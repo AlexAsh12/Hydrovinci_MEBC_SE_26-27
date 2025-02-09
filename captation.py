@@ -60,6 +60,12 @@ class DS18B20Manager:
         if not self.dossiersCapteurs:
             print("Aucun capteur détecté lors de la lecture des températures.")
             return temperatures
+        
+        # Dictionnaire de mapping des IDs vers des noms plus lisibles
+        noms_capteurs = {
+        "28-5da6491f64ff": "Capteur_Avant",
+        "28-9c85491f64ff": "Capteur_Arriere"
+        }
 
         for dossier in self.dossiersCapteurs:
             lignes = self.LireTempBrut(dossier)
@@ -74,7 +80,11 @@ class DS18B20Manager:
                 try:
                     tempCelsius = float(chaineTemp) / 1000
                     if -50 < tempCelsius < 125:  # Plage normale des capteurs DS18B20
-                        temperatures[dossier] = round(tempCelsius, 2)
+                        # Extraire l'ID du capteur du chemin complet
+                        capteur_id = dossier.split('/')[-1]
+                        # Utiliser le nom personnalisé s'il existe, sinon garder l'ID
+                        nom_capteur= noms_capteurs.get(capteur_id, capteur_id)
+                        temperatures[nom_capteur] = round(tempCelsius, 2)
                     else:
                         print("Température anormale détectée pour le capteur", dossier)
                 except ValueError:
@@ -89,20 +99,26 @@ class DS18B20Manager:
         :return: Booléen indiquant si une alerte est déclenchée, dictionnaire des températures et horodatage
     """
     def VerifierTemperatures(self):
-
         temperatures = self.LireTemperatures()
         alerteDeclenchee = False
         horodatage = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        print("Heure actuelle :", horodatage)
-
+        
+        print("\n" + "="*60)
+        print(f"                   LECTURE DES CAPTEURS")
+        print(f"                   {horodatage}")
+        print("-"*60)
+        
         if not temperatures:
-            print("Aucun capteur disponible pour la lecture des températures.")
+            print("! Aucun capteur disponible")
+            print("="*60 + "\n")
             return alerteDeclenchee, {}
-
+        
         for capteur, temperature in temperatures.items():
-            print("Capteur", capteur, ":", temperature, "degrés Celsius")
+            print(f"► {capteur:15} : {temperature:5.2f} °C")
             if temperature >= TEMPERATURE_MAX:
-                print("Alerte ! Température critique atteinte sur le capteur", capteur)
+                print(f"! ALERTE : Température critique sur {capteur}")
                 alerteDeclenchee = True
-
+        
+        print("="*60)
         return alerteDeclenchee, temperatures, horodatage
+        
