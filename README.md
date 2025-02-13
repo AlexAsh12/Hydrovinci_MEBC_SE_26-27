@@ -4,7 +4,7 @@
 
 ## Structure des fichiers
 
-### 1. `main.py`
+### 1. `main.py` 
 - **Rôle : Programme principal.
 - **Fonctions principales :**
     - Démarre la lecture des capteurs de température.
