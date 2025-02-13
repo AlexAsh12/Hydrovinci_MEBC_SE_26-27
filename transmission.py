@@ -1,4 +1,11 @@
-# Module de transmission des données via MQTT
+"""
+    Module de transmission des données via MQTT.
+
+    Liste des fonctions :
+    - SauvegarderDernierEnvoi : Sauvegarde les données en local en cas de coupure réseau
+    - EnvoyerDonneesBackup : Envoie les données sauvegardées si la connexion est rétablie
+    - EnvoyerDonneesMqtt : Envoie les données de température via MQTT
+"""
 
 import paho.mqtt.client as mqtt
 import json
@@ -12,14 +19,17 @@ MQTT_TOPIC = "capteur/temperature"
 BACKUP_FILE = "dernier_envoi.json"
 
 # Variables globales
-global connection_status
-connection_status = {"perdue": False}
+global connectionStatus
+connectionStatus = {"perdue": False}
 
 client = mqtt.Client()
 
 def SauvegarderDernierEnvoi(temperatures, horodatage):
     """
     Sauvegarde localement les dernières données envoyées.
+
+    :param temperatures: Dictionnaire des températures des capteurs
+    :param horodatage: Horodatage du relevé
     """
     donnees = {
         "horodatage": horodatage,
@@ -32,38 +42,35 @@ def SauvegarderDernierEnvoi(temperatures, horodatage):
 def EnvoyerDonneesBackup():
     """
     Tente d'envoyer les dernières données sauvegardées.
+
+    :return: True si l'envoi a réussi, False sinon
     """
     if not os.path.exists(BACKUP_FILE):
         return False
-        
+
     try:
         with open(BACKUP_FILE, "r") as fichier:
             donnees = json.load(fichier)
-        
-        print("\n" + "="*60)
-        print("                   DONNÉES DE BACKUP")
-        print(f"                   {donnees['horodatage']}")
-        print("-"*60)
-        
-        for capteur, temperature in donnees["temperatures"].items():
-            print(f"► {capteur:15} : {temperature:5.2f} °C")
-        
-        print("="*60)
 
-        # Envoyer les données de backup
+        print("\nDonnées de backup à envoyer...")
+
         if EnvoyerDonneesMqtt(donnees["temperatures"], donnees["horodatage"]):
             os.remove(BACKUP_FILE)
             print("Backup envoyé avec succès")
             return True
-            
+
     except Exception as e:
-        print(f"! Échec de l'envoi du backup : {e}")
-    
+        print(f"Échec de l'envoi du backup : {e}")
+
     return False
 
 def EnvoyerDonneesMqtt(temperatures, horodatage):
     """
     Envoie les données de température à un serveur MQTT.
+
+    :param temperatures: Dictionnaire des températures des capteurs
+    :param horodatage: Horodatage du relevé
+    :return: True si l'envoi a réussi, False sinon
     """
     payload = {
         "horodatage": horodatage,
@@ -76,20 +83,15 @@ def EnvoyerDonneesMqtt(temperatures, horodatage):
         client.connect(MQTT_BROKER, MQTT_PORT, 60)
         client.publish(MQTT_TOPIC, jsonPayload)
         client.disconnect()
-        print("\n" + "-"*60)
-        print("✓ Transmission MQTT réussie")
-        print("-"*60)
-        connection_status["perdue"] = False
+        print("Transmission MQTT réussie")
+        connectionStatus["perdue"] = False
         return True
-        
+
     except Exception as e:
-        print("-"*60)
-        print(f"! ERREUR de transmission MQTT : {e}")
-        print("-"*60)
-        
-        if not connection_status["perdue"]:
-            # Sauvegarder uniquement lors de la première déconnexion
+        print(f"Erreur de transmission MQTT : {e}")
+
+        if not connectionStatus["perdue"]:
             SauvegarderDernierEnvoi(temperatures, horodatage)
-            connection_status["perdue"] = True
-            
+            connectionStatus["perdue"] = True
+
         return False
