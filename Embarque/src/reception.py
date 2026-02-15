@@ -2,7 +2,7 @@ import paho.mqtt.client as mqtt
 import threading
 import RPi.GPIO as GPIO
 import time
-import config
+import MEBC_SE.Embarque.src.config as config
 
 MQTT_BROKER = "test.mosquitto.org"
 MQTT_PORT = 1883
@@ -48,7 +48,7 @@ def LancerEcoute(iface):
 # Clignotement LED Alerte Température
 # ---------------------
 def ClignoterLEDAlert():
-    import config
+    import MEBC_SE.Embarque.src.config as config
     global clignotement_alert_actif
     clignotement_alert_actif = True
     while config.alerte_temperature:

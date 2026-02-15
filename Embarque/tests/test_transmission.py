@@ -1,9 +1,9 @@
 import json
-import importlib
 import types
 import pytest
+import importlib
 
-MODULE_PATH = "transmission"
+MODULE_PATH = "Embarque.src.transmission"
 
 PAYLOAD = {
     "Speed_kmh": 50,
@@ -20,31 +20,27 @@ PAYLOAD = {
 @pytest.fixture
 def transmission(monkeypatch, tmp_path):
     """
-    Charge le module transmission en neutralisant init_mqtt()
-    et en redirigeant BACKUP_FILE vers un fichier temporaire.
+    Import du module transmission et patch:
+    - pas de réseau (init_mqtt neutralisé)
+    - backup dans un fichier temporaire
+    - reset connectionStatus
     """
     transmission = importlib.import_module(MODULE_PATH)
 
-    # ⛔ Désactive toute connexion réseau
+    #  Désactive toute connexion réseau
     monkeypatch.setattr(transmission, "init_mqtt", lambda: None, raising=True)
 
-    # 📁 Backup dans un dossier temporaire
+    #  Backup dans un dossier temporaire
     backup_file = tmp_path / "backup.json"
     monkeypatch.setattr(transmission, "BACKUP_FILE", str(backup_file), raising=False)
 
-    # 🔄 Recharge le module proprement
-    transmission = importlib.reload(transmission)
-
-    # 🔁 Reset état connexion
+    #  Reset état connexion
     transmission.connectionStatus["perdue"] = False
 
     return transmission
 
 
 def test_envoyer_donnees_mqtt_success(monkeypatch, transmission):
-    """
-    Cas nominal : MQTT fonctionne → publish OK, pas de backup
-    """
     published = {}
 
     class FakeClient:
@@ -52,7 +48,7 @@ def test_envoyer_donnees_mqtt_success(monkeypatch, transmission):
             published["topic"] = topic
             published["payload"] = payload
             published["qos"] = qos
-            published.update(kwargs)  # ex: retain=True
+            published.update(kwargs)
             return types.SimpleNamespace()
 
     monkeypatch.setattr(transmission, "client", FakeClient(), raising=True)
@@ -64,20 +60,14 @@ def test_envoyer_donnees_mqtt_success(monkeypatch, transmission):
     assert transmission.connectionStatus["perdue"] is False
     assert published["topic"] == transmission.MQTT_TOPIC
     assert published["qos"] == 1
-    # Si ton code publie avec retain=True, tu peux décommenter :
-    # assert published.get("retain") is True
 
     payload_dict = json.loads(published["payload"])
     assert payload_dict["horodatage"] == ts
-
-    for key, value in PAYLOAD.items():
-        assert payload_dict[key] == value
+    for k, v in PAYLOAD.items():
+        assert payload_dict[k] == v
 
 
 def test_envoyer_donnees_mqtt_failure_creates_backup(monkeypatch, transmission):
-    """
-    Cas erreur MQTT : exception → backup créé
-    """
     class FakeClient:
         def publish(self, topic, payload, qos=0, **kwargs):
             raise RuntimeError("MQTT down")
@@ -98,9 +88,6 @@ def test_envoyer_donnees_mqtt_failure_creates_backup(monkeypatch, transmission):
 
 
 def test_no_multiple_backup_when_already_perdue(monkeypatch, transmission):
-    """
-    Si déjà en mode 'perdue', on ne resauvegarde pas à chaque échec
-    """
     transmission.connectionStatus["perdue"] = True
     calls = {"count": 0}
 
@@ -122,9 +109,6 @@ def test_no_multiple_backup_when_already_perdue(monkeypatch, transmission):
 
 
 def test_sauvegarder_dernier_envoi_format(transmission):
-    """
-    Test direct de SauvegarderDernierEnvoi : structure JSON correcte
-    """
     ts = "2026-01-15 10:00:00"
     transmission.SauvegarderDernierEnvoi(PAYLOAD, ts)
 

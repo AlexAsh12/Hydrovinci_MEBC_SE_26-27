@@ -1,7 +1,7 @@
 import os
 import glob
 from datetime import datetime
-from config import CAPTEURS, SEUILS_CRITIQUES
+from MEBC_SE.Embarque.src.config import CAPTEURS, SEUILS_CRITIQUES
 
 class DS18B20Manager:
     """Gère les capteurs DS18B20, cache la liste pour performance."""

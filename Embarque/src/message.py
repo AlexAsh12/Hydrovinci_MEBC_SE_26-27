@@ -1,7 +1,7 @@
 import RPi.GPIO as GPIO
 import time
 import paho.mqtt.client as mqtt
-import config
+import MEBC_SE.Embarque.src.config as config
 
 MQTT_BROKER = "test.mosquitto.org"
 MQTT_PORT = 1883
