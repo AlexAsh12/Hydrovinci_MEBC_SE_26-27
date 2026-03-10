@@ -1,11 +1,5 @@
 # Liste des capteurs : id unique -> nom
-CAPTEURS = {
-    "28-5da6491f64ff": "CapteurBatterie1",
-    "28-9c85491f64ff": "CapteurBatterie2",
-    "28-1f8b491f64ff": "CapteurBatterieSE",
-    "28-31a6491f64ff": "CapteurMoteur",
-    "28-9ba6491f64ff": "CapteurSE"
-}
+
 
 # Seuils critiques par capteur (°C)
 SEUILS_CRITIQUES = {
@@ -24,7 +18,7 @@ BACKUP_FILE = "dernier_envoi.json"
 # GPIO des boutons physiques
 BUTTON_OK = 3
 BUTTON_NOK = 27
-BUTTON_MAYDAY = 22
+BUTTON_MAYDAY = 22 
 BUTTON_PANPAN = 5
 
 # GPIO pour la LED

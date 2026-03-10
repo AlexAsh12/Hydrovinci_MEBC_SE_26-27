@@ -1,0 +1,11 @@
+{
+  "horodatage": "2026-01-15 12:34:56",
+  "Speed_kmh": 50,
+  "Acceleration_ms2": 1.2,
+  "Battery_State_%": 80,
+  "Battery_Voltage_V": 48,
+  "Battery_Temperature_C": 25,
+  "Humidity_%": 60,
+  "Wind_Speed_ms": 3,
+  "Vehicle_Weight_kg": 1200
+}

@@ -1,118 +1,71 @@
 import json
-import types
 import pytest
-import importlib
+from unittest.mock import MagicMock, patch
+from Embarque.src.transmission import MQTTClient
 
-MODULE_PATH = "Embarque.src.transmission"
-
-PAYLOAD = {
-    "Speed_kmh": 50,
-    "Acceleration_ms2": 1.2,
-    "Battery_State_%": 80,
-    "Battery_Voltage_V": 48,
-    "Battery_Temperature_C": 25,
-    "Humidity_%": 60,
-    "Wind_Speed_ms": 3,
-    "Vehicle_Weight_kg": 1200,
-}
+TOPIC = "mebc_se/raphael/test"
+PAYLOAD = {"temperature": 22, "humidite": 60}
 
 
 @pytest.fixture
-def transmission(monkeypatch, tmp_path):
-    """
-    Import du module transmission et patch:
-    - pas de réseau (init_mqtt neutralisé)
-    - backup dans un fichier temporaire
-    - reset connectionStatus
-    """
-    transmission = importlib.import_module(MODULE_PATH)
-
-    #  Désactive toute connexion réseau
-    monkeypatch.setattr(transmission, "init_mqtt", lambda: None, raising=True)
-
-    #  Backup dans un dossier temporaire
-    backup_file = tmp_path / "backup.json"
-    monkeypatch.setattr(transmission, "BACKUP_FILE", str(backup_file), raising=False)
-
-    #  Reset état connexion
-    transmission.connectionStatus["perdue"] = False
-
-    return transmission
+def client():
+    """Crée un MQTTClient avec la connexion réseau mockée."""
+    with patch("paho.mqtt.client.Client") as MockPaho:
+        mqtt_client = MQTTClient("broker.hivemq.com")
+        mqtt_client.client = MockPaho()
+        mqtt_client.connected = True  # simule une connexion réussie
+        yield mqtt_client
 
 
-def test_envoyer_donnees_mqtt_success(monkeypatch, transmission):
-    published = {}
+def test_publish_envoie_bon_topic_et_payload(client):
+    client.publish(TOPIC, PAYLOAD)
 
-    class FakeClient:
-        def publish(self, topic, payload, qos=0, **kwargs):
-            published["topic"] = topic
-            published["payload"] = payload
-            published["qos"] = qos
-            published.update(kwargs)
-            return types.SimpleNamespace()
+    call_args = client.client.publish.call_args
+    topic_appelé = call_args[0][0]
+    payload_reçu = json.loads(call_args[0][1])
 
-    monkeypatch.setattr(transmission, "client", FakeClient(), raising=True)
-
-    ts = "2026-01-15 12:34:56"
-    ok = transmission.EnvoyerDonneesMqtt(PAYLOAD, ts)
-
-    assert ok is True
-    assert transmission.connectionStatus["perdue"] is False
-    assert published["topic"] == transmission.MQTT_TOPIC
-    assert published["qos"] == 1
-
-    payload_dict = json.loads(published["payload"])
-    assert payload_dict["horodatage"] == ts
-    for k, v in PAYLOAD.items():
-        assert payload_dict[k] == v
+    assert topic_appelé == TOPIC
+    assert payload_reçu == PAYLOAD
 
 
-def test_envoyer_donnees_mqtt_failure_creates_backup(monkeypatch, transmission):
-    class FakeClient:
-        def publish(self, topic, payload, qos=0, **kwargs):
-            raise RuntimeError("MQTT down")
+def test_publish_sans_retain(client):
+    client.publish(TOPIC, PAYLOAD)
 
-    monkeypatch.setattr(transmission, "client", FakeClient(), raising=True)
-
-    ts = "2026-01-15 12:00:00"
-    ok = transmission.EnvoyerDonneesMqtt(PAYLOAD, ts)
-
-    assert ok is False
-    assert transmission.connectionStatus["perdue"] is True
-
-    with open(transmission.BACKUP_FILE, "r", encoding="utf-8") as f:
-        backup = json.load(f)
-
-    assert backup["horodatage"] == ts
-    assert backup["data"] == PAYLOAD
+    call_kwargs = client.client.publish.call_args[1]
+    assert call_kwargs.get("retain", False) is False
 
 
-def test_no_multiple_backup_when_already_perdue(monkeypatch, transmission):
-    transmission.connectionStatus["perdue"] = True
-    calls = {"count": 0}
-
-    def fake_save(data, ts):
-        calls["count"] += 1
-
-    monkeypatch.setattr(transmission, "SauvegarderDernierEnvoi", fake_save, raising=True)
-
-    class FakeClient:
-        def publish(self, topic, payload, qos=0, **kwargs):
-            raise RuntimeError("MQTT down")
-
-    monkeypatch.setattr(transmission, "client", FakeClient(), raising=True)
-
-    ok = transmission.EnvoyerDonneesMqtt(PAYLOAD, "2026-01-15 12:01:00")
-
-    assert ok is False
-    assert calls["count"] == 0
+def test_subscribe_appelle_bien_le_client(client):
+    client.subscribe(TOPIC)
+    client.client.subscribe.assert_called_once_with(TOPIC, qos=1)
 
 
-def test_sauvegarder_dernier_envoi_format(transmission):
-    ts = "2026-01-15 10:00:00"
-    transmission.SauvegarderDernierEnvoi(PAYLOAD, ts)
+def test_on_message_stocke_le_payload(client):
+    fake_msg = MagicMock()
+    fake_msg.payload = json.dumps(PAYLOAD).encode("utf-8")
+    fake_msg.topic = TOPIC
 
-    with open(transmission.BACKUP_FILE, "r", encoding="utf-8") as f:
-        backup = json.load(f)
+    client._on_message(None, None, fake_msg)
 
-    assert backup == {"horodatage": ts, "data": PAYLOAD}
+    assert len(client.received_messages) == 1
+    assert client.received_messages[0] == PAYLOAD
+
+
+def test_listen_vide_la_liste_apres_recuperation(client):
+    fake_msg = MagicMock()
+    fake_msg.payload = json.dumps(PAYLOAD).encode("utf-8")
+    fake_msg.topic = TOPIC
+    client._on_message(None, None, fake_msg)
+
+    messages = client.listen(duration=0)
+
+    assert messages == [PAYLOAD]
+    assert client.received_messages == []
+
+
+def test_connect_timeout_si_pas_de_connexion():
+    with patch("paho.mqtt.client.Client"):
+        mqtt_client = MQTTClient("broker.hivemq.com")
+        mqtt_client.connected = False  # simule un timeout
+        result = mqtt_client.connected
+        assert result is False

@@ -1,7 +1,7 @@
 import time
 import threading
 import tkinter as tk
-import RPi.GPIO as GPIO
+# import RPi.GPIO as GPIO
 
 from MEBC_SE.Embarque.src.captation import DS18B20Manager
 from MEBC_SE.Embarque.src.transmission import EnvoyerDonneesMqtt, EnvoyerDonneesBackup, connectionStatus
