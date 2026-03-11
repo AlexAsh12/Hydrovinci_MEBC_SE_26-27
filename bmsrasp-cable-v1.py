@@ -4,7 +4,7 @@ BMS XDZN - Monitoring Câblé (RS485/UART)
 Monaco Energy Boat Challenge 2026
 Adaptation directe du code BLE vers Série
 """
-
+import transmission
 import serial
 import time
 import json
@@ -170,6 +170,13 @@ async def run_monitor(interval):
                     if data:
                         display_data(data)
                         save_to_json(data)
+
+                        # --- Envoi MQTT via transmission.py ---
+                        try:
+                            transmission.EnvoyerDonneesMqtt(data)
+                        except Exception as e:
+                            print(f"⚠️ Erreur MQTT: {e}")
+
                         errors = 0
                     else:
                         errors += 1
@@ -200,5 +207,5 @@ if __name__ == "__main__":
         sec = float(input("Intervalle (sec, défaut 2s): ") or "2")
     except:
         sec = 2
-        
+
     asyncio.run(run_monitor(sec))
