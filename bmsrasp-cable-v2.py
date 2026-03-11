@@ -12,6 +12,9 @@ import os
 import asyncio
 from datetime import datetime
 
+# Import de la fonction MQTT depuis transmission.py
+from transmission import EnvoyerDonneesMqtt
+
 # --- Configuration ---
 BMS_CONFIG = {
     "BMS_1": {"port": "/dev/ttyUSB0", "file": "data_bms_1.json"},
@@ -105,6 +108,12 @@ async def monitor_bms(bms_id, config, interval):
                     if data:
                         display_bms_status(data)
                         save_to_json(config['file'], data)
+                        
+                        # Envoi MQTT via transmission.py
+                        try:
+                            EnvoyerDonneesMqtt(data)
+                        except Exception as e:
+                            print(f"⚠️ Erreur MQTT [{bms_id}]: {e}")
                 else:
                     print(f"❌ {bms_id} ({config['port']}): Pas de réponse")
                     
