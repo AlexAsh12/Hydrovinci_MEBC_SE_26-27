@@ -37,8 +37,7 @@ class InterfaceBateau:
 
     def update_bms(self, bms1, bms2):
         """
-        Prend les deux derniers objets JSON des BMS
-        Ex: update_bms(data1[-1], data2[-1])
+        Affiche V, A, SOC + Températures Max/Min
         """
         try:
             lines = []
@@ -47,24 +46,36 @@ class InterfaceBateau:
                 v = data.get('voltage', 0)
                 i = data.get('current_a', 0)
                 soc = data.get('soc', 0)
-                # Alerte visuelle simple si SOC bas
-                status = "OK" if soc > 20 else "LOW"
                 
-                # Formatage aligné
-                line = f"[{bid}]  {v:>5}V  |  {i:>6}A  |  SOC: {soc:>5}%  |  {status}"
+                # Extraction des températures depuis la liste 'temps'
+                temp_list = data.get('temps', [])
+                if temp_list:
+                    t_max = max(temp_list)
+                    t_min = min(temp_list)
+                    temp_str = f"T: {t_min}°C > {t_max}°C"
+                else:
+                    temp_str = "T: N/A"
+                
+                # Formatage sur deux lignes par BMS pour que ce soit aéré
+                line = (f"[{bid}] {v:>5}V | {i:>6}A | SOC: {soc:>5}%\n"
+                        f"      {temp_str}")
                 lines.append(line)
 
             full_text = "\n\n".join(lines)
             self.lbl_bms.config(text=full_text)
             
-            # Changement de couleur si SOC critique sur l'un des BMS
-            if bms1.get('soc', 100) < 15 or bms2.get('soc', 100) < 15:
-                self.lbl_bms.config(fg="#ff4444")
+            # --- ALERTES COULEURS ---
+            # Rouge si SOC < 15% OU si une cellule dépasse 45°C
+            critical_temp = any(max(d.get('temps', [0])) > 45 for d in [bms1, bms2])
+            critical_soc = any(d.get('soc', 100) < 15 for d in [bms1, bms2])
+            
+            if critical_temp or critical_soc:
+                self.lbl_bms.config(fg="#ff4444") # Rouge alerte
             else:
                 self.lbl_bms.config(fg="white")
 
         except Exception as e:
-            self.lbl_bms.config(text=f"Erreur formatage JSON: {e}")
+            self.lbl_bms.config(text=f"Erreur d'affichage : {e}")
         
         self.root.update()
 
