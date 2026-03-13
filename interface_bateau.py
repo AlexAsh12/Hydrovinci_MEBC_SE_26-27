@@ -55,23 +55,31 @@ class InterfaceBateau:
                 cells = d.get('cells', [0])
                 delta_v = (max(cells) - min(cells)) * 1000
                 
-                # Gestion fine des températures
+                # Récupération de toutes les sondes
                 t_list = d.get('temps', [])
                 if len(t_list) >= 6:
-                    t_cells = t_list[0:4] # Les 4 premières sont les cellules
-                    t_mosfet = t_list[5]   # La 6ème est le MOSFET
-                    temp_info = f"Cells: {min(t_cells)}/{max(t_cells)}°C | MOS: {t_mosfet}°C"
-                elif t_list:
-                    temp_info = f"T: {min(t_list)}°C > {max(t_list)}°C"
+                    t_cells_max = max(t_list[0:4])
+                    t_ambiant = t_list[4]  # La 5ème valeur (température extérieure/ambiante)
+                    t_mosfet = t_list[5]   # La 6ème valeur (électronique)
+                    
+                    temp_info = f"CellMax: {t_cells_max}°C | AMBIANT: {t_ambiant}°C | MOS: {t_mosfet}°C"
                 else:
-                    temp_info = "T: N/A"
+                    temp_info = f"T: {max(t_list) if t_list else 'N/A'}°C"
                 
-                # Formatage propre
+                # Affichage final
                 line = (f"[{bid}] {v:5.2f}V | {i:6.2f}A | SOC: {soc:5.1f}% | ΔV: {delta_v:3.0f}mV\n"
                         f"      {temp_info}")
                 results.append(line)
             
             self.lbl_bms.config(text="\n\n".join(results))
+            
+            # --- ALERTE COULEUR ---
+            # Si l'ambiante ou le MOSFET dépasse 50°C, on passe en rouge
+            if any( (d.get('temps', [0,0,0,0,0,0])[4] > 50 or d.get('temps', [0,0,0,0,0,0])[5] > 65) for d in [bms1, bms2] if d):
+                self.lbl_bms.config(fg="#ff4444")
+            else:
+                self.lbl_bms.config(fg="white")
+
         except Exception as e:
             print(f"Erreur affichage: {e}")
         self.root.update()
@@ -83,3 +91,4 @@ class InterfaceBateau:
 # Initialisation
 
 interface = InterfaceBateau()
+
