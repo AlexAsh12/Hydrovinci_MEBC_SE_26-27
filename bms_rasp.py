@@ -22,6 +22,8 @@ BMS_CONFIG = {
 }
 BAUD_RATE = 9600
 NOMINAL_CAPACITY_AH = 98.0
+last_reports ={"BMS_1" :None, "BMS_2":None}
+
 
 def save_to_json(filename, data):
     """Enregistre les données dans le fichier spécifique du BMS"""
@@ -106,10 +108,16 @@ async def monitor_bms(bms_id, config, interval):
                 if response:
                     data = decode_xdz_frame(response, bms_id)
                     if data:
+                        
                         display_bms_status(data)
+                        last_reports[bms_id] = data
                         save_to_json(config['file'], data)
                         from interface_bateau import interface 
-                        interface.update_bms(data)
+                        interface.update_bms(
+                            last_reports.get("BMS_1"),
+                            last_reports.get("BMS_2")
+                            )
+                        interface.update_messages("Système prêt. Connexion BMS est bonne sa mere wola SHOUT OUT TO ALBERT LE GOATTTTTTTT ps emile un peu aussi mais un peu moins ")
                         # Envoi MQTT via transmission.py
                         """
                         try:
