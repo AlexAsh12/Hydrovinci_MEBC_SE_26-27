@@ -41,27 +41,39 @@ class InterfaceBateau:
         return label
 
     def update_bms(self, bms1, bms2):
-        """Affiche les données des deux BMS"""
         try:
             results = []
             for d in [bms1, bms2]:
-                if not d:
-                    results.append("BMS : Donnée non disponible")
+                if d is None:
+                    results.append("> BMS : En attente de connexion...")
                     continue
                 
                 bid = d.get('bms_id', '??')
                 v = d.get('voltage', 0.0)
                 i = d.get('current_a', 0.0)
                 soc = d.get('soc', 0.0)
-                temps = d.get('temps', [0, 0])
+                cells = d.get('cells', [0])
+                delta_v = (max(cells) - min(cells)) * 1000
                 
-                line = f"[{bid}] {v:5.2f}V | {i:6.2f}A | SOC: {soc:5.1f}% | T: {min(temps)}°C > {max(temps)}°C"
+                # Gestion fine des températures
+                t_list = d.get('temps', [])
+                if len(t_list) >= 6:
+                    t_cells = t_list[0:4] # Les 4 premières sont les cellules
+                    t_mosfet = t_list[5]   # La 6ème est le MOSFET
+                    temp_info = f"Cells: {min(t_cells)}/{max(t_cells)}°C | MOS: {t_mosfet}°C"
+                elif t_list:
+                    temp_info = f"T: {min(t_list)}°C > {max(t_list)}°C"
+                else:
+                    temp_info = "T: N/A"
+                
+                # Formatage propre
+                line = (f"[{bid}] {v:5.2f}V | {i:6.2f}A | SOC: {soc:5.1f}% | ΔV: {delta_v:3.0f}mV\n"
+                        f"      {temp_info}")
                 results.append(line)
             
             self.lbl_bms.config(text="\n\n".join(results))
         except Exception as e:
-            self.lbl_bms.config(text=f"Erreur d'affichage : {e}")
-        
+            print(f"Erreur affichage: {e}")
         self.root.update()
 
     def update_messages(self, msg):
@@ -69,4 +81,5 @@ class InterfaceBateau:
         self.root.update()
 
 # Initialisation
+
 interface = InterfaceBateau()
