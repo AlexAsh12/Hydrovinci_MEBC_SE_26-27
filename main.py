@@ -1,46 +1,27 @@
-import json
-import time
-import os
+#!/usr/bin/env python3
+import asyncio
 from interface_bateau import interface
+# On importe la fonction monitor_bms et la config depuis ton fichier
+# (Assure-toi que le nom ici correspond au nom de ton fichier sans le .py)
+import bms_rasp as bms 
 
-def get_latest_data(filename):
-    """Lit un fichier JSON et retourne le dernier objet de la liste"""
-    try:
-        if os.path.exists(filename):
-            with open(filename, 'r') as f:
-                data_list = json.load(f)
-                if data_list:
-                    return data_list[-1]  # On prend le dernier
-    except Exception as e:
-        print(f"Erreur lecture {filename}: {e}")
-    return None
+async def main():
+    print("Démarrage Global - Monaco 2026")
+    interface.update_messages("Système prêt. Connexion BMS en cours...")
 
-def main():
-    print("Démarrage du Monitoring Monaco 2026...")
+    interval = 1.0
     
-    # Message de bienvenue sur l'interface
-    interface.update_messages("Système initialisé. Lecture des fichiers JSON en cours...")
-
-    try:
-        while True:
-            # 1. Récupération des données depuis les fichiers
-            d1 = get_latest_data('data_bms_1.json')
-            d2 = get_latest_data('data_bms_2.json')
-
-            # 2. Mise à jour de l'interface si on a des données
-            if d1 and d2:
-                interface.update_bms(d1, d2)
-            else:
-                interface.update_messages("⚠️ En attente de données des fichiers JSON...")
-
-            # 3. On peut aussi update d'autres infos (IA / Messages)
-            # interface.update_other("Vitesse: 12 noeuds | Cap: 180°")
-
-            # Temporisation pour ne pas surcharger le CPU
-            time.sleep(0.5) 
-            
-    except KeyboardInterrupt:
-        print("Arrêt du programme.")
+    # On crée les tâches en utilisant les fonctions de TON fichier
+    tasks = [
+        bms.monitor_bms("BMS_1", bms.BMS_CONFIG["BMS_1"], interval),
+        bms.monitor_bms("BMS_2", bms.BMS_CONFIG["BMS_2"], interval)
+    ]
+    
+    # Lancement simultané
+    await asyncio.gather(*tasks)
 
 if __name__ == "__main__":
-    main()
+    try:
+        asyncio.run(main())
+    except KeyboardInterrupt:
+        print("\nArrêt.")
