@@ -11,6 +11,7 @@ import json
 import os
 import asyncio
 from datetime import datetime
+import interface_bateau
 
 # Import de la fonction MQTT depuis transmission.py
 # from transmission import EnvoyerDonneesMqtt
@@ -22,7 +23,7 @@ BMS_CONFIG = {
 }
 BAUD_RATE = 9600
 NOMINAL_CAPACITY_AH = 98.0
-last_reports ={"BMS_1" :None, "BMS_2":None}
+last_reports = {"BMS_1": None, "BMS_2": None}
 
 
 def save_to_json(filename, data):
@@ -32,7 +33,7 @@ def save_to_json(filename, data):
         if os.path.exists(filename):
             with open(filename, 'r') as f:
                 history = json.load(f)
-        
+
         history.append(data)
         with open(filename, 'w') as f:
             json.dump(history[-1000:], f, indent=4)
@@ -83,13 +84,13 @@ def decode_xdz_frame(hex_response, bms_name):
 def display_bms_status(data):
     """Affichage compact pour deux BMS côte à côte ou l'un après l'autre"""
     if not data: return
-    
+
     name = data['bms_id']
     v_min, v_max = min(data['cells']), max(data['cells'])
     delta = (v_max - v_min) * 1000
-    
+
     print(f"[{name}] {data['timestamp']} | {data['voltage']:.1f}V | {data['current_a']:.1f}A | SOC: {data['soc']}% | Delta: {delta:.0f}mV")
-    
+
     # Alertes rapides
     if delta > 100: print(f"  ⚠️ ALERT [{name}]: Déséquilibre important !")
     if v_min < 3.0: print(f"  ⚠️ ALERT [{name}]: Tension basse !")
@@ -97,27 +98,24 @@ def display_bms_status(data):
 async def monitor_bms(bms_id, config, interval):
     """Tâche asynchrone pour un seul BMS"""
     print(f"🚀 Démarrage {bms_id} sur {config['port']}")
-    
+
     while True:
         try:
             # On ouvre et ferme le port à chaque lecture pour éviter les blocages
             with serial.Serial(config['port'], BAUD_RATE, timeout=1) as ser:
                 ser.write("~01014642E00201FD36\r".encode('ascii'))
                 response = ser.read_until(b'\r').decode('ascii', errors='ignore').strip()
-                
+
                 if response:
                     data = decode_xdz_frame(response, bms_id)
                     if data:
-                        
                         display_bms_status(data)
                         last_reports[bms_id] = data
                         save_to_json(config['file'], data)
-                        from interface_bateau import interface 
-                        interface.update_bms(
+                        interface_bateau.update_bms(
                             last_reports.get("BMS_1"),
                             last_reports.get("BMS_2")
-                            )
-                        interface.update_messages("Système prêt. Connexion BMS est bonne sa mere wola SHOUT OUT TO ALBERT LE GOATTTTTTTT ps emile un peu aussi mais un peu moins ")
+                        )
                         # Envoi MQTT via transmission.py
                         """
                         try:
@@ -127,25 +125,25 @@ async def monitor_bms(bms_id, config, interval):
                             """
                 else:
                     print(f"❌ {bms_id} ({config['port']}): Pas de réponse")
-                    
+
         except Exception as e:
             print(f"⚠️ Erreur sur {bms_id}: {e}")
-        
+
         await asyncio.sleep(interval)
 
 async def main():
     print("="*60)
     print("MONACO ENERGY BOAT CHALLENGE 2026 - DUAL BMS MONITOR")
     print("="*60)
-    
+
     interval = 2.0
-    
+
     # Lancement des deux monitorings en parallèle
     tasks = [
         monitor_bms("BMS_1", BMS_CONFIG["BMS_1"], interval),
         monitor_bms("BMS_2", BMS_CONFIG["BMS_2"], interval)
     ]
-    
+
     await asyncio.gather(*tasks)
 
 if __name__ == "__main__":
