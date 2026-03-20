@@ -1,14 +1,14 @@
 import time
 import threading
 import tkinter as tk
-import RPi.GPIO as GPIO
+# import RPi.GPIO as GPIO
 
-from captation import DS18B20Manager
-from transmission import EnvoyerDonneesMqtt, EnvoyerDonneesBackup, connectionStatus
-from reception import LancerEcoute, ClignoterLEDAlert, clignotement_alert_actif
-from message import LancerEcouteBoutons
-from interface_bateau import InterfaceBateau
-import config  # pour SEUILS_CRITIQUES, LED_ALERT_PIN, etc.
+from MEBC_SE.Embarque.src.captation import DS18B20Manager
+from MEBC_SE.Embarque.src.transmission import EnvoyerDonneesMqtt, EnvoyerDonneesBackup, connectionStatus
+from MEBC_SE.Embarque.src.reception import LancerEcoute, ClignoterLEDAlert, clignotement_alert_actif
+from MEBC_SE.Embarque.src.message import LancerEcouteBoutons
+from MEBC_SE.Embarque.src.interface_bateau import InterfaceBateau
+import MEBC_SE.Embarque.src.config as config  # pour SEUILS_CRITIQUES, LED_ALERT_PIN, etc.
 
 interface = None
 
