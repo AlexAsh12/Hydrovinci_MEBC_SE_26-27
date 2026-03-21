@@ -25,6 +25,14 @@ BAUD_RATE = 9600
 NOMINAL_CAPACITY_AH = 98.0
 last_reports = {"BMS_1": None, "BMS_2": None}
 
+"""
+--- MQTT ---
+from transmission import MQTTClient
+MQTT_TOPIC = "mebc_se/raphael/bms"
+mqtt_client = MQTTClient("broker.hivemq.com")
+mqtt_client.connect() 
+"""
+
 
 def save_to_json(filename, data):
     """Enregistre les données dans le fichier spécifique du BMS"""
@@ -119,7 +127,7 @@ async def monitor_bms(bms_id, config, interval):
                         # Envoi MQTT via transmission.py
                         """
                         try:
-                            EnvoyerDonneesMqtt(data)
+                            mqtt_client.publish("mebc_se/raphael/bms", data)
                         except Exception as e:
                             print(f"⚠️ Erreur MQTT [{bms_id}]: {e}")
                             """
