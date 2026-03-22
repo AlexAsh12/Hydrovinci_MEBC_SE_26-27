@@ -83,7 +83,7 @@ def passer_appel():
         if verifier_reseau():
  
             print(f"📞 Lancement appel vers {NUMERO}...")
-            i#nterface_bateau.update_messages("Appel en cours...") #message sur l'interface
+            #interface_bateau.update_messages("Appel en cours...") #message sur l'interface
             ser.write(f"ATD{NUMERO};\r\n".encode())
             time.sleep(2)
  
