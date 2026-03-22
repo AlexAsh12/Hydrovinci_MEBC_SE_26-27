@@ -97,9 +97,13 @@ def update_bms(bms1, bms2):
     if root:
         root.after(0, _do)
 
+messages = []
 def update_messages(msg):
     if root:
-        root.after(0, lambda: lbl_msg.config(text=str(msg)))
+        messages.append(msg)
+        texte = "\n".join(messages[-13:])  # garder les 13 derniers
+        root.after(0, lambda t=texte: lbl_msg.config(text=t))
+
 
 def update_other(info):
     if root:

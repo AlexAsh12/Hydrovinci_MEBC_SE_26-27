@@ -2,6 +2,8 @@
 import asyncio
 import threading
 import interface_bateau
+import SMS
+import time
 # On importe la fonction monitor_bms et la config depuis ton fichier
 # (Assure-toi que le nom ici correspond au nom de ton fichier sans le .py)
 import bms_rasp as bms
@@ -22,7 +24,11 @@ async def main():
     await asyncio.gather(*tasks)
 
 if __name__ == "__main__":
-    threading.Thread(target=interface_bateau.init, daemon=True).start()
+    threading.Thread(target=interface_bateau.init).start()
+    print("thread interface lancé")
+    threading.Thread(target=SMS.lire_sms, daemon=True).start()
+    print("thread SMS lancé")
+
     try:
         asyncio.run(main())
     except KeyboardInterrupt:
