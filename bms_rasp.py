@@ -18,8 +18,8 @@ import interface_bateau
 
 # --- Configuration ---
 BMS_CONFIG = {
-    "BMS_1": {"port": "/dev/ttyUSB0", "file": "data_bms_1.json"},
-    "BMS_2": {"port": "/dev/ttyUSB1", "file": "data_bms_2.json"}
+    "BMS_1": {"port": "/dev/serial/by-id/usb-FTDI_FT232R_USB_UART_B0044HGC-if00-port0", "file": "data_bms_1.json"},
+    "BMS_2": {"port": "/dev/serial/by-id/usb-Silicon_Labs_CP2102N_USB_to_UART_Bridge_Controller_0001-if00-port0", "file": "data_bms_2.json"}
 }
 BAUD_RATE = 9600
 NOMINAL_CAPACITY_AH = 98.0
@@ -97,7 +97,7 @@ def display_bms_status(data):
     v_min, v_max = min(data['cells']), max(data['cells'])
     delta = (v_max - v_min) * 1000
 
-    print(f"[{name}] {data['timestamp']} | {data['voltage']:.1f}V | {data['current_a']:.1f}A | SOC: {data['soc']}% | Delta: {delta:.0f}mV")
+    #print(f"[{name}] {data['timestamp']} | {data['voltage']:.1f}V | {data['current_a']:.1f}A | SOC: {data['soc']}% | Delta: {delta:.0f}mV")
 
     # Alertes rapides
     if delta > 100: print(f"  ⚠️ ALERT [{name}]: Déséquilibre important !")

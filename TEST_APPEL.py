@@ -1,10 +1,10 @@
 import serial
 import time
-#import interface_bateau
+import interface_bateau
  
 # --- CONFIGURATION ---
 NUMERO = "+33602185227"
-PORT_SERIE = "/dev/ttyUSB3"
+#PORT_SERIE = "/dev/ttyUSB2"
 VITESSE = 115200
 CSQ_MINIMUM = 5  # Abaissé car module en 4G, CSQ n'est pas représentatif
  
@@ -64,88 +64,90 @@ def verifier_reseau():
     print("❌ Impossible de s'enregistrer sur le réseau.")
     return False
  
-def passer_appel():
+def passer_appel(ser_param, sim_lock):  # ser et sim_lock passés depuis le main
     global ser
-    try:
-        ser = serial.Serial(PORT_SERIE, VITESSE, timeout=1)
-        print("--- Démarrage Système Bateau ---")
-        print(f"Port {PORT_SERIE} ouvert.")
- 
-        time.sleep(1)
-        lire_tampon()
- 
-        envoyer_commande("AT")
-        envoyer_commande("AT+CMEE=2")
-        envoyer_commande("AT+CREG=0")
-        envoyer_commande("AT+CGREG=0")
-        envoyer_commande("AT+CEREG=0")
- 
-        if verifier_reseau():
- 
-            print(f"📞 Lancement appel vers {NUMERO}...")
-            #interface_bateau.update_messages("Appel en cours...") #message sur l'interface
-            ser.write(f"ATD{NUMERO};\r\n".encode())
-            time.sleep(2)
- 
-            rep_appel = lire_tampon().strip()
-            if rep_appel:
-                print(f"   < RÉPONSE APPEL : {rep_appel}")
- 
-            if "NO CARRIER" in rep_appel or "ERROR" in rep_appel:
-                print("❌ APPEL REJETÉ IMMÉDIATEMENT.")
-                print("🔍 Analyse cause (CEER)...")
-                envoyer_commande("AT+CEER")
-                return
- 
-            est_decroche = False
-            print("⏳ En attente de décrochage ou fin d'appel...")
- 
-            for i in range(300):
-                time.sleep(1)
- 
-                ser.write(b"AT+CLCC\r\n")
-                time.sleep(0.5)
-                reponse = lire_tampon()
-                clean = reponse.replace(" ", "").strip()
- 
-                if est_decroche and "+CLCC:" not in clean and "OK" in clean:
-                    print("📵 L'AUTRE A RACCROCHÉ.")
+    # Lock pour toute la durée de l'appel — bloque les écritures SMS pendant ce temps
+    with sim_lock:
+        ser = ser_param
+        try:
+            print("--- Démarrage Système Bateau ---")
+            #print(f"Port {PORT_SERIE} ouvert.")
+     
+            # PURGE OBLIGATOIRE : Élimine les résidus du thread SMS
+            if ser.in_waiting:
+                ser.reset_input_buffer()
+
+            time.sleep(1)
+     
+            envoyer_commande("AT")
+            envoyer_commande("AT+CMEE=2")
+            envoyer_commande("AT+CREG=0")
+            envoyer_commande("AT+CGREG=0")
+            envoyer_commande("AT+CEREG=0")
+     
+            if verifier_reseau():
+     
+                print(f"📞 Lancement appel vers {NUMERO}...")
+                interface_bateau.update_messages("Appel en cours...") #message sur l'interface
+                ser.write(f"ATD{NUMERO};\r\n".encode())
+                time.sleep(2)
+     
+                rep_appel = lire_tampon().strip()
+                if rep_appel:
+                    print(f"   < RÉPONSE APPEL : {rep_appel}")
+     
+                if "NO CARRIER" in rep_appel or "ERROR" in rep_appel:
+                    print("❌ APPEL REJETÉ IMMÉDIATEMENT.")
                     print("🔍 Analyse cause (CEER)...")
                     envoyer_commande("AT+CEER")
-                    break
- 
-                if "NOCARRIER" in clean or "NO CARRIER" in clean:
-                    print("❌ APPEL COUPÉ PAR LE RÉSEAU.")
-                    print("🔍 Analyse cause (CEER)...")
-                    envoyer_commande("AT+CEER")
-                    break
- 
-                if "+CLCC:" in clean:
-                    parts = clean.split('+CLCC:')[-1].split(',')
-                    if len(parts) >= 3:
-                        statut = parts[2]
-                        if statut == '0' and not est_decroche:
-                            print("🟢 L'AUTRE A DÉCROCHÉ !")
-                            est_decroche = True
-                        elif statut == '3' and not est_decroche:
-                            print(f"   🔔 Sonnerie en cours... ({i+1}s)")
- 
+                    return
+     
+                est_decroche = False
+                print("⏳ En attente de décrochage ou fin d'appel...")
+     
+                for i in range(300):
+                    time.sleep(1)
+     
+                    ser.write(b"AT+CLCC\r\n")
+                    time.sleep(0.5)
+                    reponse = lire_tampon()
+                    clean = reponse.replace(" ", "").strip()
+     
+                    if est_decroche and "+CLCC:" not in clean and "OK" in clean:
+                        print("📵 L'AUTRE A RACCROCHÉ.")
+                        print("🔍 Analyse cause (CEER)...")
+                        envoyer_commande("AT+CEER")
+                        break
+     
+                    if "NOCARRIER" in clean or "NO CARRIER" in clean:
+                        print("❌ APPEL COUPÉ PAR LE RÉSEAU.")
+                        print("🔍 Analyse cause (CEER)...")
+                        envoyer_commande("AT+CEER")
+                        break
+     
+                    if "+CLCC:" in clean:
+                        parts = clean.split('+CLCC:')[-1].split(',')
+                        if len(parts) >= 3:
+                            statut = parts[2]
+                            if statut == '0' and not est_decroche:
+                                print("🟢 L'AUTRE A DÉCROCHÉ !")
+                                est_decroche = True
+                            elif statut == '3' and not est_decroche:
+                                print(f"   🔔 Sonnerie en cours... ({i+1}s)")
+     
+                else:
+                    print("⏱️ Timeout atteint (5 min). Fin forcée.")
+     
+                print("🏁 Fin de la séquence. Raccrochage...")
+                interface_bateau.update_messages("Fin d'appel") #message sur l'interface
+                envoyer_commande("AT+CHUP")
+     
             else:
-                print("⏱️ Timeout atteint (5 min). Fin forcée.")
- 
-            print("🏁 Fin de la séquence. Raccrochage...")
-            #interface_bateau.update_messages("Fin d'appel") #message sur l'interface
-            envoyer_commande("AT+CHUP")
- 
-        else:
-            print("🚫 Abandon : Réseau ou signal insuffisant.")
- 
-    except Exception as e:
-        print(f"\n❌ ERREUR SCRIPT : {e}")
- 
-    finally:
-        print("\n--- Nettoyage et Arrêt ---")
-        if ser is not None and ser.is_open:
-            ser.close()
-            print("Port série fermé.")
- 
+                print("🚫 Abandon : Réseau ou signal insuffisant.")
+     
+        except Exception as e:
+            print(f"\n❌ ERREUR SCRIPT : {e}")
+     
+        finally:
+            print("\n--- Nettoyage et Arrêt ---")
+            print("Port série rendu au main.")
