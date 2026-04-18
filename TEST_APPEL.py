@@ -1,11 +1,12 @@
 import serial
 import time
 import interface_bateau
+import config
  
 # --- CONFIGURATION ---
-NUMERO = "+33602185227"
-#PORT_SERIE = "/dev/ttyUSB2"
-VITESSE = 115200
+# NUMERO = "+33602185227" -> Centralisé dans config.py
+
+# VITESSE = 115200 -> Centralisé dans config.py
 CSQ_MINIMUM = 5  # Abaissé car module en 4G, CSQ n'est pas représentatif
  
 ser = None
@@ -87,9 +88,9 @@ def passer_appel(ser_param, sim_lock):  # ser et sim_lock passés depuis le main
      
             if verifier_reseau():
      
-                print(f"📞 Lancement appel vers {NUMERO}...")
+                print(f"📞 Lancement appel vers {config.NUMERO_DEST}...")
                 interface_bateau.update_messages("Appel en cours...") #message sur l'interface
-                ser.write(f"ATD{NUMERO};\r\n".encode())
+                ser.write(f"ATD{config.NUMERO_DEST};\r\n".encode())
                 time.sleep(2)
      
                 rep_appel = lire_tampon().strip()
@@ -135,15 +136,12 @@ def passer_appel(ser_param, sim_lock):  # ser et sim_lock passés depuis le main
                             elif statut == '3' and not est_decroche:
                                 print(f"   🔔 Sonnerie en cours... ({i+1}s)")
      
-                else:
-                    print("⏱️ Timeout atteint (5 min). Fin forcée.")
-     
-                print("🏁 Fin de la séquence. Raccrochage...")
-                interface_bateau.update_messages("Fin d'appel") #message sur l'interface
-                envoyer_commande("AT+CHUP")
-     
             else:
-                print("🚫 Abandon : Réseau ou signal insuffisant.")
+                print("⏱️ Timeout atteint (5 min). Fin forcée.")
+     
+            print("🏁 Fin de la séquence. Raccrochage...")
+            interface_bateau.update_messages("Fin d'appel") #message sur l'interface
+            envoyer_commande("AT+CHUP")
      
         except Exception as e:
             print(f"\n❌ ERREUR SCRIPT : {e}")

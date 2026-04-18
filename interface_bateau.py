@@ -101,9 +101,10 @@ messages = []
 def update_messages(msg):
     if root:
         messages.append(msg)
-        texte = "\n".join(messages[-13:])  # garder les 13 derniers
+        if len(messages) > 20: # Limite stricte en mémoire
+            messages.pop(0)
+        texte = "\n".join(messages[-13:])
         root.after(0, lambda t=texte: lbl_msg.config(text=t))
-
 
 def update_other(info):
     if root:

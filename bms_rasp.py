@@ -12,17 +12,15 @@ import os
 import asyncio
 from datetime import datetime
 import interface_bateau
+import config
 
 # Import de la fonction MQTT depuis transmission.py
 # from transmission import EnvoyerDonneesMqtt
 
 # --- Configuration ---
-BMS_CONFIG = {
-    "BMS_1": {"port": "/dev/serial/by-id/usb-FTDI_FT232R_USB_UART_B0044HGC-if00-port0", "file": "data_bms_1.json"},
-    "BMS_2": {"port": "/dev/serial/by-id/usb-Silicon_Labs_CP2102N_USB_to_UART_Bridge_Controller_0001-if00-port0", "file": "data_bms_2.json"}
-}
-BAUD_RATE = 9600
-NOMINAL_CAPACITY_AH = 98.0
+# BMS_CONFIG = {...} -> Centralisé dans config.py
+# BAUD_RATE = 9600 -> Centralisé dans config.py
+# NOMINAL_CAPACITY_AH = 98.0 -> Centralisé dans config.py
 last_reports = {"BMS_1": None, "BMS_2": None}
 
 """
@@ -74,7 +72,7 @@ def decode_xdz_frame(hex_response, bms_name):
         voltage = int(raw[ptr:ptr+4], 16) / 1000.0
         ptr += 4
         capacity = (int(raw[ptr:ptr+4], 16) * 10) / 1000.0
-        soc = (capacity / NOMINAL_CAPACITY_AH) * 100
+        soc = (capacity / config.NOMINAL_CAPACITY_AH) * 100
 
         return {
             'bms_id': bms_name,
@@ -103,14 +101,17 @@ def display_bms_status(data):
     if delta > 100: print(f"  ⚠️ ALERT [{name}]: Déséquilibre important !")
     if v_min < 3.0: print(f"  ⚠️ ALERT [{name}]: Tension basse !")
 
-async def monitor_bms(bms_id, config, interval):
+async def monitor_bms(bms_id, bms_conf, interval):
     """Tâche asynchrone pour un seul BMS"""
-    print(f"🚀 Démarrage {bms_id} sur {config['port']}")
+    print(f"🚀 Démarrage {bms_id} sur {bms_conf['port']}")
+    
+    # --- NOUVEAU CODE : Variable d'état ---
+    erreur_affichee = False
 
     while True:
         try:
             # On ouvre et ferme le port à chaque lecture pour éviter les blocages
-            with serial.Serial(config['port'], BAUD_RATE, timeout=1) as ser:
+            with serial.Serial(bms_conf['port'], config.BAUD_RATE_BMS, timeout=1) as ser:
                 ser.write("~01014642E00201FD36\r".encode('ascii'))
                 response = ser.read_until(b'\r').decode('ascii', errors='ignore').strip()
 
@@ -119,11 +120,16 @@ async def monitor_bms(bms_id, config, interval):
                     if data:
                         display_bms_status(data)
                         last_reports[bms_id] = data
-                        save_to_json(config['file'], data)
+                        save_to_json(bms_conf['file'], data)
                         interface_bateau.update_bms(
                             last_reports.get("BMS_1"),
                             last_reports.get("BMS_2")
                         )
+                        # --- NOUVEAU CODE : Reset de l'état ---
+                        if erreur_affichee:
+                            print(f"✅ {bms_id} reconnecté.")
+                            erreur_affichee = False
+                        
                         # Envoi MQTT via transmission.py
                         """
                         try:
@@ -132,10 +138,16 @@ async def monitor_bms(bms_id, config, interval):
                             print(f"⚠️ Erreur MQTT [{bms_id}]: {e}")
                             """
                 else:
-                    print(f"❌ {bms_id} ({config['port']}): Pas de réponse")
+                    # --- MODIFICATION : Filtrage du spam ---
+                    if not erreur_affichee:
+                        print(f"❌ {bms_id} ({bms_conf['port']}): Pas de réponse")
+                        erreur_affichee = True
 
         except Exception as e:
-            print(f"⚠️ Erreur sur {bms_id}: {e}")
+            # --- MODIFICATION : Filtrage du spam ---
+            if not erreur_affichee:
+                print(f"⚠️ Erreur sur {bms_id}: {e}")
+                erreur_affichee = True
 
         await asyncio.sleep(interval)
 
@@ -144,12 +156,12 @@ async def main():
     print("MONACO ENERGY BOAT CHALLENGE 2026 - DUAL BMS MONITOR")
     print("="*60)
 
-    interval = 2.0
+    interval = config.INTERVALLE_BMS
 
     # Lancement des deux monitorings en parallèle
     tasks = [
-        monitor_bms("BMS_1", BMS_CONFIG["BMS_1"], interval),
-        monitor_bms("BMS_2", BMS_CONFIG["BMS_2"], interval)
+        monitor_bms("BMS_1", config.BMS_CONFIG["BMS_1"], interval),
+        monitor_bms("BMS_2", config.BMS_CONFIG["BMS_2"], interval)
     ]
 
     await asyncio.gather(*tasks)

@@ -1,10 +1,11 @@
 import serial
 import time
 import interface_bateau
+import config
 
 # --- CONFIGURATION ---
-PORT_SERIE = "/dev/ttyUSB3"
-VITESSE = 115200
+# PORT_SERIE = "/dev/ttyUSB3" -> Géré dynamiquement
+# VITESSE = 115200 -> Centralisé dans config.py
 
 def envoyer_commande(cmd, ser, attente=0.5):
     if ser and ser.is_open:
@@ -48,7 +49,7 @@ def lire_sms(ser, sim_lock):  # ser et sim_lock passés depuis le main
 
         while True:
             # Respiration. Laisse le CPU libre pour les appels.
-            time.sleep(3) 
+            time.sleep(4) 
             
             lignes_cmgl = []
             
