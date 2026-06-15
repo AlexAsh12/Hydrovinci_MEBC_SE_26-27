@@ -1,102 +1,101 @@
-import serial
+#!/usr/bin/env python3
+"""
+Reception des SMS via le module SIM7600.
+Utilise le polling : interroge la carte SIM toutes les 4 secondes
+pour verifier si un nouveau message est arrive.
+"""
+
 import time
 from interface import interface_bateau
-import config
-
-# --- CONFIGURATION ---
-# PORT_SERIE = "/dev/ttyUSB3" -> Géré dynamiquement
-# VITESSE = 115200 -> Centralisé dans config.py
-
-def envoyer_commande(cmd, ser, attente=0.5):
-    if ser and ser.is_open:
-        ser.write((cmd + "\r\n").encode())
-        time.sleep(attente)
-        if ser.in_waiting:
-            reponse = ser.read(ser.in_waiting).decode(errors='ignore').strip()
-            print(f"   < {reponse}")
-            return reponse
-    return ""
+from telemetrie import port_serie
 
 
-def lire_sms(ser, sim_lock):  # ser et sim_lock passés depuis le main
-    """Ecoute le port série et affiche les SMS dès qu'ils arrivent"""
+def lire_sms():
+    """
+    Boucle principale de lecture des SMS.
+    Fonctionne en mode polling securise :
+    1. Initialise le modem en mode texte
+    2. Toutes les 4 secondes, demande la liste des SMS stockes sur la SIM
+    3. Decode et affiche les nouveaux messages sur l'interface
+    4. Purge les SMS lus pour ne pas les relire
+    """
     try:
-        print("En attente de SMS (Mode Polling Sécurisé v2)...")
+        print("En attente de SMS (Mode Polling Securise v2)...")
 
-        # Initialisation AT — lock uniquement pour les écritures
-        with sim_lock:
+        # Initialisation AT - on verrouille le port pour eviter les conflits avec l'appel
+        with port_serie.sim_lock:
+            port_serie.envoyer_commande("AT")
 
-            envoyer_commande("AT", ser)
-
-            # 1. Forcer explicitement le stockage et la lecture sur la carte SIM
-            ser.write("AT+CPMS=\"SM\",\"SM\",\"SM\"\r\n".encode())
+            # Forcer le stockage et la lecture sur la carte SIM (pas la memoire interne)
+            port_serie.ser.write("AT+CPMS=\"SM\",\"SM\",\"SM\"\r\n".encode())
             time.sleep(0.5)
-            ser.reset_input_buffer()
+            port_serie.ser.reset_input_buffer()
 
-            # 2. Activer le mode texte
-            ser.write("AT+CMGF=1\r\n".encode())  
+            # Activer le mode texte (par opposition au mode PDU binaire)
+            port_serie.ser.write("AT+CMGF=1\r\n".encode())
             time.sleep(0.5)
-            ser.reset_input_buffer()
-            
-            # 3. Le modem stocke en silence (ne perturbe pas les appels)
-            ser.write("AT+CNMI=2,0,0,0,0\r\n".encode())
+            port_serie.ser.reset_input_buffer()
+
+            # Mode silencieux : le modem stocke les SMS sans envoyer de notification
+            # Evite de perturber les appels en cours
+            port_serie.ser.write("AT+CNMI=2,0,0,0,0\r\n".encode())
             time.sleep(0.5)
-            ser.reset_input_buffer()
-            
-            # (Note: Suppression totale du CMGD initial pour conserver les SMS reçus hors-ligne)
+            port_serie.ser.reset_input_buffer()
 
         dernier_message = None
 
         while True:
-            # Respiration. Laisse le CPU libre pour les appels.
-            time.sleep(4) 
-            
+            # Pause entre chaque verification. 4 secondes = bon compromis
+            # entre reactivite et charge CPU/port serie
+            time.sleep(4)
+
             lignes_cmgl = []
-            
-            # --- Zone critique verrouillée pour la lecture intégrale ---
-            with sim_lock:
-                ser.reset_input_buffer()
-                ser.write("AT+CMGL=\"ALL\"\r\n".encode())
-                
-                # Attente dynamique : on lit jusqu'à recevoir le signal de fin "OK" (max 3 sec)
+
+            # Lecture de tous les SMS stockes sur la SIM
+            with port_serie.sim_lock:
+                port_serie.ser.reset_input_buffer()
+                port_serie.ser.write("AT+CMGL=\"ALL\"\r\n".encode())
+
+                # Lecture avec timeout : on attend max 3 secondes la reponse complete
                 debut = time.time()
-                old_timeout = ser.timeout
-                ser.timeout = 0.5 
-                
+                old_timeout = port_serie.ser.timeout
+                port_serie.ser.timeout = 0.5
+
                 try:
                     while time.time() - debut < 3:
-                        ligne_brute = ser.readline().decode(errors='ignore').strip()
+                        ligne_brute = port_serie.ser.readline().decode(errors='ignore').strip()
                         if ligne_brute:
                             lignes_cmgl.append(ligne_brute)
+                        # "OK" ou "ERROR" = le modem a fini d'envoyer
                         if ligne_brute == "OK" or ligne_brute == "ERROR":
-                            break # Le modem a fini d'envoyer toute sa mémoire
+                            break
                 finally:
-                    ser.timeout = old_timeout
-            # -----------------------------------------------------------
+                    port_serie.ser.timeout = old_timeout
 
             a_lu_des_sms = False
 
-            # Traitement des lignes récupérées
+            # Traitement ligne par ligne de la reponse AT+CMGL
             for i, ligne in enumerate(lignes_cmgl):
                 if "+CMGL:" in ligne:
                     a_lu_des_sms = True
-                    # Extraction robuste de l'heure
+
+                    # Extraction de l'heure d'envoi du SMS
                     try:
-                        # On récupère le bloc de temps à la fin de la ligne
                         elements = ligne.split(",")
-                        heure_brute = elements[-1] 
+                        heure_brute = elements[-1]
                         heure = heure_brute.replace('"', '').split("+")[0].strip()
                     except:
                         heure = "??:??:??"
 
-                    # La ligne suivante = contenu du SMS
+                    # La ligne suivante contient le corps du SMS
                     if i + 1 < len(lignes_cmgl):
                         raw = lignes_cmgl[i+1]
-                        
-                        if raw == "OK" or "+CMGL:" in raw: 
-                            continue # Ignorer les faux positifs
-                        
-                        # Décodage
+
+                        # Ignorer les lignes qui ne sont pas du contenu SMS
+                        if raw == "OK" or "+CMGL:" in raw:
+                            continue
+
+                        # Tentative de decodage UCS-2 (certains operateurs encodent en hex)
                         try:
                             contenu = bytes.fromhex(raw).decode('utf-16-be')
                         except:
@@ -104,18 +103,18 @@ def lire_sms(ser, sim_lock):  # ser et sim_lock passés depuis le main
 
                         message = f"[{heure}] {contenu}"
 
+                        # Afficher uniquement les nouveaux messages (evite les doublons)
                         if message != dernier_message:
                             dernier_message = message
-                            print(f"SMS reçu : {message}")
+                            print(f"SMS recu : {message}")
                             interface_bateau.update_messages(message)
-                            print("update envoyé vers interface")
 
-            # Purge de la carte SIM uniquement SI on a trouvé et lu des messages
+            # Purge de la SIM apres lecture pour ne pas relire les memes SMS
             if a_lu_des_sms:
-                with sim_lock:
-                    ser.write("AT+CMGD=1,4\r\n".encode())  # supprime les SMS lus
-                    time.sleep(0.5) # Le modem a besoin de temps pour effacer la SIM
-                    ser.reset_input_buffer()
+                with port_serie.sim_lock:
+                    port_serie.ser.write("AT+CMGD=1,4\r\n".encode())
+                    time.sleep(0.5)
+                    port_serie.ser.reset_input_buffer()
 
     except Exception as e:
-        print(f"❌ Erreur SMS : {e}")
+        print(f"Erreur SMS : {e}")
