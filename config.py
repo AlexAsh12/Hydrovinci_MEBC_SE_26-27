@@ -33,3 +33,7 @@ LED_2 = 26     # À modifier
 LED_3 = 13     # À modifier
 LED_4 = 12     # À modifier
 LOG_MESSAGES_LIMIT = 20
+
+# --- MQTT ---
+MQTT_BROKER = "broker.hivemq.com"
+MQTT_PORT = 1883

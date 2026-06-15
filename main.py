@@ -5,6 +5,7 @@ import serial
 from interface import interface_bateau
 from telemetrie import sms
 from telemetrie import appel
+from telemetrie import mqtt_publisher
 import time
 from acquisition import bms_rasp as bms
 import os
@@ -170,6 +171,9 @@ def lancer_taches_bms():
         pass
 
 if __name__ == "__main__":
+    # Connexion MQTT (non-bloquant, le BMS tourne meme sans MQTT)
+    mqtt_publisher.init()
+
     # La lecture des BMS est déportée dans un thread secondaire
     threading.Thread(target=lancer_taches_bms, daemon=True).start()
     print("thread BMS lancé")

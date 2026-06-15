@@ -11,6 +11,7 @@ import time
 import asyncio
 from datetime import datetime
 from interface import interface_bateau
+from telemetrie import mqtt_publisher
 import config
 
 
@@ -105,10 +106,14 @@ async def monitor_bms(bms_id, bms_conf, interval):
                         )
                         # --- NOUVEAU CODE : Reset de l'état ---
                         if erreur_affichee:
-                            print(f"✅ {bms_id} reconnecté.")
+                            print(f"\u2705 {bms_id} reconnecté.")
                             erreur_affichee = False
                         
-
+                        # Envoi des données au dashboard via MQTT
+                        try:
+                            mqtt_publisher.publish_bms(data)
+                        except Exception:
+                            pass  # Le BMS ne s'arrête JAMAIS à cause du MQTT
                 else:
                     # --- MODIFICATION : Filtrage du spam ---
                     if not erreur_affichee:

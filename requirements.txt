@@ -1,0 +1,5 @@
+# Dépendances Python — Pi Zero (embarqué)
+# Installation : pip install -r requirements.txt
+
+pyserial>=3.5
+paho-mqtt>=2.0.0

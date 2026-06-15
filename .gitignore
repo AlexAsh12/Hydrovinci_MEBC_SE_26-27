@@ -6,3 +6,9 @@ __pycache__/
 IA/
 data_bms_*.json
 *.code-workspace
+
+# Credentials Google Drive (ne JAMAIS versionner)
+ground/credentials/
+ground/src/client.json
+ground/src/token.json
+ground/data/

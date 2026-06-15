@@ -1,44 +1,139 @@
-# 🚤 Monitoring Monaco Energy Boat Challenge 2026
+# MEBC_SE — Monaco Energy Boat Challenge 2026
 
-Ce projet assure l'acquisition, le stockage et l'affichage en temps réel des données des batteries (BMS). L'objectif est d'offrir une **latence zéro** au pilote tout en sécurisant l'historique de navigation.
+Système embarqué de télémétrie et contrôle pour bateau électrique solaire.
 
----
+## Architecture
 
-### 1. Le "Pont" Logiciel (Import Direct)
-Contrairement à une architecture classique où l'interface lirait des fichiers sur le disque (lent), nous avons créé un **lien direct en mémoire vive (RAM)**.
+```
+┌──────────────────────────────────┐         MQTT           ┌─────────────────────────┐
+│         Pi Zero (Embarqué)       │    (broker.hivemq.com) │     PC Ground (Sol)     │
+│                                  │                        │                         │
+│  acquisition/bms_rasp.py         │                        │  ground/src/            │
+│    └── Lit 2x BMS XDZN via USB  ├──── publish ──────────►│    transmission.py      │
+│    └── Décode les trames         │  mebc_se/bms/...       │    data_logger.py       │
+│                                  │                        │    Dashboard Dash/Plotly │
+│  telemetrie/mqtt_publisher.py    │                        │    Google Drive upload   │
+│    └── Publie les données BMS    │                        │                         │
+│                                  │                        │  Accès : localhost:8050  │
+│  telemetrie/sms.py               │                        └─────────────────────────┘
+│    └── Réception SMS SIM7600     │
+│                                  │
+│  telemetrie/appel.py             │
+│    └── Appel vocal SIM7600       │
+│                                  │
+│  interface/interface_bateau.py   │
+│    └── Affichage Tkinter pilote  │
+│                                  │
+│  main.py (orchestrateur)         │
+└──────────────────────────────────┘
+```
 
-* **Fonctionnement :** Dès le lancement de `main_provisoire.py`, l'objet `interface` est importé et reste résident en mémoire.
-* **Avantage :** Cela crée un canal de communication direct : le script de lecture n'a pas besoin de "chercher" l'affichage, il **pousse** la donnée dedans dès qu'elle est décodée.
+## Arborescence
 
----
+```
+MEBC_SE/
+├── main.py                  # Point d'entrée — lance tous les threads
+├── config.py                # Constantes centralisées (ports, BMS, MQTT, GPIO)
+├── requirements.txt         # Dépendances Python (Pi)
+│
+├── acquisition/             # Lecture des capteurs
+│   └── bms_rasp.py          # Monitoring BMS XDZN (2 batteries)
+│
+├── telemetrie/              # Communication
+│   ├── sms.py               # Réception SMS via SIM7600
+│   ├── appel.py             # Appel vocal via SIM7600
+│   └── mqtt_publisher.py    # Publication MQTT vers le dashboard
+│
+├── interface/               # Affichage
+│   └── interface_bateau.py  # Interface Tkinter pour le pilote
+│
+├── hardware/                # GPIO
+│   └── reboot_button.py     # Bouton de reboot (à intégrer)
+│
+├── ground/                  # Dashboard PC (code de Debian/Raphaël)
+│   ├── Dockerfile
+│   ├── docker-compose.yml
+│   └── src/
+│       ├── main.py          # Point d'entrée dashboard
+│       ├── transmission.py  # Client MQTT récepteur
+│       ├── data_logger.py   # Logging CSV + Google Drive
+│       ├── layout.py        # Interface Dash/Plotly
+│       ├── callbacks.py     # Logique du dashboard
+│       ├── google_drive.py  # Upload vers Drive
+│       └── assets/dashboard.css
+│
+└── Qt_Interface/            # Interface Qt (obsolète, à supprimer)
+```
 
-### 2. Traitement Parallèle : Sécurité + Vitesse
-Dans le script `bms_rasp.py`, chaque réception de donnée déclenche une **double action immédiate** :
+## Démarrage rapide
 
-1. **Action A (Stockage) :** Écriture dans le fichier `.json` pour conserver une "boîte noire" de la course.
-2. **Action B (Affichage) :** Appel de la fonction `interface.update_bms()`.
+### 1. Côté Pi Zero (embarqué)
 
-**Efficacité :** Le programme n'attend pas la fin de l'écriture sur le disque (opération lente) pour mettre à jour l'écran. La donnée passe de l'USB à l'affichage en quelques millisecondes.
+```bash
+# Installer les dépendances
+pip install -r requirements.txt
 
----
+# Lancer le système
+python main.py
+```
 
-### 3. Gestion Asynchrone (Le Multi-tâches)
-L'utilisation de la bibliothèque `asyncio` est le cœur de la réactivité :
+Au démarrage, le système :
+1. Détecte le port AT du SIM7600
+2. Lance le diagnostic SIM (carte détectée ? réseau ?)
+3. Se connecte au broker MQTT (si disponible)
+4. Lance les threads : BMS, SMS, clavier, interface
 
-* **Non-bloquant :** Si un BMS met du temps à répondre, le processeur ne reste pas figé. Il continue de traiter l'autre BMS et de rafraîchir l'interface.
-* **Fluidité :** L'interface reste interactive (le bouton "QUITTER" ou la touche "Echap" répondent instantanément).
+### 2. Côté PC Ground (dashboard)
 
----
+**Prérequis :** Installer [Docker Desktop](https://www.docker.com/products/docker-desktop/)
 
-### 4. Synthèse des flux de données
+```bash
+cd ground
 
-| Étape | Action | Vitesse |
-| :--- | :--- | :--- |
-| **1. Réception** | Le BMS envoie les octets bruts via USB | Ultra-rapide |
-| **2. Décodage** | Traduction en Volts, Ampères et Températures | Instantané |
-| **3. Dispatch** | Envoi simultané vers le JSON et l'Interface | < 10ms |
-| **4. Affichage** | Rafraîchissement du tableau de bord (Tkinter) | Temps réel |
+# Lancer le dashboard
+docker compose up
 
----
+# Ouvrir dans le navigateur
+# http://localhost:8050
+```
 
-**Note technique :** Shout out to Albert le GOAT et Emile (un peu moins).
+Le dashboard affiche en temps réel :
+- SOC (état de charge)
+- Tensions par cellule (15 cellules)
+- Courant, puissance, température
+- Historique de capacité
+- Alarmes
+
+### 3. Google Drive (optionnel)
+
+Pour activer l'enregistrement automatique sur Google Drive :
+
+```bash
+cd ground
+docker compose --profile auth run --service-ports auth
+```
+
+Suivre les instructions à l'écran pour l'authentification OAuth.
+Demander l'accès au dossier Drive partagé à Raphaël (Debian).
+
+## Topics MQTT
+
+| Topic | Donnée | Format |
+|---|---|---|
+| `mebc_se/bms/cells/voltages` | Tensions cellules | JSON list `[3.24, 3.22, ...]` |
+| `mebc_se/bms/pack/voltage` | Tension pack | float `48.6` |
+| `mebc_se/bms/pack/current` | Courant | float `-32.4` |
+| `mebc_se/bms/pack/soc` | État de charge | float `75.0` |
+| `mebc_se/bms/pack/capacity` | Capacité totale | float `98.0` |
+| `mebc_se/bms/pack/remaining` | Capacité restante | float `73.5` |
+| `mebc_se/bms/pack/temperature` | Températures | JSON list `[25.0, 26.1]` |
+| `mebc_se/bms/alarms` | Alarmes actives | JSON list `[]` |
+
+Broker : `broker.hivemq.com` (public, port 1883)
+
+## Sécurité
+
+- Le MQTT est un bonus : si le broker est injoignable, le BMS tourne normalement
+- Aucun stockage local sur le Pi Zero (tout part en MQTT)
+- Les credentials Google Drive ne sont PAS versionnés (`.gitignore`)
+- Le broker HiveMQ est public : les données ne sont pas chiffrées

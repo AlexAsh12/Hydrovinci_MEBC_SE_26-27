@@ -1,0 +1,6 @@
+﻿dash>=2.14.0
+plotly>=5.18.0
+paho-mqtt>=2.0.0
+google-api-python-client>=2.100.0
+google-auth-oauthlib>=1.1.0
+google-auth-httplib2>=0.2.0
