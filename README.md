@@ -54,7 +54,7 @@ MEBC_SE/
 │   ├── Dockerfile
 │   ├── docker-compose.yml
 │   └── src/
-│       ├── main.py          # Point d'entrée dashboard
+│       ├── dashboard.py     # Point d'entrée dashboard
 │       ├── transmission.py  # Client MQTT récepteur
 │       ├── data_logger.py   # Logging CSV + Google Drive
 │       ├── layout.py        # Interface Dash/Plotly

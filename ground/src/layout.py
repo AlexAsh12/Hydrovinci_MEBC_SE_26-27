@@ -1,4 +1,4 @@
-﻿from dash import dcc, html
+from dash import dcc, html
 
 REFRESH_MS = 1000  # UI refresh interval in milliseconds
 
@@ -16,11 +16,18 @@ def build_layout():
             dcc.Interval(id="interval", interval=REFRESH_MS, n_intervals=0),
 
             # ÔöÇÔöÇ Top bar ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+            # ── Top bar ──────────────────────────────────────────────────────────
             html.Div(className="topbar", children=[
                 html.Div(className="topbar-left", children=[
                     html.Div(className="topbar-dot", id="conn-dot"),
                     html.Span("BMS Dashboard", className="topbar-title"),
                     html.Span(id="conn-label", className="topbar-status"),
+                ]),
+                html.Div(className="topbar-left", children=[
+                    html.Span(id="bms1-dot", className="topbar-dot dot-off"),
+                    html.Span("BMS_1", className="topbar-status"),
+                    html.Span(id="bms2-dot", className="topbar-dot dot-off", style={"marginLeft": "12px"}),
+                    html.Span("BMS_2", className="topbar-status"),
                 ]),
                 html.Div(className="topbar-right", children=[
                     html.Span(id="last-update", className="topbar-ts"),

@@ -20,6 +20,7 @@ import config
 # BAUD_RATE = 9600 -> Centralisé dans config.py
 # NOMINAL_CAPACITY_AH = 98.0 -> Centralisé dans config.py
 last_reports = {"BMS_1": None, "BMS_2": None}
+bms_connected = {"BMS_1": False, "BMS_2": False}
 
 
 
@@ -109,6 +110,14 @@ async def monitor_bms(bms_id, bms_conf, interval):
                             print(f"\u2705 {bms_id} reconnecté.")
                             erreur_affichee = False
                         
+                        # Signaler la connexion au dashboard
+                        if not bms_connected[bms_id]:
+                            bms_connected[bms_id] = True
+                            try:
+                                mqtt_publisher.publish_bms_connection(bms_connected)
+                            except Exception:
+                                pass
+
                         # Envoi des données au dashboard via MQTT
                         try:
                             mqtt_publisher.publish_bms(data)
@@ -123,8 +132,15 @@ async def monitor_bms(bms_id, bms_conf, interval):
         except Exception as e:
             # --- MODIFICATION : Filtrage du spam ---
             if not erreur_affichee:
-                print(f"⚠️ Erreur sur {bms_id}: {e}")
+                print(f"\u26a0\ufe0f Erreur sur {bms_id}: {e}")
                 erreur_affichee = True
+            # Signaler la déconnexion au dashboard
+            if bms_connected[bms_id]:
+                bms_connected[bms_id] = False
+                try:
+                    mqtt_publisher.publish_bms_connection(bms_connected)
+                except Exception:
+                    pass
 
         await asyncio.sleep(interval)
 

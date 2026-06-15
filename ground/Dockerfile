@@ -1,4 +1,4 @@
-﻿FROM python:3.11-slim
+FROM python:3.11-slim
 
 WORKDIR /app
 
@@ -14,4 +14,4 @@ RUN mkdir -p /app/data/sessions /app/credentials
 
 EXPOSE 8050
 
-CMD ["python", "src/main.py"]
+CMD ["python", "src/dashboard.py"]

@@ -21,6 +21,7 @@ TOPICS = {
     "remaining_ah":  "mebc_se/bms/pack/remaining",
     "temperature":   "mebc_se/bms/pack/temperature",
     "alarms":        "mebc_se/bms/alarms",
+    "bms_connection":"mebc_se/bms/connection",
 }
 
 # --- Client MQTT global ---
@@ -91,3 +92,18 @@ def publish_bms(data):
 
     except Exception as e:
         print(f"[MQTT] Erreur publication {data.get('bms_id', '?')}: {e}")
+
+
+def publish_bms_connection(bms_status):
+    """
+    Publie l'état de connexion de chaque BMS.
+    bms_status = {"BMS_1": True, "BMS_2": False}
+    Ne lève JAMAIS d'exception.
+    """
+    if _client is None or not _connected:
+        return
+
+    try:
+        _client.publish(TOPICS["bms_connection"], json.dumps(bms_status), qos=1)
+    except Exception:
+        pass

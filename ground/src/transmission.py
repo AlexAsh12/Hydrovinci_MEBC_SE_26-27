@@ -1,4 +1,4 @@
-﻿import json
+import json
 import time
 import threading
 import statistics
@@ -24,6 +24,7 @@ TOPICS = {
     "temperature":    "mebc_se/bms/pack/temperature",  # float ou list
     "speed_knots":    "mebc_se/bms/nav/speed",         # float "6.2"
     "alarms":         "mebc_se/bms/alarms",            # JSON list []
+    "bms_connection": "mebc_se/bms/connection",        # JSON {"BMS_1": true, ...}
 }
 
 # ÔöÇÔöÇÔöÇ ├ëtat partag├® ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
@@ -41,6 +42,7 @@ bms_state = {
     "alarms":        [],
     "connected":     False,
     "last_update":   None,
+    "bms_connection": {"BMS_1": False, "BMS_2": False},
 }
 
 capacity_history = []

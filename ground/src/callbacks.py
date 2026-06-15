@@ -1,4 +1,4 @@
-﻿from transmission import get_state, get_history
+from transmission import get_state, get_history
 from dash import Output, Input, callback
 import plotly.graph_objects as go
 from network_monitor import get_net_state 
@@ -86,6 +86,20 @@ def update_status(n):
 
     return cls, label, ts, net_label, net_style
 
+
+@callback(
+    Output("bms1-dot", "className"),
+    Output("bms2-dot", "className"),
+    Input("interval", "n_intervals"),
+)
+def update_bms_connection(n):
+    s = get_state()
+    bms_conn = s.get("bms_connection", {})
+
+    bms1_cls = "topbar-dot dot-on" if bms_conn.get("BMS_1") else "topbar-dot dot-err"
+    bms2_cls = "topbar-dot dot-on" if bms_conn.get("BMS_2") else "topbar-dot dot-err"
+
+    return bms1_cls, bms2_cls
 
 @callback(
     Output("soc-gauge",      "figure"),
