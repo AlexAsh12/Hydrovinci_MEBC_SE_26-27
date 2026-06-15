@@ -81,10 +81,10 @@ def display_bms_status(data):
 
 async def monitor_bms(bms_id, bms_conf, interval):
     """Tâche asynchrone pour un seul BMS"""
-    print(f"🚀 Démarrage {bms_id} sur {bms_conf['port']}")
+    print(f"Démarrage {bms_id} sur {bms_conf['port']}")
     
-    # --- NOUVEAU CODE : Variable d'état ---
     erreur_affichee = False
+    etait_connecte = False
 
     while True:
         try:
@@ -103,22 +103,29 @@ async def monitor_bms(bms_id, bms_conf, interval):
                             last_reports.get("BMS_1"),
                             last_reports.get("BMS_2")
                         )
-                        # --- NOUVEAU CODE : Reset de l'état ---
                         if erreur_affichee:
-                            print(f"✅ {bms_id} reconnecté.")
+                            print(f"{bms_id} reconnecte.")
                             erreur_affichee = False
-                        
+
+                        # Signaler la connexion sur l'interface du pilote
+                        if not etait_connecte:
+                            etait_connecte = True
+                            interface_bateau.update_statut(bms_id, True)
 
                 else:
-                    # --- MODIFICATION : Filtrage du spam ---
                     if not erreur_affichee:
-                        print(f"❌ {bms_id} ({bms_conf['port']}): Pas de réponse")
+                        print(f"{bms_id} ({bms_conf['port']}): Pas de reponse")
                         erreur_affichee = True
+                    if etait_connecte:
+                        etait_connecte = False
+                        interface_bateau.update_statut(bms_id, False)
 
         except Exception as e:
-            # --- MODIFICATION : Filtrage du spam ---
             if not erreur_affichee:
-                print(f"⚠️ Erreur sur {bms_id}: {e}")
+                print(f"Erreur sur {bms_id}: {e}")
                 erreur_affichee = True
+            if etait_connecte:
+                etait_connecte = False
+                interface_bateau.update_statut(bms_id, False)
 
         await asyncio.sleep(interval)

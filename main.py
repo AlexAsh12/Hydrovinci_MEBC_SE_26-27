@@ -63,6 +63,7 @@ if __name__ == "__main__":
 
     # 2. SIM7600 : detection automatique, continue sans si absent
     sim_ok = port_serie.initialiser()
+    interface_bateau.update_statut("SIM7600", sim_ok)
 
     if sim_ok:
         # SMS et clavier ne sont lances que si le modem est present
