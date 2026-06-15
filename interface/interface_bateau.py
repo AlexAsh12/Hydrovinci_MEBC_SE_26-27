@@ -46,7 +46,7 @@ def init():
     # Zones d'affichage
     lbl_bms = _setup_section("ÉTAT BATTERIES (V | A | SOC | TEMP)", "#00d4ff")
     lbl_msg = _setup_section("MESSAGES SYSTÈME", "#ffcc00")
-    lbl_other = _setup_section("IA & NAVIGATION", "#00ff88")
+    lbl_other = _setup_section("STATUT ET AUTRES", "#00ff88")
 
     root.mainloop()
 

@@ -6,3 +6,5 @@ __pycache__/
 IA/
 data_bms_*.json
 *.code-workspace
+ground/data/
+ground/credentials/

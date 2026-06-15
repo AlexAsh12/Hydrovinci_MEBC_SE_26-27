@@ -1,151 +1,169 @@
-import serial
+#!/usr/bin/env python3
+"""
+Gestion des appels vocaux via le module SIM7600.
+Sequence complete : verification reseau -> lancement appel -> suivi en temps reel -> raccrochage.
+"""
+
 import time
 from interface import interface_bateau
+from telemetrie import port_serie
 import config
- 
-# --- CONFIGURATION ---
-# NUMERO = "+33602185227" -> Centralisé dans config.py
 
-# VITESSE = 115200 -> Centralisé dans config.py
-CSQ_MINIMUM = 5  # Abaissé car module en 4G, CSQ n'est pas représentatif
- 
-ser = None
- 
-# --- FONCTIONS SÉRIE ---
-def envoyer_commande(cmd, attente=0.5):
-    if ser and ser.is_open:
-        ser.write((cmd + "\r\n").encode())
-        time.sleep(attente)
-        if ser.in_waiting:
-            reponse = ser.read(ser.in_waiting).decode(errors='ignore').strip()
-            print(f"   < {reponse}")
-            return reponse
-    return ""
- 
-def lire_tampon():
-    if ser and ser.in_waiting:
-        return ser.read(ser.in_waiting).decode(errors='ignore')
-    return ""
- 
+# Seuil minimum de qualite de signal pour tenter un appel.
+# Abaisse car le module SIM7600 en 4G retourne souvent un CSQ bas
+# meme avec une connexion fonctionnelle.
+CSQ_MINIMUM = 5
+
+
 def verifier_reseau():
-    print("🌍 Vérification réseau...")
- 
-    # 1. Vérification SIM
-    print("🔍 Vérification Carte SIM...")
-    rep_sim = envoyer_commande("AT+CPIN?")
+    """
+    Verifie que le module est enregistre sur le reseau mobile.
+    Etapes :
+    1. Verification de la presence de la carte SIM (AT+CPIN)
+    2. Passage en mode operateur automatique (AT+COPS=0)
+    3. Attente de l'enregistrement reseau (AT+CREG) avec 15 tentatives
+    4. Si 5 echecs consecutifs, forçage sur SFR (code 20815)
+    Retourne True si le reseau est pret, False sinon.
+    """
+    print("Verification reseau...")
+
+    # Etape 1 : la carte SIM est-elle presente et deverrouillee ?
+    rep_sim = port_serie.envoyer_commande("AT+CPIN?")
     if "READY" in rep_sim:
-        print("   ✅ SIM OK.")
+        print("   SIM OK.")
     elif "SIM PIN" in rep_sim:
-        print("   🔐 SIM VERROUILLÉE (PIN requis)")
+        print("   SIM VERROUILLEE (PIN requis)")
         return False
     else:
-        print("   ❌ SIM NON DÉTECTÉE")
+        print("   SIM NON DETECTEE")
         return False
- 
-    # 2. Mode automatique
-    envoyer_commande('AT+COPS=0', attente=2)
- 
-    # 3. Boucle CREG
-    print("🔄 Attente enregistrement réseau...")
+
+    # Etape 2 : laisser le module choisir l'operateur automatiquement
+    port_serie.envoyer_commande('AT+COPS=0', attente=2)
+
+    # Etape 3 : attendre que le module s'enregistre sur le reseau
+    # CREG retourne +CREG: 0,X ou X=1 (enregistre) ou X=5 (roaming)
+    print("Attente enregistrement reseau...")
     for i in range(15):
-        reponse = envoyer_commande("AT+CREG?", attente=2)
+        reponse = port_serie.envoyer_commande("AT+CREG?", attente=2)
         if ",1" in reponse or ",5" in reponse:
-            print(f"   ✅ RÉSEAU OK (essai {i+1})")
-            print("   ⏳ Stabilisation réseau (4s)...")
+            print(f"   RESEAU OK (essai {i+1})")
+            # Pause de stabilisation avant de lancer l'appel
+            print("   Stabilisation reseau (4s)...")
             time.sleep(4)
             return True
- 
-        # Après 5 échecs, forcer SFR
+
+        # Apres 5 echecs, on force manuellement le reseau SFR
         if i == 4:
-            print("   ⚡ Forçage réseau SFR (20815)...")
-            envoyer_commande('AT+COPS=1,2,"20815"', attente=5)
- 
+            print("   Forcage reseau SFR (20815)...")
+            port_serie.envoyer_commande('AT+COPS=1,2,"20815"', attente=5)
+
         print(f"   ... En attente ({i+1}/15)")
- 
-    print("❌ Impossible de s'enregistrer sur le réseau.")
+
+    print("Impossible de s'enregistrer sur le reseau.")
     return False
- 
-def passer_appel(ser_param, sim_lock):  # ser et sim_lock passés depuis le main
-    global ser
-    # Lock pour toute la durée de l'appel — bloque les écritures SMS pendant ce temps
-    with sim_lock:
-        ser = ser_param
+
+
+def passer_appel():
+    """
+    Lance un appel vocal vers le numero defini dans config.py.
+    Sequence :
+    1. Verrouille le port serie (bloque les SMS pendant l'appel)
+    2. Purge le buffer serie (residus du thread SMS)
+    3. Configure le modem (desactive les notifications non-sollicitees)
+    4. Verifie le reseau
+    5. Lance l'appel avec ATD
+    6. Boucle de suivi : verifie toutes les secondes si l'appel est actif
+    7. Detecte le decrochage, le raccrochage ou la coupure reseau
+    8. Raccroche proprement avec AT+CHUP
+    """
+    # Verrouillage du port pour toute la duree de l'appel
+    with port_serie.sim_lock:
         try:
-            print("--- Démarrage Système Bateau ---")
-            #print(f"Port {PORT_SERIE} ouvert.")
-     
-            # PURGE OBLIGATOIRE : Élimine les résidus du thread SMS
-            if ser.in_waiting:
-                ser.reset_input_buffer()
+            print("--- Demarrage sequence appel ---")
+
+            # Purge du buffer : elimine les residus laisses par le thread SMS
+            if port_serie.ser.in_waiting:
+                port_serie.ser.reset_input_buffer()
 
             time.sleep(1)
-     
-            envoyer_commande("AT")
-            envoyer_commande("AT+CMEE=2")
-            envoyer_commande("AT+CREG=0")
-            envoyer_commande("AT+CGREG=0")
-            envoyer_commande("AT+CEREG=0")
-     
+
+            # Configuration initiale du modem
+            port_serie.envoyer_commande("AT")            # Ping
+            port_serie.envoyer_commande("AT+CMEE=2")     # Erreurs detaillees en texte
+            port_serie.envoyer_commande("AT+CREG=0")     # Desactive les notifs CREG
+            port_serie.envoyer_commande("AT+CGREG=0")    # Desactive les notifs GPRS
+            port_serie.envoyer_commande("AT+CEREG=0")    # Desactive les notifs LTE
+
             if verifier_reseau():
-     
-                print(f"📞 Lancement appel vers {config.NUMERO_DEST}...")
-                interface_bateau.update_messages("Appel en cours...") #message sur l'interface
-                ser.write(f"ATD{config.NUMERO_DEST};\r\n".encode())
+
+                # Lancement de l'appel avec la commande ATD (le ; final = appel vocal)
+                print(f"Lancement appel vers {config.NUMERO_DEST}...")
+                interface_bateau.update_messages("Appel en cours...")
+                port_serie.ser.write(f"ATD{config.NUMERO_DEST};\r\n".encode())
                 time.sleep(2)
-     
-                rep_appel = lire_tampon().strip()
+
+                # Lecture de la reponse immediate (OK, NO CARRIER, ERROR)
+                rep_appel = port_serie.lire_tampon().strip()
                 if rep_appel:
-                    print(f"   < RÉPONSE APPEL : {rep_appel}")
-     
+                    print(f"   < REPONSE APPEL : {rep_appel}")
+
+                # Rejet immediat de l'appel
                 if "NO CARRIER" in rep_appel or "ERROR" in rep_appel:
-                    print("❌ APPEL REJETÉ IMMÉDIATEMENT.")
-                    print("🔍 Analyse cause (CEER)...")
-                    envoyer_commande("AT+CEER")
+                    print("APPEL REJETE IMMEDIATEMENT.")
+                    print("Analyse cause (CEER)...")
+                    port_serie.envoyer_commande("AT+CEER")
                     return
-     
+
                 est_decroche = False
-                print("⏳ En attente de décrochage ou fin d'appel...")
-     
+                print("En attente de decrochage ou fin d'appel...")
+
+                # Boucle de suivi : interroge AT+CLCC chaque seconde pendant max 5 min
+                # CLCC retourne la liste des appels actifs avec leur statut :
+                # statut 0 = actif (decroche), statut 3 = sonnerie
                 for i in range(300):
                     time.sleep(1)
-     
-                    ser.write(b"AT+CLCC\r\n")
+
+                    port_serie.ser.write(b"AT+CLCC\r\n")
                     time.sleep(0.5)
-                    reponse = lire_tampon()
+                    reponse = port_serie.lire_tampon()
                     clean = reponse.replace(" ", "").strip()
-     
+
+                    # Cas 1 : on etait decroche et plus d'appel actif = l'autre a raccroche
                     if est_decroche and "+CLCC:" not in clean and "OK" in clean:
-                        print("📵 L'AUTRE A RACCROCHÉ.")
-                        print("🔍 Analyse cause (CEER)...")
-                        envoyer_commande("AT+CEER")
+                        print("L'AUTRE A RACCROCHE.")
+                        port_serie.envoyer_commande("AT+CEER")
                         break
-     
+
+                    # Cas 2 : coupure reseau
                     if "NOCARRIER" in clean or "NO CARRIER" in clean:
-                        print("❌ APPEL COUPÉ PAR LE RÉSEAU.")
-                        print("🔍 Analyse cause (CEER)...")
-                        envoyer_commande("AT+CEER")
+                        print("APPEL COUPE PAR LE RESEAU.")
+                        port_serie.envoyer_commande("AT+CEER")
                         break
-     
+
+                    # Cas 3 : analyse du statut CLCC
                     if "+CLCC:" in clean:
                         parts = clean.split('+CLCC:')[-1].split(',')
                         if len(parts) >= 3:
                             statut = parts[2]
                             if statut == '0' and not est_decroche:
-                                print("🟢 L'AUTRE A DÉCROCHÉ !")
+                                print("L'AUTRE A DECROCHE !")
                                 est_decroche = True
                             elif statut == '3' and not est_decroche:
-                                print(f"   🔔 Sonnerie en cours... ({i+1}s)")
-     
-            else:
-                print("⏱️ Timeout atteint (5 min). Fin forcée.")
-     
-            print("🏁 Fin de la séquence. Raccrochage...")
-            interface_bateau.update_messages("Fin d'appel") #message sur l'interface
-            envoyer_commande("AT+CHUP")
-     
+                                print(f"   Sonnerie en cours... ({i+1}s)")
+
+                else:
+                    # La boucle for s'est terminee sans break = timeout 5 min
+                    print("Timeout atteint (5 min). Fin forcee.")
+
+            # Raccrochage propre dans tous les cas
+            print("Fin de la sequence. Raccrochage...")
+            interface_bateau.update_messages("Fin d'appel")
+            port_serie.envoyer_commande("AT+CHUP")
+
         except Exception as e:
-            print(f"\n❌ ERREUR SCRIPT : {e}")
-     
+            print(f"ERREUR SCRIPT : {e}")
+
         finally:
-            print("\n--- Nettoyage et Arrêt ---")
-            print("Port série rendu au main.")
+            print("--- Nettoyage et Arret ---")
+            print("Port serie rendu au main.")

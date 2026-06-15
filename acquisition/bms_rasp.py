@@ -121,25 +121,4 @@ async def monitor_bms(bms_id, bms_conf, interval):
                 print(f"⚠️ Erreur sur {bms_id}: {e}")
                 erreur_affichee = True
 
-        await asyncio.sleep(interval)
-
-async def main():
-    print("="*60)
-    print("MONACO ENERGY BOAT CHALLENGE 2026 - DUAL BMS MONITOR")
-    print("="*60)
-
-    interval = config.INTERVALLE_BMS
-
-    # Lancement des deux monitorings en parallèle
-    tasks = [
-        monitor_bms("BMS_1", config.BMS_CONFIG["BMS_1"], interval),
-        monitor_bms("BMS_2", config.BMS_CONFIG["BMS_2"], interval)
-    ]
-
-    await asyncio.gather(*tasks)
-
-if __name__ == "__main__":
-    try:
-        asyncio.run(main())
-    except KeyboardInterrupt:
-        print("\nArrêt du monitoring.")
+        await asyncio.sleep(interval)
