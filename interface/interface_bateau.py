@@ -106,6 +106,22 @@ def update_messages(msg):
         texte = "\n".join(messages[-13:])
         root.after(0, lambda t=texte: lbl_msg.config(text=t))
 
-def update_other(info):
-    if root:
-        root.after(0, lambda: lbl_other.config(text=str(info)))
+# Statuts de connexion des peripheriques
+statuts = {"BMS_1": False, "BMS_2": False, "SIM7600": False}
+
+def update_statut(device, connecte):
+    """Met a jour le statut d'un peripherique et rafraichit l'affichage."""
+    statuts[device] = connecte
+    _rafraichir_statuts()
+
+def _rafraichir_statuts():
+    """Reconstruit le texte de la section statut a partir du dict."""
+    if not root:
+        return
+    lignes = []
+    for device, ok in statuts.items():
+        indicateur = "[OK]" if ok else "[--]"
+        etat = "Detecte" if ok else "Non detecte"
+        lignes.append(f"{indicateur}  {device} : {etat}")
+    texte = "\n".join(lignes)
+    root.after(0, lambda t=texte: lbl_other.config(text=t))
