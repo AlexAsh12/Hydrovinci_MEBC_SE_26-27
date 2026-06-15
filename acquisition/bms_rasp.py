@@ -7,15 +7,12 @@ Lecture simultanée sur USB0 et USB3
 
 import serial
 import time
-import json
-import os
+
 import asyncio
 from datetime import datetime
-import interface_bateau
+from interface import interface_bateau
 import config
 
-# Import de la fonction MQTT depuis transmission.py
-# from transmission import EnvoyerDonneesMqtt
 
 # --- Configuration ---
 # BMS_CONFIG = {...} -> Centralisé dans config.py
@@ -23,28 +20,9 @@ import config
 # NOMINAL_CAPACITY_AH = 98.0 -> Centralisé dans config.py
 last_reports = {"BMS_1": None, "BMS_2": None}
 
-"""
---- MQTT ---
-from transmission import MQTTClient
-MQTT_TOPIC = "mebc_se/raphael/bms"
-mqtt_client = MQTTClient("broker.hivemq.com")
-mqtt_client.connect() 
-"""
 
 
-def save_to_json(filename, data):
-    """Enregistre les données dans le fichier spécifique du BMS"""
-    try:
-        history = []
-        if os.path.exists(filename):
-            with open(filename, 'r') as f:
-                history = json.load(f)
 
-        history.append(data)
-        with open(filename, 'w') as f:
-            json.dump(history[-1000:], f, indent=4)
-    except Exception as e:
-        print(f"❌ Erreur JSON ({filename}): {e}")
 
 def decode_xdz_frame(hex_response, bms_name):
     """Décode la trame reçue"""
@@ -120,7 +98,7 @@ async def monitor_bms(bms_id, bms_conf, interval):
                     if data:
                         display_bms_status(data)
                         last_reports[bms_id] = data
-                        save_to_json(bms_conf['file'], data)
+
                         interface_bateau.update_bms(
                             last_reports.get("BMS_1"),
                             last_reports.get("BMS_2")
@@ -130,13 +108,7 @@ async def monitor_bms(bms_id, bms_conf, interval):
                             print(f"✅ {bms_id} reconnecté.")
                             erreur_affichee = False
                         
-                        # Envoi MQTT via transmission.py
-                        """
-                        try:
-                            mqtt_client.publish("mebc_se/raphael/bms", data)
-                        except Exception as e:
-                            print(f"⚠️ Erreur MQTT [{bms_id}]: {e}")
-                            """
+
                 else:
                     # --- MODIFICATION : Filtrage du spam ---
                     if not erreur_affichee:

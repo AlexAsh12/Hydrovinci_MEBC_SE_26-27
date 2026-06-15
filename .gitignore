@@ -4,5 +4,5 @@ __pycache__/
 **/__pycache__/
 .pytest_cache/
 IA/
-Embarque/src/event_bus.py
-Embarque/src/format_ai.py
+data_bms_*.json
+*.code-workspace

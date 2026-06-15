@@ -3,7 +3,7 @@ import os
 import time
 
 BUTTON_PIN = 6          # À adapter si tu utilises un autre GPIO
-LONG_PRESS_TIME = 2      # Durée d’appui long en secondes
+LONG_PRESS_TIME = 2      # Durée d'appui long en secondes
 
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(BUTTON_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
@@ -19,7 +19,7 @@ try:
             # Tant que le bouton reste pressé
             while GPIO.input(BUTTON_PIN) == False:
                 time.sleep(0.1)
-                # Si l’appui long dépasse la durée choisie
+                # Si l'appui long dépasse la durée choisie
                 if time.time() - button_pressed_time > LONG_PRESS_TIME:
                     print("Appui long détecté, redémarrage...")
                     os.system("sudo reboot")
