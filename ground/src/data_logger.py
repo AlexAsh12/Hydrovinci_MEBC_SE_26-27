@@ -1,4 +1,4 @@
-﻿import csv
+import csv
 import os
 import threading
 import time
@@ -14,7 +14,7 @@ except Exception as e:
 
 LOG_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "data", "sessions")
 UPLOAD_INTERVAL = 300   # synchro Drive toutes les 5 min
-LOG_INTERVAL    = 1     # une ligne par seconde
+LOG_INTERVAL    = 5     # une ligne toutes les 5 secondes
 
 CELL_HEADERS = [f"c{i+1}" for i in range(15)]
 HEADERS = [
@@ -34,6 +34,15 @@ def _log_loop():
     while True:
         try:
             s    = get_state()
+
+            # last_update est le timestamp de la derniere donnee MQTT recue du Pi.
+            # Il vaut None tant que le Pi n'a rien envoye.
+            # Sans ce check, le logger ecrirait les valeurs par defaut (soc=50, voltage=48...)
+            # en boucle meme quand le Pi est eteint, ce qui pollue le CSV.
+            if s["last_update"] is None:
+                time.sleep(LOG_INTERVAL)
+                continue
+
             path = _current_filepath()
 
             # cr├®e le fichier avec headers s'il n'existe pas
