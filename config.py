@@ -23,14 +23,13 @@ SEUILS_CRITIQUES = {
     "CapteurSE": 35,
     "default": 40
 }
-BOUTON_1 = 3
-BOUTON_2 = 27
-BOUTON_3 = 22
-BOUTON_4 = 5
-BOUTON_5 = 6
-LED_1 = 19
-LED_2 = 26
-LED_3 = 13
-LED_4 = 12
-BACKUP_FILE = "dernier_envoi.json"
+BOUTON_1 = 3   # À modifier
+BOUTON_2 = 27  # À modifier
+BOUTON_3 = 22  # À modifier
+BOUTON_4 = 5   # À modifier
+BOUTON_5 = 6   # À modifier
+LED_1 = 19     # À modifier
+LED_2 = 26     # À modifier
+LED_3 = 13     # À modifier
+LED_4 = 12     # À modifier
 LOG_MESSAGES_LIMIT = 20

@@ -2,11 +2,11 @@
 import asyncio
 import threading
 import serial
-import interface_bateau
-import SMS
-import TEST_APPEL
+from interface import interface_bateau
+from telemetrie import sms
+from telemetrie import appel
 import time
-import bms_rasp as bms
+from acquisition import bms_rasp as bms
 import os
 import glob #Pour la recherche du port
 import config
@@ -80,6 +80,54 @@ if PORT_ACTIF is None:
 ser = SafeSerial(PORT_ACTIF, baudrate=config.VITESSE_MODEM, timeout=1)
 
 
+def diagnostic_sim():
+    """Diagnostic rapide de la carte SIM et du réseau au démarrage (informatif uniquement)."""
+    print("=" * 40)
+    print("DIAGNOSTIC SIM7600")
+    print("=" * 40)
+    try:
+        ser.reset_input_buffer()
+
+        # 1. Carte SIM détectée ?
+        ser.write(b"AT+CPIN?\r\n")
+        time.sleep(0.5)
+        rep = ser.read(ser.in_waiting).decode(errors='ignore').strip() if ser.in_waiting else ""
+        if "READY" in rep:
+            print("Carte SIM détectée")
+        else:
+            print(f"⚠️ SIM : {rep if rep else 'Pas de réponse'}")
+            print("=" * 40)
+            return  # Pas de SIM = pas la peine de tester le réseau
+
+        # 2. Qualité du signal
+        ser.write(b"AT+CSQ\r\n")
+        time.sleep(0.5)
+        rep = ser.read(ser.in_waiting).decode(errors='ignore').strip() if ser.in_waiting else ""
+        print(f"Signal : {rep}")
+
+        # 3. Enregistrement réseau
+        ser.write(b"AT+CREG?\r\n")
+        time.sleep(0.5)
+        rep = ser.read(ser.in_waiting).decode(errors='ignore').strip() if ser.in_waiting else ""
+        if ",1" in rep or ",5" in rep:
+            print("Enregistré sur le réseau")
+        else:
+            print(f"⚠️ Réseau : {rep if rep else 'Non enregistré'}")
+
+        # 4. Opérateur actif
+        ser.write(b"AT+COPS?\r\n")
+        time.sleep(0.5)
+        rep = ser.read(ser.in_waiting).decode(errors='ignore').strip() if ser.in_waiting else ""
+        print(f"Opérateur : {rep}")
+
+    except Exception as e:
+        print(f"Diagnostic impossible : {e}")
+    print("=" * 40)
+
+
+diagnostic_sim()
+
+
 # Lock pour éviter que SMS et appel utilisent le port en même temps
 sim_lock = threading.Lock()
 
@@ -91,7 +139,7 @@ def ecouter_clavier():
     while True:
         touche = input()
         if touche.lower() == "p":
-            threading.Thread(target=TEST_APPEL.passer_appel, args=(ser, sim_lock), daemon=True).start()
+            threading.Thread(target=appel.passer_appel, args=(ser, sim_lock), daemon=True).start()
 
 async def main():
     print("Démarrage Global - Monaco 2026")
@@ -126,7 +174,7 @@ if __name__ == "__main__":
     threading.Thread(target=lancer_taches_bms, daemon=True).start()
     print("thread BMS lancé")
 
-    threading.Thread(target=SMS.lire_sms, args=(ser, sim_lock), daemon=True).start()
+    threading.Thread(target=sms.lire_sms, args=(ser, sim_lock), daemon=True).start()
     print("thread SMS lancé")
     
     # Touche P + Entrée pour lancer un appel (sera remplacé par bouton physique)

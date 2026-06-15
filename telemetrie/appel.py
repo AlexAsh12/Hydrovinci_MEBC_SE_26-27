@@ -1,6 +1,6 @@
 import serial
 import time
-import interface_bateau
+from interface import interface_bateau
 import config
  
 # --- CONFIGURATION ---
