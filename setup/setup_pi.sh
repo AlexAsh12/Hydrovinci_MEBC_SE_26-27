@@ -1,12 +1,14 @@
 #!/bin/bash
+# A LANCER AVEC LA COMMANDE : bash setup_pi.sh
 # Script d'installation automatique pour le Raspberry Pi (Monaco 2026)
 
 echo "=== DEBUT DE L'INSTALLATION MEBC ==="
-
-# 1. Detection automatique de l'utilisateur et du dossier
+# 1. Detection automatique de l'utilisateur et du dossier racine
 # $SUDO_USER recupere le vrai utilisateur (ex: edouard) meme si lance avec sudo
 USER_NAME=${SUDO_USER:-$USER}
-PROJECT_DIR=$(pwd)
+# Le script est dans le dossier setup/, donc la racine est le dossier parent (..)
+SCRIPT_DIR=$(pwd)
+PROJECT_DIR=$(dirname "$SCRIPT_DIR")
 
 echo "Utilisateur detecte : $USER_NAME"
 echo "Dossier du projet : $PROJECT_DIR"
