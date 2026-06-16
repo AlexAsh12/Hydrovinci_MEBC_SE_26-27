@@ -128,4 +128,4 @@ async def monitor_bms(bms_id, bms_conf, interval):
                 etait_connecte = False
                 interface_bateau.update_statut(bms_id, False)
 
-        await asyncio.sleep(interval)
+        await asyncio.sleep(interval)
