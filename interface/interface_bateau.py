@@ -48,6 +48,9 @@ def init():
     lbl_msg = _setup_section("MESSAGES SYSTÈME", "#ffcc00")
     lbl_other = _setup_section("STATUT ET AUTRES", "#00ff88")
 
+    # Afficher l'etat initial des peripheriques (le SIM7600 est deja detecte a ce stade)
+    _rafraichir_statuts()
+
     root.mainloop()
 
 def update_bms(bms1, bms2):
