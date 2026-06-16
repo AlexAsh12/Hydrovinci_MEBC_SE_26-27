@@ -45,17 +45,19 @@ def _on_disconnect(client, userdata, flags, rc, properties=None):
 
 
 def init():
-    """Initialise le client MQTT en arrière-plan. Ne bloque jamais."""
+    """Initialise le client MQTT en arriere-plan. Ne bloque jamais."""
     global _client
     try:
         _client = mqtt.Client(callback_api_version=mqtt.CallbackAPIVersion.VERSION2)
         _client.on_connect = _on_connect
         _client.on_disconnect = _on_disconnect
-        _client.connect(config.MQTT_BROKER, config.MQTT_PORT, keepalive=60)
-        _client.loop_start()  # Thread daemon — reconnexion automatique
+        # connect_async + loop_start : la connexion se fait en arriere-plan.
+        # Si le broker est injoignable, ca ne bloque pas le demarrage.
+        _client.connect_async(config.MQTT_BROKER, config.MQTT_PORT, keepalive=60)
+        _client.loop_start()
         print(f"[MQTT] Connexion en cours vers {config.MQTT_BROKER}:{config.MQTT_PORT}")
     except Exception as e:
-        print(f"[MQTT] Impossible de se connecter : {e} — le BMS tourne sans MQTT")
+        print(f"[MQTT] Impossible d'initialiser : {e} — le BMS tourne sans MQTT")
         _client = None
 
 
