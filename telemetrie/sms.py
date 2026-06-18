@@ -19,32 +19,34 @@ def lire_sms():
     3. Decode et affiche les nouveaux messages sur l'interface
     4. Purge les SMS lus pour ne pas les relire
     """
-    try:
-        print("En attente de SMS (Mode Polling Securise v2)...")
+    print("En attente de SMS (Mode Polling Securise v2)...")
 
-        # Initialisation AT - on verrouille le port pour eviter les conflits avec l'appel
-        with port_serie.sim_lock:
-            port_serie.envoyer_commande("AT")
+    dernier_message = None
 
-            # Forcer le stockage et la lecture sur la carte SIM (pas la memoire interne)
-            port_serie.ser.write("AT+CPMS=\"SM\",\"SM\",\"SM\"\r\n".encode())
-            time.sleep(0.5)
-            port_serie.ser.reset_input_buffer()
+    while True:
+        try:
+            # Reinitialisation AT a chaque tour : reconfigure le modem automatiquement
+            # s'il a reset. Commandes idempotentes, cout batterie negligeable (pas de radio).
+            # NOTE: pourra etre sorti de la boucle plus tard si besoin (ex: reinit seulement sur echec).
+            with port_serie.sim_lock:
+                port_serie.envoyer_commande("AT")
 
-            # Activer le mode texte (par opposition au mode PDU binaire)
-            port_serie.ser.write("AT+CMGF=1\r\n".encode())
-            time.sleep(0.5)
-            port_serie.ser.reset_input_buffer()
+                # Forcer le stockage et la lecture sur la carte SIM (pas la memoire interne)
+                port_serie.ser.write("AT+CPMS=\"SM\",\"SM\",\"SM\"\r\n".encode())
+                time.sleep(0.5)
+                port_serie.ser.reset_input_buffer()
 
-            # Mode silencieux : le modem stocke les SMS sans envoyer de notification
-            # Evite de perturber les appels en cours
-            port_serie.ser.write("AT+CNMI=2,0,0,0,0\r\n".encode())
-            time.sleep(0.5)
-            port_serie.ser.reset_input_buffer()
+                # Activer le mode texte (par opposition au mode PDU binaire)
+                port_serie.ser.write("AT+CMGF=1\r\n".encode())
+                time.sleep(0.5)
+                port_serie.ser.reset_input_buffer()
 
-        dernier_message = None
+                # Mode silencieux : le modem stocke les SMS sans envoyer de notification
+                # Evite de perturber les appels en cours
+                port_serie.ser.write("AT+CNMI=2,0,0,0,0\r\n".encode())
+                time.sleep(0.5)
+                port_serie.ser.reset_input_buffer()
 
-        while True:
             # Pause entre chaque verification. 4 secondes = bon compromis
             # entre reactivite et charge CPU/port serie
             time.sleep(4)
@@ -72,6 +74,8 @@ def lire_sms():
                 finally:
                     port_serie.ser.timeout = old_timeout
 
+            interface_bateau.update_statut("SIM7600", True)  # Le modem est present, meme si aucun SMS n'est recu
+            
             a_lu_des_sms = False
 
             # Traitement ligne par ligne de la reponse AT+CMGL
@@ -116,5 +120,5 @@ def lire_sms():
                     time.sleep(0.5)
                     port_serie.ser.reset_input_buffer()
 
-    except Exception as e:
-        print(f"Erreur SMS : {e}")
+        except Exception as e:
+            print(f"Erreur SMS : {e}")

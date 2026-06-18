@@ -1,6 +1,8 @@
 import tkinter as tk
 from tkinter import font
 
+from telemetrie import port_serie
+
 root = None
 lbl_bms = None
 lbl_msg = None
@@ -23,7 +25,7 @@ def init():
     root.title("Monitoring Monaco 2026")
 
     # --- ASTUCE TEST : Commente la ligne fullscreen pour ne plus être bloqué ---
-    # root.attributes('-fullscreen', True)
+    root.attributes('-fullscreen', True)
     root.geometry("1000x700") # Fenêtre large pour tester tranquillement
 
     root.configure(bg='#101010')
@@ -123,6 +125,13 @@ def _rafraichir_statuts():
         return
     lignes = []
     for device, ok in statuts.items():
+        if(device == "SIM7600"):
+            if(not ok): lignes.append("[--]  SIM7600 : Non detecte")
+            else:
+                qualite = port_serie.lire_qualite_signal()
+                lignes.append(f"[OK]  SIM7600 : Detecte | Qualité signal : {qualite}")
+            continue
+
         indicateur = "[OK]" if ok else "[--]"
         etat = "Detecte" if ok else "Non detecte"
         lignes.append(f"{indicateur}  {device} : {etat}")
