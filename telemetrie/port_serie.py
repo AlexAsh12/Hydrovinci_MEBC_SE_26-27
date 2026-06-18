@@ -162,3 +162,12 @@ def diagnostic_sim():
     except Exception as e:
         print(f"Diagnostic impossible : {e}")
     print("=" * 40)
+
+def lire_qualite_signal():
+    #retourne le retour de AT+CSQ, ou None si le port n'est pas ouvert
+    if not(ser and ser.is_open):
+        return None
+    
+    with sim_lock:
+        return envoyer_commande("AT+CSQ", attente=0.5)
+    
