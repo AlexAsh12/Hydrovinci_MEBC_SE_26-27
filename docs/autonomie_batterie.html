@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Autonomie Batterie — MEBC 2026</title>
+<style>
+  :root{
+    --bleu:#0a4d8c; --cyan:#00a8d4; --cyan-clair:#e6f7fc;
+    --vert:#1a9f5a; --vert-clair:#e8f8ef;
+    --rouge:#d43a3a; --rouge-clair:#fdecaa00; --rouge-bg:#fdecec;
+    --jaune:#c98a00; --jaune-bg:#fff8e6;
+    --gris:#5a6470; --gris-clair:#f4f6f8; --bord:#dde3ea; --encre:#1f2933;
+  }
+  *{box-sizing:border-box}
+  body{
+    font-family:"Segoe UI",Calibri,Arial,sans-serif; color:var(--encre);
+    line-height:1.6; margin:0; background:#eef1f4; font-size:15px;
+  }
+  .page{max-width:880px; margin:24px auto; background:#fff; padding:0 0 60px;
+    box-shadow:0 2px 18px rgba(0,0,0,.08); border-radius:10px; overflow:hidden}
+
+  /* ---------- En-tete ---------- */
+  header{
+    background:linear-gradient(135deg,#063a6b 0%,#0a4d8c 45%,#00a8d4 100%);
+    color:#fff; padding:46px 50px 38px; position:relative;
+  }
+  header .kicker{font-size:13px; letter-spacing:3px; text-transform:uppercase;
+    opacity:.85; margin:0 0 8px}
+  header h1{margin:0; font-size:34px; font-weight:700; line-height:1.15}
+  header .sub{margin:14px 0 0; font-size:16px; opacity:.92; max-width:560px}
+  header .wave{position:absolute; right:38px; top:38px; font-size:46px; opacity:.25}
+
+  main{padding:38px 50px}
+
+  h2{color:var(--bleu); font-size:23px; margin:42px 0 14px; padding-bottom:8px;
+    border-bottom:3px solid var(--cyan); display:flex; align-items:center; gap:10px}
+  h2 .n{background:var(--cyan); color:#fff; width:30px; height:30px; border-radius:50%;
+    display:inline-flex; align-items:center; justify-content:center; font-size:16px;
+    flex:0 0 auto}
+  h3{color:var(--bleu); font-size:17px; margin:24px 0 8px}
+
+  /* ---------- Sommaire ---------- */
+  .toc{background:var(--gris-clair); border:1px solid var(--bord); border-radius:8px;
+    padding:18px 26px; margin:30px 0}
+  .toc h4{margin:0 0 10px; color:var(--bleu); font-size:14px; letter-spacing:1px;
+    text-transform:uppercase}
+  .toc ol{margin:0; padding-left:22px; columns:2; column-gap:34px}
+  .toc li{margin:4px 0}
+  .toc a{color:var(--encre); text-decoration:none}
+  .toc a:hover{color:var(--cyan); text-decoration:underline}
+
+  /* ---------- Encadres ---------- */
+  .box{border-radius:8px; padding:14px 18px 14px 48px; margin:18px 0; position:relative}
+  .box::before{position:absolute; left:16px; top:13px; font-size:20px}
+  .info{background:var(--cyan-clair); border-left:5px solid var(--cyan)}
+  .info::before{content:"💡"}
+  .warn{background:var(--jaune-bg); border-left:5px solid var(--jaune)}
+  .warn::before{content:"⚠️"}
+  .ok{background:var(--vert-clair); border-left:5px solid var(--vert)}
+  .ok::before{content:"✅"}
+  .danger{background:var(--rouge-bg); border-left:5px solid var(--rouge)}
+  .danger::before{content:"🔴"}
+  .box b{color:var(--encre)}
+
+  /* ---------- Tableaux ---------- */
+  table{border-collapse:collapse; width:100%; margin:16px 0; font-size:14px}
+  th{background:var(--bleu); color:#fff; text-align:left; padding:9px 12px; font-weight:600}
+  td{padding:8px 12px; border-bottom:1px solid var(--bord)}
+  tr:nth-child(even) td{background:var(--gris-clair)}
+  td.num,th.num{text-align:right; font-variant-numeric:tabular-nums}
+
+  /* ---------- Formules ---------- */
+  .formula{background:#0d2438; color:#dbeafc; font-family:"Consolas",monospace;
+    padding:14px 20px; border-radius:8px; margin:14px 0; font-size:14.5px;
+    overflow-x:auto; line-height:1.7}
+  .formula .c{color:#6fcf97}              /* commentaire */
+  .formula .k{color:#56ccf2; font-weight:bold}  /* resultat */
+  .calc{background:var(--gris-clair); border:1px solid var(--bord); border-radius:8px;
+    padding:16px 20px; margin:16px 0; font-family:"Consolas",monospace; font-size:14px;
+    line-height:1.9}
+  .calc .res{color:var(--vert); font-weight:bold}
+
+  /* ---------- Jauge batterie ---------- */
+  .gauge-wrap{display:flex; gap:26px; align-items:center; flex-wrap:wrap; margin:18px 0}
+  .legend{font-size:13.5px}
+  .legend div{margin:5px 0; display:flex; align-items:center; gap:8px}
+  .chip{width:14px; height:14px; border-radius:3px; flex:0 0 auto}
+
+  /* ---------- Cartes recap ---------- */
+  .cards{display:flex; gap:16px; flex-wrap:wrap; margin:20px 0}
+  .card{flex:1 1 200px; border:1px solid var(--bord); border-radius:10px; padding:18px;
+    text-align:center; background:#fff}
+  .card .big{font-size:30px; font-weight:700; color:var(--cyan); line-height:1}
+  .card .lbl{font-size:13px; color:var(--gris); margin-top:6px}
+
+  /* ---------- Checklist ---------- */
+  ul.check{list-style:none; padding:0; margin:14px 0}
+  ul.check li{padding:9px 12px 9px 40px; position:relative; border:1px solid var(--bord);
+    border-radius:7px; margin:8px 0; background:#fff}
+  ul.check li::before{content:"☑"; position:absolute; left:13px; top:9px; color:var(--vert);
+    font-size:17px}
+
+  code{background:var(--gris-clair); padding:1px 6px; border-radius:4px;
+    font-family:"Consolas",monospace; font-size:13.5px; color:var(--bleu)}
+  .small{font-size:13px; color:var(--gris)}
+  footer{padding:24px 50px; color:var(--gris); font-size:12.5px; border-top:1px solid var(--bord);
+    margin-top:30px}
+  @media print{body{background:#fff}.page{box-shadow:none;margin:0;border-radius:0}}
+</style>
+</head>
+<body>
+<div class="page">
+
+<header>
+  <span class="wave">〜</span>
+  <p class="kicker">Monaco Energy Boat Challenge 2026</p>
+  <h1>Autonomie Batterie<br>Guide complet & calculs</h1>
+  <p class="sub">Comprendre le pack 5S Li-ion, faire les calculs soi-même, et vérifier
+  que le système tient les 4 h de course.</p>
+</header>
+
+<main>
+
+  <div class="toc">
+    <h4>Sommaire</h4>
+    <ol>
+      <li><a href="#s1">Le système d'alimentation</a></li>
+      <li><a href="#s2">Fonctionnement Li-ion</a></li>
+      <li><a href="#s3">Grandeurs & unités</a></li>
+      <li><a href="#s4">Les formules</a></li>
+      <li><a href="#s5">Exemple chiffré</a></li>
+      <li><a href="#s6">Critère « 4 h »</a></li>
+      <li><a href="#s7">Comment mesurer</a></li>
+      <li><a href="#s8">Recommandations course</a></li>
+      <li><a href="#s9">Aide-mémoire</a></li>
+    </ol>
+  </div>
+
+  <!-- ====== 1 ====== -->
+  <h2 id="s1"><span class="n">1</span>Le système d'alimentation</h2>
+  <p>La chaîne, de la batterie jusqu'aux appareils :</p>
+
+  <svg viewBox="0 0 840 200" width="100%" role="img" aria-label="Schema chaine alimentation">
+    <defs>
+      <marker id="ar" markerWidth="10" markerHeight="10" refX="7" refY="3" orient="auto">
+        <path d="M0,0 L7,3 L0,6 Z" fill="#0a4d8c"/>
+      </marker>
+    </defs>
+    <!-- pack -->
+    <rect x="10" y="50" width="180" height="100" rx="10" fill="#e6f7fc" stroke="#0a4d8c" stroke-width="2"/>
+    <text x="100" y="80" text-anchor="middle" font-size="15" font-weight="bold" fill="#0a4d8c">Pack 5S Li-ion</text>
+    <text x="100" y="102" text-anchor="middle" font-size="12.5" fill="#1f2933">5× 18650 série</text>
+    <text x="100" y="122" text-anchor="middle" font-size="12.5" fill="#1f2933">+ BCPB3 (charge)</text>
+    <!-- fleche 1 -->
+    <line x1="190" y1="100" x2="270" y2="100" stroke="#0a4d8c" stroke-width="2" marker-end="url(#ar)"/>
+    <text x="230" y="90" text-anchor="middle" font-size="12" fill="#d43a3a" font-weight="bold">15–21 V</text>
+    <text x="230" y="116" text-anchor="middle" font-size="10.5" fill="#5a6470">variable</text>
+    <!-- buck -->
+    <rect x="272" y="55" width="160" height="90" rx="10" fill="#fff8e6" stroke="#c98a00" stroke-width="2"/>
+    <text x="352" y="92" text-anchor="middle" font-size="15" font-weight="bold" fill="#c98a00">Buck DFRobot</text>
+    <text x="352" y="113" text-anchor="middle" font-size="12.5" fill="#1f2933">abaisseur ~88 %</text>
+    <!-- fleche 2 -->
+    <line x1="432" y1="100" x2="512" y2="100" stroke="#0a4d8c" stroke-width="2" marker-end="url(#ar)"/>
+    <text x="472" y="90" text-anchor="middle" font-size="12" fill="#1a9f5a" font-weight="bold">5,1 V</text>
+    <text x="472" y="116" text-anchor="middle" font-size="10.5" fill="#5a6470">stable</text>
+    <!-- PDB + charges -->
+    <rect x="514" y="20" width="316" height="160" rx="10" fill="#f4f6f8" stroke="#0a4d8c" stroke-width="2"/>
+    <text x="672" y="42" text-anchor="middle" font-size="14" font-weight="bold" fill="#0a4d8c">PDB — rail 5 V (fusible)</text>
+    <rect x="532" y="56" width="280" height="32" rx="6" fill="#fff" stroke="#00a8d4"/>
+    <text x="672" y="77" text-anchor="middle" font-size="12.5" fill="#1f2933">📺 Écran 7" HDMI</text>
+    <rect x="532" y="96" width="280" height="32" rx="6" fill="#fff" stroke="#00a8d4"/>
+    <text x="672" y="117" text-anchor="middle" font-size="12.5" fill="#1f2933">📡 SIM7600 (modem)</text>
+    <rect x="532" y="136" width="280" height="32" rx="6" fill="#fff" stroke="#00a8d4"/>
+    <text x="672" y="157" text-anchor="middle" font-size="12.5" fill="#1f2933">🍓 Raspberry Pi Zero 2W</text>
+  </svg>
+
+  <div class="info">Le <b>buck</b> transforme la tension <b>variable</b> du pack (15–21 V) en
+  <b>5,1 V stable</b> : c'est lui qui protège tes appareils. Sans lui, impossible
+  d'alimenter du 5 V depuis un pack qui varie autant.</div>
+
+  <!-- ====== 2 ====== -->
+  <h2 id="s2"><span class="n">2</span>Fonctionnement d'une batterie Li-ion</h2>
+
+  <h3>2.1 — La tension n'est PAS constante (= jauge de charge)</h3>
+  <p>La tension d'une cellule dépend de son état de charge. Sur le pack 5S, on multiplie par 5 :</p>
+
+  <div class="gauge-wrap">
+    <!-- jauge verticale -->
+    <svg viewBox="0 0 120 230" width="150" role="img" aria-label="Jauge tension pack">
+      <defs>
+        <linearGradient id="g" x1="0" y1="1" x2="0" y2="0">
+          <stop offset="0%" stop-color="#d43a3a"/>
+          <stop offset="25%" stop-color="#e8a33a"/>
+          <stop offset="55%" stop-color="#e8d23a"/>
+          <stop offset="100%" stop-color="#1a9f5a"/>
+        </linearGradient>
+      </defs>
+      <rect x="40" y="12" width="40" height="200" rx="6" fill="url(#g)" stroke="#1f2933" stroke-width="1.5"/>
+      <rect x="52" y="4" width="16" height="10" rx="2" fill="#1f2933"/>
+      <!-- reperes -->
+      <g font-size="11" fill="#1f2933">
+        <line x1="80" y1="20" x2="92" y2="20" stroke="#1f2933"/><text x="95" y="24">21,0 V · plein</text>
+        <line x1="80" y1="108" x2="92" y2="108" stroke="#1f2933"/><text x="95" y="112">18,5 V · ~50 %</text>
+        <line x1="80" y1="188" x2="92" y2="188" stroke="#d43a3a"/><text x="95" y="192" fill="#d43a3a">15,8 V · ta mesure</text>
+        <line x1="80" y1="204" x2="92" y2="204" stroke="#1f2933"/><text x="95" y="208">15,0 V · vide</text>
+      </g>
+    </svg>
+    <table style="flex:1 1 320px">
+      <tr><th>Par cellule</th><th class="num">Pack 5S</th><th>État</th></tr>
+      <tr><td>4,20 V</td><td class="num">21,0 V</td><td>100 % plein</td></tr>
+      <tr><td>3,70 V</td><td class="num">18,5 V</td><td>~50 % nominal</td></tr>
+      <tr><td>3,50 V</td><td class="num">17,5 V</td><td>~20 %</td></tr>
+      <tr><td style="color:#d43a3a">3,16 V</td><td class="num" style="color:#d43a3a">15,8 V</td><td style="color:#d43a3a">~5–10 % (ta mesure)</td></tr>
+      <tr><td>3,00 V</td><td class="num">15,0 V</td><td>0 % coupure</td></tr>
+    </table>
+  </div>
+
+  <div class="danger"><b>Ton 15,8 V = pack presque vide.</b> Remesure à pleine charge :
+  tu dois lire <b>~20–21 V</b>. Si ça plafonne bas, des cellules sont fatiguées — c'est
+  le seul vrai risque pour les 4 h.</div>
+
+  <h3>2.2 — Série & parallèle</h3>
+  <p><b>En série</b> (notre cas, 5S) : les <b>tensions s'additionnent</b>, la capacité
+  (Ah) <b>ne change pas</b>. <b>En parallèle</b> : l'inverse (capacités additionnées,
+  tension inchangée).</p>
+
+  <h3>2.3 — La charge : phases CC puis CV</h3>
+  <p>C'est pourquoi le « 4/5 » arrive vite mais le « 5/5 » traîne :</p>
+
+  <svg viewBox="0 0 760 260" width="100%" role="img" aria-label="Courbe de charge CC CV">
+    <!-- axes -->
+    <line x1="60" y1="20" x2="60" y2="210" stroke="#1f2933" stroke-width="1.5"/>
+    <line x1="60" y1="210" x2="720" y2="210" stroke="#1f2933" stroke-width="1.5"/>
+    <text x="30" y="120" font-size="12" fill="#1f2933" transform="rotate(-90 30,120)">Valeur</text>
+    <text x="390" y="240" font-size="12" fill="#1f2933" text-anchor="middle">Temps de charge →</text>
+    <!-- separation CC/CV -->
+    <line x1="370" y1="20" x2="370" y2="210" stroke="#aab4bf" stroke-width="1" stroke-dasharray="5 4"/>
+    <text x="215" y="38" font-size="13" fill="#0a4d8c" text-anchor="middle" font-weight="bold">Phase CC (rapide)</text>
+    <text x="545" y="38" font-size="13" fill="#c98a00" text-anchor="middle" font-weight="bold">Phase CV (lente)</text>
+    <text x="215" y="54" font-size="11" fill="#5a6470" text-anchor="middle">~0 → 80 % de charge</text>
+    <text x="545" y="54" font-size="11" fill="#5a6470" text-anchor="middle">les derniers 20 %</text>
+    <!-- courbe tension (monte puis plateau) -->
+    <path d="M60,195 C180,150 300,90 370,75 L720,70" fill="none" stroke="#0a4d8c" stroke-width="3"/>
+    <text x="690" y="60" font-size="12" fill="#0a4d8c" font-weight="bold">Tension</text>
+    <!-- courbe courant (constant puis chute) -->
+    <path d="M60,95 L370,95 C470,95 560,170 720,195" fill="none" stroke="#d43a3a" stroke-width="3"/>
+    <text x="120" y="88" font-size="12" fill="#d43a3a" font-weight="bold">Courant</text>
+  </svg>
+
+  <div class="info"><b>CC</b> : courant fixe, la tension monte, remplit ~80 % vite.
+  <b>CV</b> : à 21 V le chargeur maintient la tension, le courant diminue tout seul →
+  le dernier 1/5 rentre lentement. <b>C'est normal et sain</b> (protège et équilibre les cellules).</div>
+
+  <!-- ====== 3 ====== -->
+  <h2 id="s3"><span class="n">3</span>Les grandeurs & leurs unités</h2>
+  <table>
+    <tr><th>Symbole</th><th>Nom</th><th>Unité</th><th>C'est quoi</th></tr>
+    <tr><td><code>V</code></td><td>Tension</td><td>Volt (V)</td><td>« pression » électrique</td></tr>
+    <tr><td><code>I</code></td><td>Courant</td><td>Ampère (A)</td><td>débit d'électricité</td></tr>
+    <tr><td><code>Q</code></td><td>Capacité</td><td>Ampère-heure (Ah)</td><td>« réservoir » de charge</td></tr>
+    <tr><td><code>E</code></td><td>Énergie</td><td>Watt-heure (Wh)</td><td>énergie totale stockée</td></tr>
+    <tr><td><code>P</code></td><td>Puissance</td><td>Watt (W)</td><td>énergie consommée par seconde</td></tr>
+    <tr><td><code>η</code></td><td>Rendement</td><td>%</td><td>efficacité du buck (~0,88)</td></tr>
+  </table>
+  <div class="formula"><span class="c"># Les 3 relations de base</span>
+P = V × I        <span class="c"># puissance  = tension × courant</span>
+E = V × Q        <span class="c"># énergie    = tension × capacité</span>
+t = E / P        <span class="c"># durée      = énergie / puissance</span></div>
+  <div class="info">On raisonne en <b>énergie (Wh)</b>, pas en courant : l'énergie se
+  conserve même quand la tension du pack baisse. En fin de décharge, le buck tire
+  <b>plus de courant</b> (V baisse) pour garder la même puissance.</div>
+
+  <!-- ====== 4 ====== -->
+  <h2 id="s4"><span class="n">4</span>Les formules d'autonomie</h2>
+  <div class="formula"><span class="c"># Étape 1 — Énergie totale du pack   (V_nom 5S = 3,7 × 5 = 18,5 V)</span>
+E_batt   = V_nominal × Q
+
+<span class="c"># Étape 2 — Énergie utilisable        (on ne vide pas à 0 : DoD 85 %)</span>
+E_utile  = E_batt × 0,85
+
+<span class="c"># Étape 3 — Conso des appareils (côté 5 V, après le buck)</span>
+P_charge = P_ecran + P_pi + P_sim
+
+<span class="c"># Étape 4 — Conso côté batterie (avant le buck, pertes ~12 %)</span>
+P_pack   = P_charge / 0,88
+
+<span class="c"># Étape 5 — Autonomie</span>
+<span class="k">Autonomie = E_utile / P_pack</span></div>
+
+  <div class="info"><b>P_charge</b> = ce que reçoivent les appareils (après le buck).
+  <b>P_pack</b> = ce que la batterie doit fournir (avant le buck). <b>P_pack &gt; P_charge</b>
+  à cause des pertes du buck.</div>
+
+  <!-- ====== 5 ====== -->
+  <h2 id="s5"><span class="n">5</span>Exemple chiffré <span class="small">(à adapter avec tes mesures)</span></h2>
+  <p>Hypothèses : cellules <b>2,0 Ah</b> (prudent, non marquées) · conso écran 3,0 + Pi 1,0 + SIM 0,4 = <b>4,4 W</b></p>
+  <div class="calc">
+Étape 1 : E_batt   = 18,5 × 2,0      = 37,0 Wh<br>
+Étape 2 : E_utile  = 37,0 × 0,85     = 31,4 Wh<br>
+Étape 3 : P_charge = 3,0 + 1,0 + 0,4 = 4,4 W<br>
+Étape 4 : P_pack   = 4,4 / 0,88      = 5,0 W<br>
+Étape 5 : <span class="res">Autonomie = 31,4 / 5,0 = 6,3 h  ✅ &gt; 4 h</span>
+  </div>
+  <p class="small">Scénario pessimiste (2,0 Ah + charge lourde 6 W) :
+  <code>P_pack = 6,0/0,88 = 6,8 W</code> → <code>31,4/6,8 = 4,6 h</code> — encore &gt; 4 h ✅</p>
+
+  <!-- ====== 6 ====== -->
+  <h2 id="s6"><span class="n">6</span>« Est-ce que ça va le faire ? » — le critère 4 h</h2>
+  <div class="formula">E_besoin = P_pack × 4 h        = 5,0 × 4            = <span class="k">20 Wh utiles</span>
+Q_min    = E_besoin / 0,85 / V_nom = 20 / 0,85 / 18,5 = <span class="k">≈ 1,3 Ah</span></div>
+  <div class="cards">
+    <div class="card"><div class="big">~20 Wh</div><div class="lbl">énergie utile nécessaire pour 4 h</div></div>
+    <div class="card"><div class="big">≥ 2 Ah</div><div class="lbl">toute 18650 saine suffit</div></div>
+    <div class="card"><div class="big">~6,3 h</div><div class="lbl">autonomie estimée (cas typique)</div></div>
+  </div>
+  <div class="ok"><b>La capacité n'est pas le risque.</b> Toute cellule 18650 saine
+  ≥ 2 Ah tient les 4 h. Les vrais risques : pack <b>dégradé</b> ou <b>pas plein</b> au départ.</div>
+
+  <!-- ====== 7 ====== -->
+  <h2 id="s7"><span class="n">7</span>Comment MESURER les vraies valeurs</h2>
+  <p>Les conso estimées sont à ±30 %. Pour du concret :</p>
+  <h3>7.1 — Mesurer P_pack (côté batterie) — le plus utile</h3>
+  <p>Un <b>wattmètre inline</b> sur le fil <b>batterie → buck</b> affiche directement
+  <code>V</code>, <code>I</code>, <code>P</code> (et souvent les <code>Wh</code> cumulés).
+  <code>P_pack = V_batterie × I_batterie</code>.</p>
+  <h3>7.2 — Mesurer P_charge (côté 5 V)</h3>
+  <p>Un <b>wattmètre USB</b> sur la ligne 5 V donne la conso des appareils. Puis
+  <code>P_pack = P_charge / 0,88</code>.</p>
+  <h3>7.3 — Le test définitif : décharge complète</h3>
+  <div class="calc">
+1. Charger à fond (5/5 ≈ 21 V)<br>
+2. Brancher un wattmètre inline (cumul Wh) sur la ligne batterie<br>
+3. Faire tourner le <b>système réel</b> jusqu'à coupure (~15 V)<br>
+4. Lire le <b>total Wh</b> = E_utile réelle, sans aucune hypothèse<br>
+5. <span class="res">Autonomie = E_utile_mesurée / P_pack</span>
+  </div>
+  <div class="ok">Si le pack sort <b>≥ 20 Wh</b> → les 4 h sont garanties.
+  S'il sort <b>beaucoup moins que ~30 Wh</b> → des cellules sont fatiguées.</div>
+
+  <!-- ====== 8 ====== -->
+  <h2 id="s8"><span class="n">8</span>Recommandations pour la course</h2>
+  <ul class="check">
+    <li><b>Vérifier la santé du pack</b> : à pleine charge il doit lire ~20–21 V.</li>
+    <li><b>Partir à 5/5</b> (pas 4/5) : la phase CV ajoute un vrai bout d'autonomie.</li>
+    <li><b>Régler le buck à ~5,1 V</b> (pas 4,9 V) : marge contre les chutes. Le Pi tolère jusqu'à 5,25 V.</li>
+    <li><b>Condensateurs bulk</b> près du SIM7600 (déjà présents) : absorbent les pics d'émission → évitent les reboots.</li>
+    <li><b>Faire le test de décharge §7.3 une fois</b> avant la course : lève tous les doutes.</li>
+  </ul>
+
+  <!-- ====== 9 ====== -->
+  <h2 id="s9"><span class="n">9</span>Aide-mémoire — toutes les formules</h2>
+  <div class="formula">P = V × I                              <span class="c">puissance</span>
+E = V × Q                              <span class="c">énergie (série : V s'additionne, Q inchangée)</span>
+
+E_batt    = V_nominal × Q              <span class="c">énergie totale        [V_nom 5S = 18,5 V]</span>
+E_utile   = E_batt × 0,85             <span class="c">énergie utilisable    [DoD 85 %]</span>
+P_charge  = P_ecran + P_pi + P_sim    <span class="c">conso appareils (5 V)</span>
+P_pack    = P_charge / 0,88           <span class="c">conso côté batterie   [rdt buck 88 %]</span>
+<span class="k">Autonomie = E_utile / P_pack</span>          <span class="c">en heures</span>
+
+E_besoin  = P_pack × heures_visées    <span class="c">énergie requise</span>
+Q_min     = E_besoin / 0,85 / V_nom   <span class="c">capacité minimale</span></div>
+
+</main>
+
+<footer>
+  Monaco Energy Boat Challenge 2026 — Guide autonomie batterie ·
+  Document de référence interne · Valeurs de conso à confirmer par mesure (§7).
+</footer>
+
+</div>
+</body>
+</html>
