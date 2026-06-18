@@ -1,0 +1,90 @@
+============================================================
+  MEBC 2026 - Commandes a copier-coller dans la console Pi
+============================================================
+
+Place-toi d'abord dans le dossier setup du projet, par exemple :
+
+    cd ~/MEBC_SE/setup
+
+
+------------------------------------------------------------
+1) INSTALLER LE PROJET  (premiere fois seulement)
+------------------------------------------------------------
+Installe les dependances, les droits du port serie et le
+service de demarrage automatique (systemd).
+
+    sudo bash setup_pi.sh
+
+
+------------------------------------------------------------
+2) ACTIVER LE READ-ONLY  (avant la course)
+------------------------------------------------------------
+Protege la carte SD : plus aucune ecriture (tout en RAM).
+A faire une fois que le code ne bouge plus.
+
+    sudo bash readonly_on.sh
+    sudo reboot
+
+    !!! VERIFICATION IMPORTANTE - A FAIRE AU TOUT PREMIER ESSAI !!!
+    Les scripts utilisent la convention "do_overlayfs 0 = activer".
+    Selon la version de raspi-config, elle POURRAIT etre inversee.
+    Donc apres le tout premier readonly_on.sh + reboot, verifie :
+
+        findmnt -no FSTYPE /
+
+      --> affiche "overlay" = read-only bien ACTIF (parfait, rien a faire)
+      --> affiche "ext4"    = la convention est inversee : ouvre
+          readonly_on.sh ET readonly_off.sh et echange le 0 et le 1
+          dans la ligne :  raspi-config nonint do_overlayfs X
+          (puis relance le test une fois)
+
+
+------------------------------------------------------------
+3) DESACTIVER LE READ-ONLY  (pour modifier le code)
+------------------------------------------------------------
+Repasse la carte en lecture/ecriture pour pouvoir editer
+les fichiers, faire un git pull, relancer setup_pi.sh, etc.
+
+    sudo bash readonly_off.sh
+    sudo reboot
+
+
+============================================================
+  BON A SAVOIR - PERSISTANCE APRES REBOOT
+============================================================
+
+- setup_pi.sh : a lancer UNE SEULE FOIS dans la vie de la Pi.
+  Tout ce qu'il fait (paquets, droits serie, service systemd qui
+  demarre au boot) est ecrit sur la carte et reste apres chaque
+  reboot. A re-lancer seulement si tu changes le service ou
+  reinstalles.
+
+- readonly : une fois ACTIVE, ca le reste a chaque reboot,
+  jusqu'a ce que tu lances readonly_off.sh.
+
+- IMPORTANT : quand le read-only est ACTIF, toute modification
+  (editer un fichier, git pull, MEME re-lancer setup_pi.sh) est
+  PERDUE au reboot (elle part en RAM, pas sur la carte).
+
+  Donc pour modifier quoi que ce soit :
+      1. sudo bash readonly_off.sh   puis   sudo reboot
+      2. fais tes modifications
+      3. sudo bash readonly_on.sh    puis   sudo reboot
+
+  Et fais bien setup_pi.sh avec le read-only DESACTIVE.
+
+
+============================================================
+  RAPPELS UTILES
+============================================================
+
+Verifier si le read-only est actif :
+    findmnt -no FSTYPE /
+    --> affiche "overlay" si le read-only est ACTIF
+
+Voir les logs du programme en direct :
+    journalctl -u mebc.service -f
+
+Arreter / demarrer le programme :
+    sudo systemctl stop mebc.service
+    sudo systemctl start mebc.service
