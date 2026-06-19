@@ -44,11 +44,14 @@ async def _bms_main():
 
 
 def ecouter_clavier():
-    """Touche P + Entree pour lancer un appel (sera remplace par bouton physique)."""
+    """Touche P + Entree pour lancer un appel (sera remplace par bouton physique).
+    Touche M + Entree pour envoyer un SMS 'Bien recu' au numero cible (test)."""
     while True:
         touche = input()
         if touche.lower() == "p":
             threading.Thread(target=appel.passer_appel, daemon=True).start()
+        elif touche.lower() == "m":
+            sms.demander_envoi_sms()
 
 
 # --- Demarrage ---
