@@ -91,17 +91,20 @@ def initialiser():
     return True
 
 
-def envoyer_commande(cmd, attente=0.5):
+def envoyer_commande(cmd, attente=0.5, silencieux=False):
     """
     Envoie une commande AT sur le port serie et retourne la reponse.
     Si le port n'est pas ouvert, retourne une chaine vide sans planter.
+    silencieux=True : n'affiche pas la reponse (pour les commandes en boucle
+    qui pollueraient le terminal, ex: AT+CSQ).
     """
     if ser and ser.is_open:
         ser.write((cmd + "\r\n").encode())
         time.sleep(attente)
         if ser.in_waiting:
             reponse = ser.read(ser.in_waiting).decode(errors='ignore').strip()
-            print(f"   < {reponse}")
+            if not silencieux:
+                print(f"   < {reponse}")
             return reponse
     return ""
 
@@ -169,7 +172,7 @@ def lire_qualite_signal():
         return None
 
     with sim_lock:
-        reponse = envoyer_commande("AT+CSQ", attente=0.5)
+        reponse = envoyer_commande("AT+CSQ", attente=0.5, silencieux=True)
 
     # La reponse brute contient l'echo et "OK" sur plusieurs lignes :
     #   AT+CSQ / +CSQ: 14,99 / OK
