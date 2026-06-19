@@ -108,7 +108,7 @@ def update_messages(msg):
         messages.append(msg)
         if len(messages) > 20: # Limite stricte en mémoire
             messages.pop(0)
-        texte = "\n".join(messages[-13:])
+        texte = "\n".join(messages[-5:])
         root.after(0, lambda t=texte: lbl_msg.config(text=t))
 
 # Statuts de connexion des peripheriques

@@ -164,10 +164,17 @@ def diagnostic_sim():
     print("=" * 40)
 
 def lire_qualite_signal():
-    #retourne le retour de AT+CSQ, ou None si le port n'est pas ouvert
+    #retourne uniquement la valeur de AT+CSQ (ex: "14,99"), ou None si indisponible
     if not(ser and ser.is_open):
         return None
-    
+
     with sim_lock:
-        return envoyer_commande("AT+CSQ", attente=0.5)
+        reponse = envoyer_commande("AT+CSQ", attente=0.5)
+
+    # La reponse brute contient l'echo et "OK" sur plusieurs lignes :
+    #   AT+CSQ / +CSQ: 14,99 / OK
+    # On ne garde que la valeur apres "+CSQ:".
+    if "+CSQ:" in reponse:
+        return reponse.split("+CSQ:")[1].split()[0]
+    return None
     
