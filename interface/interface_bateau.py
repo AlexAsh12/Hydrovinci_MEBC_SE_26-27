@@ -1,6 +1,8 @@
 import tkinter as tk
 from tkinter import font
 
+from telemetrie import port_serie
+
 root = None
 lbl_bms = None
 lbl_msg = None
@@ -23,7 +25,7 @@ def init():
     root.title("Monitoring Monaco 2026")
 
     # --- ASTUCE TEST : Commente la ligne fullscreen pour ne plus être bloqué ---
-    # root.attributes('-fullscreen', True)
+    root.attributes('-fullscreen', True)
     root.geometry("1000x700") # Fenêtre large pour tester tranquillement
 
     root.configure(bg='#101010')
@@ -46,7 +48,10 @@ def init():
     # Zones d'affichage
     lbl_bms = _setup_section("ÉTAT BATTERIES (V | A | SOC | TEMP)", "#00d4ff")
     lbl_msg = _setup_section("MESSAGES SYSTÈME", "#ffcc00")
-    lbl_other = _setup_section("IA & NAVIGATION", "#00ff88")
+    lbl_other = _setup_section("STATUT ET AUTRES", "#00ff88")
+
+    # Afficher l'etat initial des peripheriques (le SIM7600 est deja detecte a ce stade)
+    _rafraichir_statuts()
 
     root.mainloop()
 
@@ -103,9 +108,32 @@ def update_messages(msg):
         messages.append(msg)
         if len(messages) > 20: # Limite stricte en mémoire
             messages.pop(0)
-        texte = "\n".join(messages[-13:])
+        texte = "\n".join(messages[-5:])
         root.after(0, lambda t=texte: lbl_msg.config(text=t))
 
-def update_other(info):
-    if root:
-        root.after(0, lambda: lbl_other.config(text=str(info)))
+# Statuts de connexion des peripheriques
+statuts = {"BMS_1": False, "BMS_2": False, "SIM7600": False}
+
+def update_statut(device, connecte):
+    """Met a jour le statut d'un peripherique et rafraichit l'affichage."""
+    statuts[device] = connecte
+    _rafraichir_statuts()
+
+def _rafraichir_statuts():
+    """Reconstruit le texte de la section statut a partir du dict."""
+    if not root:
+        return
+    lignes = []
+    for device, ok in statuts.items():
+        if(device == "SIM7600"):
+            if(not ok): lignes.append("[--]  SIM7600 : Non detecte")
+            else:
+                qualite = port_serie.lire_qualite_signal()
+                lignes.append(f"[OK]  SIM7600 : Detecte | Qualité signal : {qualite}")
+            continue
+
+        indicateur = "[OK]" if ok else "[--]"
+        etat = "Detecte" if ok else "Non detecte"
+        lignes.append(f"{indicateur}  {device} : {etat}")
+    texte = "\n".join(lignes)
+    root.after(0, lambda t=texte: lbl_other.config(text=t))

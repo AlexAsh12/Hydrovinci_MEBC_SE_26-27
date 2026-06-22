@@ -83,10 +83,10 @@ def display_bms_status(data):
 
 async def monitor_bms(bms_id, bms_conf, interval):
     """Tâche asynchrone pour un seul BMS"""
-    print(f"🚀 Démarrage {bms_id} sur {bms_conf['port']}")
+    print(f"Démarrage {bms_id} sur {bms_conf['port']}")
     
-    # --- NOUVEAU CODE : Variable d'état ---
     erreur_affichee = False
+    etait_connecte = False
 
     while True:
         try:
@@ -105,37 +105,48 @@ async def monitor_bms(bms_id, bms_conf, interval):
                             last_reports.get("BMS_1"),
                             last_reports.get("BMS_2")
                         )
-                        # --- NOUVEAU CODE : Reset de l'état ---
+
+                        # Envoi des donnees au dashboard sol via MQTT
+                        try:
+                            mqtt_publisher.publish_bms(data)
+                        except Exception:
+                            pass  # Le BMS ne s'arrete jamais a cause du MQTT
+
                         if erreur_affichee:
-                            print(f"\u2705 {bms_id} reconnecté.")
+                            print(f"{bms_id} reconnecte.")
                             erreur_affichee = False
-                        
-                        # Signaler la connexion au dashboard
-                        if not bms_connected[bms_id]:
+
+                        # Signaler la connexion sur l'interface du pilote
+                        if not etait_connecte:
+                            etait_connecte = True
+                            interface_bateau.update_statut(bms_id, True)
+                            # Signaler la connexion au dashboard sol
                             bms_connected[bms_id] = True
                             try:
                                 mqtt_publisher.publish_bms_connection(bms_connected)
                             except Exception:
                                 pass
 
-                        # Envoi des données au dashboard via MQTT
-                        try:
-                            mqtt_publisher.publish_bms(data)
-                        except Exception:
-                            pass  # Le BMS ne s'arrête JAMAIS à cause du MQTT
                 else:
-                    # --- MODIFICATION : Filtrage du spam ---
                     if not erreur_affichee:
-                        print(f"❌ {bms_id} ({bms_conf['port']}): Pas de réponse")
+                        print(f"{bms_id} ({bms_conf['port']}): Pas de reponse")
                         erreur_affichee = True
+                    if etait_connecte:
+                        etait_connecte = False
+                        interface_bateau.update_statut(bms_id, False)
+                        bms_connected[bms_id] = False
+                        try:
+                            mqtt_publisher.publish_bms_connection(bms_connected)
+                        except Exception:
+                            pass
 
         except Exception as e:
-            # --- MODIFICATION : Filtrage du spam ---
             if not erreur_affichee:
-                print(f"\u26a0\ufe0f Erreur sur {bms_id}: {e}")
+                print(f"Erreur sur {bms_id}: {e}")
                 erreur_affichee = True
-            # Signaler la déconnexion au dashboard
-            if bms_connected[bms_id]:
+            if etait_connecte:
+                etait_connecte = False
+                interface_bateau.update_statut(bms_id, False)
                 bms_connected[bms_id] = False
                 try:
                     mqtt_publisher.publish_bms_connection(bms_connected)
@@ -143,24 +154,3 @@ async def monitor_bms(bms_id, bms_conf, interval):
                     pass
 
         await asyncio.sleep(interval)
-
-async def main():
-    print("="*60)
-    print("MONACO ENERGY BOAT CHALLENGE 2026 - DUAL BMS MONITOR")
-    print("="*60)
-
-    interval = config.INTERVALLE_BMS
-
-    # Lancement des deux monitorings en parallèle
-    tasks = [
-        monitor_bms("BMS_1", config.BMS_CONFIG["BMS_1"], interval),
-        monitor_bms("BMS_2", config.BMS_CONFIG["BMS_2"], interval)
-    ]
-
-    await asyncio.gather(*tasks)
-
-if __name__ == "__main__":
-    try:
-        asyncio.run(main())
-    except KeyboardInterrupt:
-        print("\nArrêt du monitoring.")
