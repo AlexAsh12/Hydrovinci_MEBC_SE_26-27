@@ -1,79 +1,82 @@
-﻿# MEBC Ground Dashboard
+# MEBC Ground Dashboard
 
-Interface web de supervision du BMS (Battery Management System) du voilier MEBC.
-Affiche en temps r├®el l'├®tat de la batterie, les tensions des cellules, la puissance ├®lectrique et la navigation.
-
----
-
-## Pr├®requis
-
-- [Docker Desktop](https://www.docker.com/products/docker-desktop/) install├® et d├®marr├®
-- Le fichier `client.json` fourni par Rapha├½l
-- Votre adresse Gmail communiqu├®e ├á Rapha├½l (voir section Google Drive ci-dessous)
+Interface web de supervision du BMS (Battery Management System) du bateau MEBC.
+Affiche en temps reel l'etat de la batterie, les tensions des cellules, la puissance
+electrique, la navigation, les statuts (BMS / SIM7600 / MQTT) et la console du Pi.
 
 ---
 
-## Installation (premi├¿re fois)
+## Prerequis
 
-### 1. R├®cup├®rer les fichiers
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) installe et demarre
+- (Google Drive, optionnel) le fichier `client.json` fourni par Raphael
+- (Google Drive, optionnel) votre adresse Gmail communiquee a Raphael
 
-T├®l├®chargez ou clonez ce dossier `Ground/` sur votre machine.
+---
 
-### 2. Placer le fichier client.json
+## Installation (premiere fois)
 
-Cr├®ez un dossier `credentials/` ├á la racine du projet et placez-y le fichier `client.json` fourni par Rapha├½l :
+### 1. Recuperer les fichiers
 
-```
-Ground/
-Ôö£ÔöÇÔöÇ credentials/
-Ôöé   ÔööÔöÇÔöÇ client.json     ÔåÉ fichier fourni par Rapha├½l
-Ôö£ÔöÇÔöÇ src/
-Ôö£ÔöÇÔöÇ Dockerfile
-ÔööÔöÇÔöÇ docker-compose.yml
-```
+Cloner le depot et se placer dans le dossier `ground/`.
 
-### 3. Construire l'image Docker
+### 2. Construire l'image Docker
 
 ```bash
 docker compose build
 ```
 
-### 4. S'authentifier sur Google Drive (obligatoire pour la synchro des donn├®es)
+### 3. (Optionnel) S'authentifier sur Google Drive
 
-> **Important** : avant de faire cette ├®tape, envoyez votre adresse Gmail ├á Rapha├½l
-> afin qu'il vous ajoute en tant qu'utilisateur de test sur l'application OAuth.
-> Sans cela, Google refusera la connexion.
+Seulement si vous voulez la synchro automatique des CSV sur le Drive de l'asso.
 
-Une fois que Rapha├½l vous a confirm├® l'ajout, lancez :
+> **Important** : avant cette etape, envoyez votre adresse Gmail a Raphael afin
+> qu'il vous ajoute comme utilisateur de test sur l'application OAuth. Sans cela,
+> Google refuse la connexion.
+
+Placer le `client.json` fourni dans un dossier `credentials/` :
+
+```
+ground/
+|-- credentials/
+|   |-- client.json     <- fourni par Raphael
+|-- src/
+|-- Dockerfile
+|-- docker-compose.yml
+```
+
+Puis lancer l'authentification (une seule fois par machine) :
 
 ```bash
 docker compose --profile auth run --service-ports auth
 ```
 
-Un lien s'affiche dans le terminal. Copiez-le et ouvrez-le dans votre navigateur.
-Connectez-vous avec votre compte Google ÔåÆ autorisez l'acc├¿s ÔåÆ la page se ferme automatiquement.
+Un lien s'affiche dans le terminal. Le copier dans le navigateur, se connecter avec
+le compte Google autorise, accepter l'acces : la page se ferme. Le fichier
+`credentials/token.json` est cree.
 
-Le fichier `credentials/token.json` est cr├®├®. **Cette ├®tape n'est ├á faire qu'une seule fois par machine.**
+Sans Google Drive, le dashboard fonctionne quand meme : les CSV restent en local
+dans `data/sessions/`.
 
 ---
 
 ## Utilisation quotidienne
 
-### D├®marrer le dashboard
+### Demarrer le dashboard
 
 ```bash
 docker compose up -d
 ```
 
-Ouvrez ensuite [http://localhost:8050](http://localhost:8050) dans votre navigateur.
+Ouvrir ensuite [http://localhost:8050](http://localhost:8050).
 
-### Arr├¬ter le dashboard
+### Arreter le dashboard
 
 ```bash
 docker compose down
 ```
 
-### Voir les logs en direct
+### Voir les logs du conteneur
 
 ```bash
 docker compose logs -f dashboard
@@ -81,61 +84,76 @@ docker compose logs -f dashboard
 
 ---
 
-## Structure des donn├®es
+## Ce que montre le dashboard
 
-Les donn├®es sont sauvegard├®es localement dans le dossier `data/` :
+- **Cartes principales** : SOC, tension/courant/puissance, vitesse, autonomie, temperature, alarmes
+- **Tension par cellule** : barres des 15 cellules + repartition + historique de capacite
+- **Zone Statuts** : BMS_1, BMS_2, SIM7600, MQTT (pastille verte = connecte, grise = non)
+- **Terminal Pi** : la console du Pi en direct (les erreurs apparaissent en rouge,
+  la ligne la plus recente en haut)
+
+---
+
+## Structure des donnees
+
+Les donnees sont sauvegardees localement dans le dossier `data/` :
 
 ```
 data/
-Ôö£ÔöÇÔöÇ sessions/
-Ôöé   ÔööÔöÇÔöÇ session_YYYY-MM-DD.csv   ÔåÉ une ligne par seconde
-Ôö£ÔöÇÔöÇ state.json                   ÔåÉ dernier ├®tat BMS connu
-ÔööÔöÇÔöÇ history.json                 ÔåÉ historique capacit├® r├®siduelle
+|-- sessions/
+|   |-- session_AAAA-MM-JJ.csv   <- une ligne toutes les 5 secondes
+|-- state.json                   <- dernier etat BMS connu
+|-- history.json                 <- historique capacite residuelle
 ```
 
-Les fichiers CSV sont aussi synchronis├®s automatiquement sur Google Drive toutes les 5 minutes
-(si `credentials/token.json` est pr├®sent).
+Si Google Drive est configure, les CSV sont aussi synchronises automatiquement
+toutes les 5 minutes.
 
 ---
 
-## Comment ├ºa fonctionne
+## Comment ca fonctionne
 
 ```
-BMS (embarqu├®)
-    Ôöé  publie sur MQTT (broker.hivemq.com)
-    Ôû╝
+Pi Zero (embarque)
+    |  publie sur MQTT (broker.hivemq.com)
+    v
 Ground Dashboard (Docker)
-    Ôö£ÔöÇÔöÇ transmission.py   ÔÇö re├ºoit les donn├®es MQTT et maintient l'├®tat en m├®moire
-    Ôö£ÔöÇÔöÇ data_logger.py    ÔÇö enregistre une ligne CSV par seconde + synchro Drive
-    Ôö£ÔöÇÔöÇ callbacks.py      ÔÇö Dash rafra├«chit l'interface toutes les secondes
-    ÔööÔöÇÔöÇ google_drive.py   ÔÇö upload le CSV du jour vers le Drive partag├®
+    |-- transmission.py   - recoit les donnees MQTT et maintient l'etat en memoire
+    |-- data_logger.py    - enregistre une ligne CSV toutes les 5 s + synchro Drive
+    |-- callbacks.py      - Dash rafraichit l'interface toutes les secondes
+    |-- layout.py         - structure de la page (cartes, statuts, terminal)
+    |-- google_drive.py   - upload le CSV du jour vers le Drive partage
 ```
 
-Le dashboard est une application [Dash](https://dash.plotly.com/) (Python) qui s'actualise toutes les **1 seconde**.
-Les donn├®es transitent par MQTT sur le broker public HiveMQ (`broker.hivemq.com:1883`).
+Le dashboard est une application [Dash](https://dash.plotly.com/) (Python) qui
+s'actualise toutes les **1 seconde**. Les donnees transitent par MQTT sur le broker
+public HiveMQ (`broker.hivemq.com:1883`). Point d'entree : `src/dashboard.py`.
 
 ---
 
-## Probl├¿mes fr├®quents
+## Problemes frequents
 
-**Le dashboard affiche "D├®connect├®"**
-ÔåÆ Le BMS n'envoie pas de donn├®es MQTT. V├®rifiez que l'embarqu├® est allum├® et connect├® ├á internet.
+**Le dashboard affiche "Deconnecte"**
+-> Le sol n'est pas connecte au broker MQTT. Verifier la connexion internet du PC.
+
+**Le terminal Pi reste vide**
+-> Le Pi n'est pas connecte au MQTT, ou il n'a rien affiche depuis la connexion.
 
 **`[drive] Erreur upload : invalid_grant`**
-ÔåÆ Votre token Google a expir├®. Relancez l'authentification :
+-> Le token Google a expire. Relancer l'authentification :
 
 ```bash
 rm credentials/token.json
 docker compose --profile auth run --service-ports auth
 ```
 
-**Le port 8050 est d├®j├á utilis├®**
-ÔåÆ Changez le port dans `docker-compose.yml` : remplacez `"8050:8050"` par ex. `"8051:8050"`,
-puis acc├®dez au dashboard sur [http://localhost:8051](http://localhost:8051).
+**Le port 8050 est deja utilise**
+-> Changer le port dans `docker-compose.yml` : remplacer `"8050:8050"` par
+`"8051:8050"`, puis acceder a [http://localhost:8051](http://localhost:8051).
 
 ---
 
-## Mettre ├á jour
+## Mettre a jour
 
 ```bash
 docker compose down
@@ -148,4 +166,5 @@ docker compose up -d
 
 ## Contact
 
-Pour tout probl├¿me ou pour ├¬tre ajout├® aux utilisateurs Google Drive : **raphaelraphaelmarques@gmail.com**
+Pour tout probleme ou pour etre ajoute aux utilisateurs Google Drive :
+**raphaelraphaelmarques@gmail.com**
