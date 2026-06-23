@@ -3,7 +3,7 @@ from dash import Output, Input, callback, html
 import plotly.graph_objects as go
 from network_monitor import get_net_state 
 
-# ÔöÇÔöÇÔöÇ Color helpers ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+# ─── Color helpers ────────────────────────────────────────────────────────────
 COLORS = {
     "bg":       "#0d1117",
     "surface":  "#161b22",
@@ -42,14 +42,14 @@ def cell_color(v, lo=3.15, hi=3.25):
 def fmt_autonomy(remaining_ah, current_a):
     """Return human-readable autonomy string."""
     if current_a >= 0:
-        return "Ôê× (charge)"
+        return "∞ (charge)"
     hours = remaining_ah / abs(current_a)
     h = int(hours)
     m = int((hours - h) * 60)
     return f"{h}h {m:02d}min"
 
 
-# ÔöÇÔöÇÔöÇ Callbacks ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+# ─── Callbacks ────────────────────────────────────────────────────────────────
 
 @callback(
     Output("conn-dot",       "className"),
@@ -65,22 +65,22 @@ def update_status(n):
 
     # MQTT
     cls   = "topbar-dot dot-on" if s["connected"] else "topbar-dot dot-off"
-    label = "Connect├®" if s["connected"] else "D├®connect├®"
-    ts    = f"Mis ├á jour : {s['last_update']}" if s["last_update"] else ""
+    label = "Connecté" if s["connected"] else "Déconnecté"
+    ts    = f"Mis à jour : {s['last_update']}" if s["last_update"] else ""
 
-    # R├®seau
+    # Réseau
     icons = {
-        "ok":       ("ÔùÅ R├®seau OK",       "#3fb950"),
-        "unstable": ("Ôû▓ R├®seau instable", "#d29922"),
-        "offline":  ("Ô£ò Hors ligne",      "#f85149"),
-        "checking": ("ÔÇª V├®rification",    "#8b949e"),
+        "ok":       ("● Réseau OK",       "#3fb950"),
+        "unstable": ("▲ Réseau instable", "#d29922"),
+        "offline":  ("✕ Hors ligne",      "#f85149"),
+        "checking": ("… Vérification",    "#8b949e"),
     }
     net_label, net_color = icons.get(net["status"], icons["checking"])
 
     if net["latency_avg"] and net["status"] != "offline":
-        net_label += f" ┬À {net['latency_avg']} ms"
+        net_label += f" · {net['latency_avg']} ms"
     if net["loss_pct"] and net["status"] == "unstable":
-        net_label += f" ┬À {net['loss_pct']}% perte"
+        net_label += f" · {net['loss_pct']}% perte"
 
     net_style = {"color": net_color, "fontSize": "12px", "marginRight": "16px"}
 
@@ -195,11 +195,11 @@ def update_elec(n):
     elif v < 46:
         v_badge, v_cls = "Bas", "badge badge-warn"
     else:
-        v_badge, v_cls = "├ëlev├®", "badge badge-warn"
+        v_badge, v_cls = "Élevé", "badge badge-warn"
 
     # current badge
     if i < 0:
-        i_badge, i_cls = "D├®charge", "badge badge-blue"
+        i_badge, i_cls = "Décharge", "badge badge-blue"
     else:
         i_badge, i_cls = "Charge", "badge badge-ok"
 
@@ -271,7 +271,7 @@ def update_cells(n):
     if cells:
         y_min = min(3.0, min(cells) - 0.05)
         y_max = max(3.4, max(cells) + 0.05)
-        delta = f"min {min(cells):.3f} V ┬À max {max(cells):.3f} V ┬À ╬ö {max(cells)-min(cells):.3f} V"
+        delta = f"min {min(cells):.3f} V · max {max(cells):.3f} V · Δ {max(cells)-min(cells):.3f} V"
     else:
         y_min, y_max = 3.0, 3.4
         delta = ""
@@ -344,7 +344,7 @@ def update_cap_history(n):
         line=dict(color=COLORS["blue"], width=2),
         fill="tozeroy",
         fillcolor="rgba(56,139,253,0.08)",
-        hovertemplate="%{x} ┬À %{y:.1f} Ah<extra></extra>",
+        hovertemplate="%{x} · %{y:.1f} Ah<extra></extra>",
     ))
     fig.update_layout(
         **PLOT_LAYOUT,
@@ -356,5 +356,5 @@ def update_cap_history(n):
             ticksuffix=" Ah",
         ),
     )
-    hint = f"{times[0]} ÔåÆ {times[-1]}" if len(times) > 1 else ""
+    hint = f"{times[0]} → {times[-1]}" if len(times) > 1 else ""
     return fig, hint

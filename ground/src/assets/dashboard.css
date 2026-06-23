@@ -9,7 +9,7 @@ body {
     min-height: 100vh;
 }
 
-/* ÔöÇÔöÇ Root ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ */
+/* ── Root ──────────────────────────────────────────────────────────────────── */
 .dash-root {
     max-width: 1400px;
     margin: 0 auto;
@@ -19,7 +19,7 @@ body {
     gap: 12px;
 }
 
-/* ÔöÇÔöÇ Top bar ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ */
+/* ── Top bar ───────────────────────────────────────────────────────────────── */
 .topbar {
     display: flex;
     align-items: center;
@@ -37,12 +37,12 @@ body {
 .dot-err      { background: #f85149; box-shadow: 0 0 6px #f8514988; }
 .topbar-right { display: flex; align-items: center; gap: 10px; }
 
-/* ÔöÇÔöÇ Grid rows ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ */
+/* ── Grid rows ─────────────────────────────────────────────────────────────── */
 .row { display: grid; gap: 12px; }
 .row-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .row-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 
-/* ÔöÇÔöÇ Cards ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ */
+/* ── Cards ─────────────────────────────────────────────────────────────────── */
 .card {
     background: #161b22;
     border: 0.5px solid #21262d;
@@ -67,14 +67,14 @@ body {
 .card-htitle { font-size: 12px; font-weight: 500; color: #8b949e; letter-spacing: .03em; }
 .card-hint   { font-size: 11px; color: #484f58; font-family: 'IBM Plex Mono', monospace; }
 
-/* ÔöÇÔöÇ SOC card ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ */
+/* ── SOC card ──────────────────────────────────────────────────────────────── */
 .card-soc    { display: flex; flex-direction: column; align-items: center; }
 .soc-graph   { width: 100% !important; }
 .soc-stats   { display: flex; align-items: center; gap: 16px; margin-top: 6px; }
 .soc-stat    { text-align: center; }
 .soc-divider { width: 0.5px; height: 28px; background: #21262d; }
 
-/* ÔöÇÔöÇ Value typography ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ */
+/* ── Value typography ──────────────────────────────────────────────────────── */
 .big-val  { font-family: 'IBM Plex Mono', monospace; font-size: 28px; font-weight: 500; color: #e6edf3; line-height: 1; }
 .med-val  { font-family: 'IBM Plex Mono', monospace; font-size: 22px; font-weight: 500; color: #e6edf3; }
 .stat-val { font-family: 'IBM Plex Mono', monospace; font-size: 16px; font-weight: 500; color: #e6edf3; }
@@ -82,26 +82,26 @@ body {
 .stat-unit{ font-size: 12px; color: #484f58; }
 .sub-hint { font-size: 11px; color: #484f58; margin-top: 3px; }
 
-/* ÔöÇÔöÇ Electrical / nav layout ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ */
+/* ── Electrical / nav layout ────────────────────────────────────────────────── */
 .elec-row    { display: flex; flex-direction: column; gap: 10px; }
 .elec-item   { display: flex; flex-direction: column; }
 .elec-val-row{ display: flex; align-items: baseline; gap: 4px; flex-wrap: wrap; margin-top: 2px; }
 .nav-bottom  { display: flex; gap: 20px; }
 .sep         { height: 0.5px; background: #21262d; }
 
-/* ÔöÇÔöÇ Badges ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ */
+/* ── Badges ─────────────────────────────────────────────────────────────────── */
 .badge      { display: inline-block; font-size: 10px; padding: 2px 7px; border-radius: 5px; font-weight: 500; letter-spacing: .03em; }
 .badge-ok   { background: #1a3a1f; color: #3fb950; }
 .badge-warn { background: #3a2a0a; color: #d29922; }
 .badge-err  { background: #3a1010; color: #f85149; }
 .badge-blue { background: #0d2a4a; color: #388bfd; }
 
-/* ÔöÇÔöÇ Legend ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ */
+/* ── Legend ──────────────────────────────────────────────────────────────────── */
 .legend      { display: flex; gap: 16px; justify-content: flex-end; margin-top: 6px; }
 .legend-item { font-size: 11px; color: #484f58; display: flex; align-items: center; gap: 5px; }
 .legend-dot  { display: inline-block; width: 9px; height: 9px; border-radius: 2px; }
 
-/* ÔöÇÔöÇ Plotly overrides ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ */
+/* ── Plotly overrides ────────────────────────────────────────────────────────── */
 .js-plotly-plot .plotly .modebar { display: none !important; }
 
 /* -- Statuts systeme + Terminal Pi ------------------------------------------ */

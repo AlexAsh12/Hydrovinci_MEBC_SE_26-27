@@ -1,4 +1,4 @@
-﻿import os
+import os
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
 from google.oauth2.credentials import Credentials
@@ -15,7 +15,7 @@ SCOPES      = ["https://www.googleapis.com/auth/drive.file"]
 def _get_service():
     if not os.path.exists(TOKEN_FILE):
         raise RuntimeError(
-            "credentials/token.json introuvable ÔÇö "
+            "credentials/token.json introuvable — "
             "lancez 'docker compose --profile auth run --service-ports auth' pour vous authentifier"
         )
 
@@ -28,7 +28,7 @@ def _get_service():
                 f.write(creds.to_json())
         else:
             raise RuntimeError(
-                "Token Google expir├® et non renouvelable ÔÇö "
+                "Token Google expiré et non renouvelable — "
                 "relancez l'authentification avec 'docker compose --profile auth run --service-ports auth'"
             )
 
@@ -36,7 +36,7 @@ def _get_service():
 
 
 def upload_file(local_path: str):
-    """Upload ou met ├á jour un fichier CSV sur Drive."""
+    """Upload ou met à jour un fichier CSV sur Drive."""
     filename = os.path.basename(local_path)
 
     try:
@@ -56,7 +56,7 @@ def upload_file(local_path: str):
                 fileId=file_id,
                 media_body=media,
             ).execute()
-            print(f"[drive] Mis ├á jour : {filename}")
+            print(f"[drive] Mis à jour : {filename}")
         else:
             metadata = {
                 "name":    filename,
@@ -67,7 +67,7 @@ def upload_file(local_path: str):
                 media_body=media,
                 fields="id",
             ).execute()
-            print(f"[drive] Cr├®├® : {filename}")
+            print(f"[drive] Créé : {filename}")
 
     except Exception as e:
         print(f"[drive] Erreur upload : {e}")

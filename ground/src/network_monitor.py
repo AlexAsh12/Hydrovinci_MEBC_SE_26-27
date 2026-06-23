@@ -1,24 +1,24 @@
-﻿import threading
+import threading
 import time
 import socket
 import statistics
 
-# ÔöÇÔöÇÔöÇ ├ëtat partag├® ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+# ─── État partagé ─────────────────────────────────────────────────────────────
 _lock = threading.Lock()
 
 net_state = {
     "status":   "checking",   # "ok" | "unstable" | "offline" | "checking"
-    "latency_ms": None,        # derni├¿re latence en ms
+    "latency_ms": None,        # dernière latence en ms
     "latency_avg": None,       # moyenne glissante
-    "loss_pct":  0,            # % de paquets perdus (fen├¬tre glissante)
+    "loss_pct":  0,            # % de paquets perdus (fenêtre glissante)
     "last_check": None,
 }
 
-_latency_history = []   # fen├¬tre des 10 derni├¿res mesures
+_latency_history = []   # fenêtre des 10 dernières mesures
 WINDOW = 10
 CHECK_INTERVAL = 3      # secondes entre chaque sonde
 
-# H├┤tes ├á sonder (on essaie dans l'ordre)
+# Hôtes à sonder (on essaie dans l'ordre)
 PROBE_HOSTS = [
     ("8.8.8.8", 53),        # Google DNS
     ("1.1.1.1", 53),        # Cloudflare DNS
@@ -32,8 +32,8 @@ def get_net_state():
 
 
 def _probe() -> float | None:
-    """Tente une connexion TCP sur les h├┤tes de sonde.
-    Retourne la latence en ms, ou None si ├®chec."""
+    """Tente une connexion TCP sur les hôtes de sonde.
+    Retourne la latence en ms, ou None si échec."""
     for host, port in PROBE_HOSTS:
         try:
             start = time.perf_counter()

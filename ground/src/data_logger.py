@@ -45,7 +45,7 @@ def _log_loop():
 
             path = _current_filepath()
 
-            # cr├®e le fichier avec headers s'il n'existe pas
+            # crée le fichier avec headers s'il n'existe pas
             write_header = not os.path.exists(path)
 
             with open(path, "a", newline="") as f:
@@ -76,18 +76,18 @@ def _log_loop():
 
 
 def _upload_loop():
-    """Synchro p├®riodique vers Drive ÔÇö ind├®pendante du logging."""
+    """Synchro périodique vers Drive — indépendante du logging."""
     if not _drive_available:
-        print("[logger] Upload Drive d├®sactiv├® (module indisponible).")
+        print("[logger] Upload Drive désactivé (module indisponible).")
         return
     while True:
         time.sleep(UPLOAD_INTERVAL)
         path = _current_filepath()
         if os.path.exists(path):
             _upload_file(path)
-            print(f"[logger] Upload├® : {path}")
+            print(f"[logger] Uploadé : {path}")
 
 
-# d├®marre les deux threads au chargement
+# démarre les deux threads au chargement
 threading.Thread(target=_log_loop,    daemon=True).start()
 threading.Thread(target=_upload_loop, daemon=True).start()

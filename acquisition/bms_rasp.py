@@ -78,8 +78,8 @@ def display_bms_status(data):
     #print(f"[{name}] {data['timestamp']} | {data['voltage']:.1f}V | {data['current_a']:.1f}A | SOC: {data['soc']}% | Delta: {delta:.0f}mV")
 
     # Alertes rapides
-    if delta > 100: print(f"  ⚠️ ALERT [{name}]: Déséquilibre important !")
-    if v_min < 3.0: print(f"  ⚠️ ALERT [{name}]: Tension basse !")
+    if delta > 100: print(f"  ALERT [{name}]: Déséquilibre important !")
+    if v_min < 3.0: print(f"  ALERT [{name}]: Tension basse !")
 
 async def monitor_bms(bms_id, bms_conf, interval):
     """Tâche asynchrone pour un seul BMS"""

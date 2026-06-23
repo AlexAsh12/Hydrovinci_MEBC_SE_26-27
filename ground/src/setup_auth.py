@@ -1,6 +1,6 @@
-﻿"""
-Authentification Google Drive ÔÇö ├á lancer une seule fois par machine.
-Voir README.md pour les instructions compl├¿tes.
+"""
+Authentification Google Drive — à lancer une seule fois par machine.
+Voir README.md pour les instructions complètes.
 """
 import os
 import sys
@@ -15,25 +15,25 @@ SCOPES      = ["https://www.googleapis.com/auth/drive.file"]
 
 def main():
     if not os.path.exists(CLIENT_FILE):
-        print("Ô£ù  credentials/client.json introuvable.")
-        print("   Demandez le fichier client.json ├á Rapha├½l et placez-le dans le dossier credentials/")
+        print("✗  credentials/client.json introuvable.")
+        print("   Demandez le fichier client.json à Raphaël et placez-le dans le dossier credentials/")
         sys.exit(1)
 
     print("=" * 60)
-    print("  Authentification Google Drive ÔÇö MEBC Ground Dashboard")
+    print("  Authentification Google Drive — MEBC Ground Dashboard")
     print("=" * 60)
     print()
     print("1. Un lien va s'afficher ci-dessous.")
     print("2. Copiez-le et ouvrez-le dans votre navigateur.")
-    print("3. Connectez-vous avec votre compte Google et autorisez l'acc├¿s.")
-    print("4. Votre navigateur sera redirig├® vers http://localhost:8080")
-    print("   ÔåÆ la fen├¬tre se fermera automatiquement, c'est normal.")
+    print("3. Connectez-vous avec votre compte Google et autorisez l'accès.")
+    print("4. Votre navigateur sera redirigé vers http://localhost:8080")
+    print("   → la fenêtre se fermera automatiquement, c'est normal.")
     print()
 
     flow = InstalledAppFlow.from_client_secrets_file(CLIENT_FILE, SCOPES)
 
     # host='0.0.0.0' est obligatoire en Docker pour que le port-forwarding
-    # fonctionne (le navigateur de l'h├┤te doit atteindre le serveur du conteneur)
+    # fonctionne (le navigateur de l'hôte doit atteindre le serveur du conteneur)
     creds = flow.run_local_server(host="0.0.0.0", port=8080, open_browser=False)
 
     os.makedirs(os.path.dirname(TOKEN_FILE), exist_ok=True)
@@ -41,7 +41,7 @@ def main():
         f.write(creds.to_json())
 
     print()
-    print("Ô£ô  Authentification r├®ussie ! token.json sauvegard├® dans credentials/")
+    print("✓  Authentification réussie ! token.json sauvegardé dans credentials/")
     print()
     print("Vous pouvez maintenant lancer le dashboard :")
     print("   docker compose up -d")

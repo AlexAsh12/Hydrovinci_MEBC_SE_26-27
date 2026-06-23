@@ -6,14 +6,14 @@ import datetime
 from pathlib import Path
 import paho.mqtt.client as mqtt
 
-# ÔöÇÔöÇÔöÇ Persistence paths ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+# ─── Persistence paths ────────────────────────────────────────────────────────
 _BASE_DIR   = Path(__file__).resolve().parent.parent
 _DATA_DIR   = _BASE_DIR / "data"
 _DATA_DIR.mkdir(exist_ok=True)
 _STATE_FILE   = _DATA_DIR / "state.json"
 _HISTORY_FILE = _DATA_DIR / "history.json"
 
-# ÔöÇÔöÇÔöÇ Topics ÔÇö adapte ├á ta nomenclature ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+# ─── Topics — adapte à ta nomenclature ───────────────────────────────────────
 TOPICS = {
     "cell_voltages":  "mebc_se/bms/cells/voltages",   # JSON list [3.24, 3.22, ...]
     "pack_voltage":   "mebc_se/bms/pack/voltage",      # float "48.6"
@@ -30,7 +30,7 @@ TOPICS = {
     "log":            "mebc_se/log",                   # texte brut (ligne de console Pi)
 }
 
-# ÔöÇÔöÇÔöÇ ├ëtat partag├® ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+# ─── État partagé ─────────────────────────────────────────────────────────────
 _lock = threading.Lock()
 
 bms_state = {
@@ -58,7 +58,7 @@ log_lines = []
 MAX_LOG = 300
 
 
-# ÔöÇÔöÇÔöÇ Persistence helpers ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+# ─── Persistence helpers ──────────────────────────────────────────────────────
 
 def _save_state():
     try:
@@ -129,14 +129,14 @@ class MQTTClient:
         if rc == 0:
             for topic in TOPICS.values():
                 client.subscribe(topic, qos=1)
-            print(f"Ô£ô Connect├® ├á {self.broker}, abonn├® ├á {len(TOPICS)} topics")
+            print(f"✓ Connecté à {self.broker}, abonné à {len(TOPICS)} topics")
         else:
-            print(f"Ô£ù ├ëchec connexion, code: {rc}")
+            print(f"✗ Échec connexion, code: {rc}")
 
     def _on_disconnect(self, client, userdata, flags, rc, properties=None):
         with _lock:
             bms_state["connected"] = False
-        print("Ô£ù D├®connect├® du broker")
+        print("✗ Déconnecté du broker")
 
     def _on_message(self, client, userdata, message):
         topic = message.topic
@@ -186,22 +186,22 @@ class MQTTClient:
         if history_updated:
             _save_history()
 
-        print(f"Ô£ô [{key}] {value}")
+        print(f"✓ [{key}] {value}")
 
     def publish(self, topic: str, data: dict):
         payload = json.dumps(data)
         self.client.publish(topic, payload, qos=1)
-        print(f"Ô£ô Envoy├® sur '{topic}' : {data}")
+        print(f"✓ Envoyé sur '{topic}' : {data}")
 
     def connect_background(self):
-        """Connexion non-bloquante ÔÇö tourne en thread daemon."""
+        """Connexion non-bloquante — tourne en thread daemon."""
         try:
             self.client.connect(self.broker, self.port, keepalive=60)
             self.client.loop_start()
         except Exception as e:
-            print(f"[MQTT] Connexion impossible : {e} ÔÇö donn├®es de d├®mo actives")
+            print(f"[MQTT] Connexion impossible : {e} — données de démo actives")
 
 
-# ÔöÇÔöÇÔöÇ Instance globale lanc├®e au chargement du module ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+# ─── Instance globale lancée au chargement du module ─────────────────────────
 mqtt_client = MQTTClient("broker.hivemq.com")
 mqtt_client.connect_background()

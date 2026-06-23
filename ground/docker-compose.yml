@@ -1,6 +1,6 @@
-﻿services:
+services:
 
-  # ÔöÇÔöÇ Dashboard principal ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+  # ── Dashboard principal ────────────────────────────────────────────────────
   dashboard:
     build: .
     image: mebc-ground-dashboard
@@ -12,7 +12,7 @@
       - ./credentials:/app/credentials # token.json Google Drive
     restart: unless-stopped
 
-  # ÔöÇÔöÇ Authentification Google Drive (├á lancer une seule fois) ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+  # ── Authentification Google Drive (à lancer une seule fois) ───────────────
   # Usage : docker compose --profile auth run --service-ports auth
   auth:
     build: .

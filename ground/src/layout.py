@@ -23,8 +23,7 @@ def build_layout():
         children=[
             dcc.Interval(id="interval", interval=REFRESH_MS, n_intervals=0),
 
-            # ÔöÇÔöÇ Top bar ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
-            # ── Top bar ──────────────────────────────────────────────────────────
+            # --- Top bar ---
             html.Div(className="topbar", children=[
                 html.Div(className="topbar-left", children=[
                     html.Div(className="topbar-dot", id="conn-dot"),
@@ -37,7 +36,7 @@ def build_layout():
                 ]),
             ]),
 
-            # ÔöÇÔöÇ Row 1 : SOC ┬À ├ëlectrique ┬À Navigation ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+            # --- Row 1 : SOC | Electrique | Navigation ---
             html.Div(className="row row-3", children=[
 
                 # SOC card
@@ -50,7 +49,7 @@ def build_layout():
                     ]),
                     html.Div(className="soc-stats", children=[
                         html.Div(className="soc-stat", children=[
-                            html.Div("Capacit├®", className="card-label"),
+                            html.Div("Capacité", className="card-label"),
                             html.Span(id="cap-total", className="stat-val"),
                             html.Span(" Ah", className="stat-unit"),
                         ]),
@@ -65,7 +64,7 @@ def build_layout():
 
                 # Electrical card
                 html.Div(className="card", children=[
-                    html.Div("├ëlectrique", className="card-label"),
+                    html.Div("Électrique", className="card-label"),
                     html.Div(className="elec-row", children=[
                         html.Div(className="elec-item", children=[
                             html.Div("Tension globale", className="card-label"),
@@ -97,7 +96,7 @@ def build_layout():
 
                 # Navigation card
                 html.Div(className="card", children=[
-                    html.Div("Navigation & ├®tat", className="card-label"),
+                    html.Div("Navigation & état", className="card-label"),
                     html.Div(className="elec-row", children=[
                         html.Div(className="elec-item", children=[
                             html.Div("Vitesse", className="card-label"),
@@ -108,9 +107,9 @@ def build_layout():
                         ]),
                         html.Div(className="sep"),
                         html.Div(className="elec-item", children=[
-                            html.Div("Autonomie estim├®e", className="card-label"),
+                            html.Div("Autonomie estimée", className="card-label"),
                             html.Span(id="autonomy-val", className="big-val"),
-                            html.Div("├á vitesse constante", className="sub-hint"),
+                            html.Div("à vitesse constante", className="sub-hint"),
                         ]),
                         html.Div(className="sep"),
                         html.Div(className="nav-bottom", children=[
@@ -118,7 +117,7 @@ def build_layout():
                                 html.Div("Temp. max", className="card-label"),
                                 html.Div(className="elec-val-row", children=[
                                     html.Span(id="temp-val", className="med-val"),
-                                    html.Span(" ┬░C", className="big-unit"),
+                                    html.Span(" °C", className="big-unit"),
                                     html.Span(id="temp-badge", className="badge"),
                                 ]),
                             ]),
@@ -134,10 +133,10 @@ def build_layout():
                 ]),
             ]),
 
-            # ÔöÇÔöÇ Row 2 : Cell voltages bar chart ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+            # --- Row 2 : Cell voltages bar chart ---
             html.Div(className="card", children=[
                 html.Div(className="card-header", children=[
-                    html.Span("Tension par cellule ÔÇö 15 cellules", className="card-htitle"),
+                    html.Span("Tension par cellule — 15 cellules", className="card-htitle"),
                     html.Span(id="cell-delta", className="card-hint"),
                 ]),
                 dcc.Graph(id="cell-bar", figure=_EMPTY_FIG, config={"displayModeBar": False},
@@ -145,7 +144,7 @@ def build_layout():
                 html.Div(className="legend", children=[
                     html.Span(className="legend-item", children=[
                         html.Span(className="legend-dot", style={"background": "#3B6D11"}),
-                        "├ëlev├®",
+                        "Élevé",
                     ]),
                     html.Span(className="legend-item", children=[
                         html.Span(className="legend-dot", style={"background": "#97C459"}),
@@ -162,18 +161,18 @@ def build_layout():
                 ]),
             ]),
 
-            # ÔöÇÔöÇ Row 3 : Pie + Capacity history ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+            # --- Row 3 : Pie + Capacity history ---
             html.Div(className="row row-2", children=[
                 html.Div(className="card", children=[
                     html.Div(className="card-header", children=[
-                        html.Span("R├®partition des cellules", className="card-htitle"),
+                        html.Span("Répartition des cellules", className="card-htitle"),
                     ]),
                     dcc.Graph(id="cell-pie", figure=_EMPTY_FIG, config={"displayModeBar": False},
                               style={"height": "220px"}),
                 ]),
                 html.Div(className="card", children=[
                     html.Div(className="card-header", children=[
-                        html.Span("Capacit├® r├®siduelle", className="card-htitle"),
+                        html.Span("Capacité résiduelle", className="card-htitle"),
                         html.Span(id="history-range", className="card-hint"),
                     ]),
                     dcc.Graph(id="cap-history", figure=_EMPTY_FIG, config={"displayModeBar": False},
@@ -181,11 +180,11 @@ def build_layout():
                 ]),
             ]),
 
-            # -- Row 4 : Statuts systeme + Terminal Pi temps reel ----------------
+            # --- Row 4 : Statuts systeme + Terminal Pi temps reel ---
             html.Div(className="row row-term", children=[
                 html.Div(className="card", children=[
                     html.Div(className="card-header", children=[
-                        html.Span("Statuts systeme", className="card-htitle"),
+                        html.Span("Statuts système", className="card-htitle"),
                     ]),
                     html.Div(className="status-list", children=[
                         _status_row("BMS_1",   "st-bms1"),
@@ -201,7 +200,7 @@ def build_layout():
                 ]),
                 html.Div(className="card", children=[
                     html.Div(className="card-header", children=[
-                        html.Span("Terminal Pi - temps reel", className="card-htitle"),
+                        html.Span("Terminal Pi — temps réel", className="card-htitle"),
                         html.Span(id="term-count", className="card-hint"),
                     ]),
                     html.Div(id="terminal", className="terminal"),
