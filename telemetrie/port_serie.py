@@ -166,10 +166,22 @@ def diagnostic_sim():
         print(f"Diagnostic impossible : {e}")
     print("=" * 40)
 
-def lire_qualite_signal():
-    #retourne uniquement la valeur de AT+CSQ (ex: "14,99"), ou None si indisponible
-    if not(ser and ser.is_open):
-        return None
+# Cache de la derniere qualite signal connue (valeur de AT+CSQ, ex: "14,99").
+# La boucle SMS la met a jour via rafraichir_qualite_signal() (qui fait l'AT+CSQ).
+# L'interface, elle, lit juste cette valeur via lire_qualite_signal() : aucune
+# commande serie, donc lecture instantanee qui ne bloque jamais (important quand
+# le MQTT reconnecte en boucle sur une 4G faible).
+_qualite_signal = None
+
+
+def rafraichir_qualite_signal():
+    """Demande la qualite du signal (AT+CSQ) au modem et la stocke dans le cache.
+    A appeler regulierement depuis la boucle SMS."""
+    global _qualite_signal  # on va modifier la variable du module, pas une locale
+
+    if not (ser and ser.is_open):
+        _qualite_signal = None
+        return
 
     with sim_lock:
         reponse = envoyer_commande("AT+CSQ", attente=0.5, silencieux=True)
@@ -178,6 +190,13 @@ def lire_qualite_signal():
     #   AT+CSQ / +CSQ: 14,99 / OK
     # On ne garde que la valeur apres "+CSQ:".
     if "+CSQ:" in reponse:
-        return reponse.split("+CSQ:")[1].split()[0]
-    return None
+        _qualite_signal = reponse.split("+CSQ:")[1].split()[0]
+    else:
+        _qualite_signal = None
+
+
+def lire_qualite_signal():
+    """Retourne la derniere qualite signal connue (depuis le cache).
+    Aucune commande serie : instantane, ne bloque jamais l'appelant."""
+    return _qualite_signal
     

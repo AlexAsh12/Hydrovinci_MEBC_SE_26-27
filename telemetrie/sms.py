@@ -100,6 +100,10 @@ def lire_sms():
                 finally:
                     port_serie.ser.timeout = old_timeout
 
+            # Lecture de la qualite du signal (AT+CSQ) -> stockee dans le cache de port_serie.
+            # L'interface lira cette valeur sans refaire de commande serie.
+            port_serie.rafraichir_qualite_signal()
+
             interface_bateau.update_statut("SIM7600", True)  # Le modem est present, meme si aucun SMS n'est recu
             
             a_lu_des_sms = False
