@@ -153,14 +153,25 @@ docker compose --profile auth run --service-ports auth
 
 ---
 
-## Mettre a jour
+## Mettre a jour (apres tout changement de code)
+
+> **Important** : le code source est COPIE dans l'image Docker au moment du `build`.
+> Un `git pull` seul ne suffit PAS : `docker compose up` relance l'ANCIENNE image
+> et donc l'ancien code. Apres chaque modification du code (ou `git pull`), il faut
+> TOUJOURS reconstruire l'image avec `--build`, sinon les changements n'apparaissent pas.
 
 ```bash
-docker compose down
-git pull
-docker compose build
-docker compose up -d
+git pull                       # recuperer le nouveau code
+docker compose up -d --build   # reconstruire l'image PUIS relancer
 ```
+
+Pour verifier que l'image a bien ete reconstruite :
+
+```bash
+docker images mebc-ground-dashboard
+```
+
+La colonne `CREATED` doit afficher "seconds/minutes ago" (pas "7 days ago").
 
 ---
 

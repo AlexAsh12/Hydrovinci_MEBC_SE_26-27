@@ -139,6 +139,13 @@ docker compose up
 # Ouvrir http://localhost:8050
 ```
 
+> **Apres un `git pull` (nouveau code)**, il faut reconstruire l'image Docker,
+> sinon l'ancien code continue de tourner :
+> ```bash
+> docker compose up -d --build
+> ```
+> Detail dans [ground/README.md](ground/README.md).
+
 Le dashboard affiche en temps reel :
 - **Zone Statuts** : BMS_1, BMS_2, SIM7600, MQTT (pastille verte = OK)
 - **Terminal Pi** : la console du Pi en direct (erreurs en rouge)
