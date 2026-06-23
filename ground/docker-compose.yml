@@ -1,0 +1,27 @@
+services:
+
+  # ── Dashboard principal ────────────────────────────────────────────────────
+  dashboard:
+    build: .
+    image: mebc-ground-dashboard
+    container_name: mebc-dashboard
+    ports:
+      - "8050:8050"
+    volumes:
+      - ./data:/app/data               # sessions CSV + state persistant
+      - ./credentials:/app/credentials # token.json Google Drive
+    restart: unless-stopped
+
+  # ── Authentification Google Drive (à lancer une seule fois) ───────────────
+  # Usage : docker compose --profile auth run --service-ports auth
+  auth:
+    build: .
+    image: mebc-ground-dashboard
+    container_name: mebc-auth
+    volumes:
+      - ./credentials:/app/credentials
+    command: python src/setup_auth.py
+    ports:
+      - "8080:8080"
+    profiles:
+      - auth

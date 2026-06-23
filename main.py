@@ -12,6 +12,7 @@ from interface import interface_bateau
 from telemetrie import sms
 from telemetrie import appel
 from telemetrie import port_serie
+from telemetrie import mqtt_publisher
 from acquisition import bms_rasp as bms
 import config
 
@@ -60,6 +61,11 @@ if __name__ == "__main__":
     print("Demarrage Global - Monaco 2026")
     interface_bateau.update_messages("Systeme pret. Connexion BMS en cours...")
 
+    # 0. MQTT : connexion au broker (non-bloquant, le systeme tourne meme sans MQTT)
+    mqtt_publisher.init()
+    # Capture de la console (stdout/stderr) pour diffuser le terminal au dashboard sol
+    mqtt_publisher.capturer_console()
+
     # 1. BMS : toujours lance, independant du SIM7600
     threading.Thread(target=lancer_taches_bms, daemon=True).start()
     print("thread BMS lance")
@@ -67,6 +73,7 @@ if __name__ == "__main__":
     # 2. SIM7600 : detection automatique, continue sans si absent
     sim_ok = port_serie.initialiser()
     interface_bateau.update_statut("SIM7600", sim_ok)
+    mqtt_publisher.publish_sim_connection(sim_ok)  # statut SIM vers le dashboard sol
 
     if sim_ok:
         # SMS et clavier ne sont lances que si le modem est present

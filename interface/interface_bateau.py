@@ -112,7 +112,7 @@ def update_messages(msg):
         root.after(0, lambda t=texte: lbl_msg.config(text=t))
 
 # Statuts de connexion des peripheriques
-statuts = {"BMS_1": False, "BMS_2": False, "SIM7600": False}
+statuts = {"BMS_1": False, "BMS_2": False, "SIM7600": False, "MQTT": False }
 
 def update_statut(device, connecte):
     """Met a jour le statut d'un peripherique et rafraichit l'affichage."""

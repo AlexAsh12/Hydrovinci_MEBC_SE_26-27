@@ -11,6 +11,7 @@ import time
 import asyncio
 from datetime import datetime
 from interface import interface_bateau
+from telemetrie import mqtt_publisher
 import config
 
 
@@ -19,6 +20,7 @@ import config
 # BAUD_RATE = 9600 -> Centralisé dans config.py
 # NOMINAL_CAPACITY_AH = 98.0 -> Centralisé dans config.py
 last_reports = {"BMS_1": None, "BMS_2": None}
+bms_connected = {"BMS_1": False, "BMS_2": False}
 
 
 
@@ -76,8 +78,8 @@ def display_bms_status(data):
     #print(f"[{name}] {data['timestamp']} | {data['voltage']:.1f}V | {data['current_a']:.1f}A | SOC: {data['soc']}% | Delta: {delta:.0f}mV")
 
     # Alertes rapides
-    if delta > 100: print(f"  ⚠️ ALERT [{name}]: Déséquilibre important !")
-    if v_min < 3.0: print(f"  ⚠️ ALERT [{name}]: Tension basse !")
+    if delta > 100: print(f"  ALERT [{name}]: Déséquilibre important !")
+    if v_min < 3.0: print(f"  ALERT [{name}]: Tension basse !")
 
 async def monitor_bms(bms_id, bms_conf, interval):
     """Tâche asynchrone pour un seul BMS"""
@@ -103,6 +105,13 @@ async def monitor_bms(bms_id, bms_conf, interval):
                             last_reports.get("BMS_1"),
                             last_reports.get("BMS_2")
                         )
+
+                        # Envoi des donnees au dashboard sol via MQTT
+                        try:
+                            mqtt_publisher.publish_bms(data)
+                        except Exception:
+                            pass  # Le BMS ne s'arrete jamais a cause du MQTT
+
                         if erreur_affichee:
                             print(f"{bms_id} reconnecte.")
                             erreur_affichee = False
@@ -111,6 +120,12 @@ async def monitor_bms(bms_id, bms_conf, interval):
                         if not etait_connecte:
                             etait_connecte = True
                             interface_bateau.update_statut(bms_id, True)
+                            # Signaler la connexion au dashboard sol
+                            bms_connected[bms_id] = True
+                            try:
+                                mqtt_publisher.publish_bms_connection(bms_connected)
+                            except Exception:
+                                pass
 
                 else:
                     if not erreur_affichee:
@@ -119,6 +134,11 @@ async def monitor_bms(bms_id, bms_conf, interval):
                     if etait_connecte:
                         etait_connecte = False
                         interface_bateau.update_statut(bms_id, False)
+                        bms_connected[bms_id] = False
+                        try:
+                            mqtt_publisher.publish_bms_connection(bms_connected)
+                        except Exception:
+                            pass
 
         except Exception as e:
             if not erreur_affichee:
@@ -127,5 +147,10 @@ async def monitor_bms(bms_id, bms_conf, interval):
             if etait_connecte:
                 etait_connecte = False
                 interface_bateau.update_statut(bms_id, False)
+                bms_connected[bms_id] = False
+                try:
+                    mqtt_publisher.publish_bms_connection(bms_connected)
+                except Exception:
+                    pass
 
         await asyncio.sleep(interval)
