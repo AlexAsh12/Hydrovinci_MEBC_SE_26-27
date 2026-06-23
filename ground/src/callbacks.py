@@ -1,5 +1,5 @@
-from transmission import get_state, get_history
-from dash import Output, Input, callback
+from transmission import get_state, get_history, get_logs
+from dash import Output, Input, callback, html
 import plotly.graph_objects as go
 from network_monitor import get_net_state 
 
@@ -88,18 +88,44 @@ def update_status(n):
 
 
 @callback(
-    Output("bms1-dot", "className"),
-    Output("bms2-dot", "className"),
+    Output("st-bms1", "className"),
+    Output("st-bms2", "className"),
+    Output("st-sim",  "className"),
+    Output("st-mqtt", "className"),
     Input("interval", "n_intervals"),
 )
-def update_bms_connection(n):
+def update_statuts(n):
     s = get_state()
-    bms_conn = s.get("bms_connection", {})
+    conn = s.get("bms_connection", {})
 
-    bms1_cls = "topbar-dot dot-on" if bms_conn.get("BMS_1") else "topbar-dot dot-err"
-    bms2_cls = "topbar-dot dot-on" if bms_conn.get("BMS_2") else "topbar-dot dot-err"
+    def dot(ok):
+        return "topbar-dot dot-on" if ok else "topbar-dot dot-off"
 
-    return bms1_cls, bms2_cls
+    return (
+        dot(conn.get("BMS_1")),
+        dot(conn.get("BMS_2")),
+        dot(s.get("sim_connection")),
+        dot(s.get("connected")),     # MQTT = connexion du sol au broker
+    )
+
+
+@callback(
+    Output("terminal",   "children"),
+    Output("term-count", "children"),
+    Input("interval",    "n_intervals"),
+)
+def update_terminal(n):
+    logs = get_logs()
+
+    def line_class(line):
+        low = line.lower()
+        if "erreur" in low or "error" in low or "traceback" in low or "exception" in low:
+            return "term-line term-err"
+        return "term-line"
+
+    # Plus recent en haut : la derniere ligne est toujours visible sans scroller
+    lignes = [html.Div(l, className=line_class(l)) for l in reversed(logs)]
+    return lignes, f"{len(logs)} lignes"
 
 @callback(
     Output("soc-gauge",      "figure"),

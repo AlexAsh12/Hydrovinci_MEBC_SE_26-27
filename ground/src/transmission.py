@@ -25,6 +25,8 @@ TOPICS = {
     "speed_knots":    "mebc_se/bms/nav/speed",         # float "6.2"
     "alarms":         "mebc_se/bms/alarms",            # JSON list []
     "bms_connection": "mebc_se/bms/connection",        # JSON {"BMS_1": true, ...}
+    "sim_connection": "mebc_se/sim/connection",        # JSON bool
+    "log":            "mebc_se/log",                   # texte brut (ligne de console Pi)
 }
 
 # ÔöÇÔöÇÔöÇ ├ëtat partag├® ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
@@ -43,10 +45,15 @@ bms_state = {
     "connected":     False,
     "last_update":   None,
     "bms_connection": {"BMS_1": False, "BMS_2": False},
+    "sim_connection": False,
 }
 
 capacity_history = []
 MAX_HISTORY = 120
+
+# Lignes de console recues du Pi (terminal temps reel du dashboard)
+log_lines = []
+MAX_LOG = 300
 
 
 # ÔöÇÔöÇÔöÇ Persistence helpers ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
@@ -99,6 +106,10 @@ def get_history():
     with _lock:
         return list(capacity_history)
 
+def get_logs():
+    with _lock:
+        return list(log_lines)
+
 
 class MQTTClient:
     def __init__(self, broker: str, port: int = 1883):
@@ -128,6 +139,14 @@ class MQTTClient:
     def _on_message(self, client, userdata, message):
         topic = message.topic
         raw   = message.payload.decode("utf-8").strip()
+
+        # Flux de logs : lignes de console brutes (pas du JSON), on les accumule
+        if topic == TOPICS["log"]:
+            with _lock:
+                log_lines.append(raw)
+                if len(log_lines) > MAX_LOG:
+                    del log_lines[:len(log_lines) - MAX_LOG]
+            return
 
         topic_to_key = {v: k for k, v in TOPICS.items()}
         key = topic_to_key.get(topic)

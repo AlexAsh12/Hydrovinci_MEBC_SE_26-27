@@ -7,9 +7,13 @@ RÈGLE DE SÉCURITÉ : Si le MQTT est mort, le BMS continue normalement.
 Aucune exception de ce module ne doit remonter au code appelant.
 """
 
+import sys
 import json
+import threading
 import paho.mqtt.client as mqtt
 import config
+
+from interface import interface_bateau
 
 # --- Topics MQTT (doivent correspondre à ceux du dashboard Ground) ---
 TOPICS = {
@@ -22,11 +26,15 @@ TOPICS = {
     "temperature":   "mebc_se/bms/pack/temperature",
     "alarms":        "mebc_se/bms/alarms",
     "bms_connection":"mebc_se/bms/connection",
+    "sim_connection":"mebc_se/sim/connection",
+    "log":           "mebc_se/log",
 }
 
 # --- Client MQTT global ---
 _client = None
 _connected = False
+# Dernier statut SIM7600 connu (republie a chaque (re)connexion au broker).
+_sim_status = False
 
 
 def _on_connect(client, userdata, flags, rc, properties=None):
@@ -34,13 +42,18 @@ def _on_connect(client, userdata, flags, rc, properties=None):
     _connected = (rc == 0)
     if rc == 0:
         print("[MQTT] Connecté au broker")
+        interface_bateau.update_statut("MQTT", True)
+        # Republier le statut SIM7600 (il a pu etre defini avant la connexion au broker)
+        publish_sim_connection(_sim_status)
     else:
         print(f"[MQTT] Echec connexion, code: {rc}")
+        interface_bateau.update_statut("MQTT", False)
 
 
 def _on_disconnect(client, userdata, flags, rc, properties=None):
     global _connected
     _connected = False
+    interface_bateau.update_statut("MQTT", False)
     print("[MQTT] Deconnecte du broker (reconnexion automatique)")
 
 
@@ -109,3 +122,73 @@ def publish_bms_connection(bms_status):
         _client.publish(TOPICS["bms_connection"], json.dumps(bms_status), qos=1)
     except Exception:
         pass
+
+
+def publish_sim_connection(connecte):
+    """
+    Publie l'état de connexion du SIM7600 (message retenu = retain).
+    Memorise la valeur pour la republier a chaque reconnexion au broker.
+    """
+    global _sim_status
+    _sim_status = bool(connecte)
+    if _client is None or not _connected:
+        return
+    try:
+        _client.publish(TOPICS["sim_connection"], json.dumps(_sim_status), qos=1, retain=True)
+    except Exception:
+        pass
+
+
+def publish_log(ligne):
+    """
+    Publie une ligne de console (stdout/stderr du Pi) vers le dashboard.
+    NE DOIT JAMAIS appeler print() : ce serait une recursion infinie via la capture console.
+    """
+    if _client is None or not _connected:
+        return
+    try:
+        _client.publish(TOPICS["log"], ligne, qos=0)
+    except Exception:
+        pass
+
+
+# --- Capture de la console (stdout + stderr) pour la diffuser au dashboard ---
+_tee_lock = threading.Lock()
+
+
+class _ConsoleTee:
+    """
+    Duplique un flux (stdout ou stderr) : ecrit en local (console/journal)
+    ET publie chaque ligne complete via MQTT. Capture donc les print() et les
+    tracebacks d'erreurs (qui partent sur stderr).
+    """
+    def __init__(self, original):
+        self._original = original
+        self._buffer = ""
+
+    def write(self, text):
+        # 1) Affichage local inchange (console / journal systemd)
+        self._original.write(text)
+        # 2) Extraction des lignes completes (sous verrou : plusieurs threads ecrivent)
+        lignes = []
+        with _tee_lock:
+            self._buffer += text
+            while "\n" in self._buffer:
+                ligne, self._buffer = self._buffer.split("\n", 1)
+                if ligne.strip():
+                    lignes.append(ligne)
+        # 3) Publication hors verrou (publish_log ne print jamais -> pas de recursion)
+        for ligne in lignes:
+            publish_log(ligne)
+
+    def flush(self):
+        self._original.flush()
+
+    def isatty(self):
+        return False
+
+
+def capturer_console():
+    """Redirige stdout et stderr pour diffuser la console du Pi vers le dashboard."""
+    sys.stdout = _ConsoleTee(sys.stdout)
+    sys.stderr = _ConsoleTee(sys.stderr)

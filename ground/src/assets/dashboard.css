@@ -103,3 +103,26 @@ body {
 
 /* ÔöÇÔöÇ Plotly overrides ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ */
 .js-plotly-plot .plotly .modebar { display: none !important; }
+
+/* -- Statuts systeme + Terminal Pi ------------------------------------------ */
+.row-term { grid-template-columns: 300px 1fr; }
+
+.status-list  { display: flex; flex-direction: column; gap: 12px; margin-top: 4px; }
+.status-item  { display: flex; align-items: center; gap: 10px; }
+.status-label { font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: #e6edf3; }
+
+.terminal {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11.5px;
+    line-height: 1.5;
+    background: #0a0d12;
+    border: 0.5px solid #21262d;
+    border-radius: 6px;
+    padding: 10px 12px;
+    height: 240px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+}
+.term-line { color: #8b949e; white-space: pre-wrap; word-break: break-word; }
+.term-err  { color: #f85149; }

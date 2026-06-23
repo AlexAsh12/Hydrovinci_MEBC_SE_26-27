@@ -9,6 +9,14 @@ _EMPTY_FIG = {"layout": {
     "yaxis": {"visible": False},
 }}
 
+def _status_row(label, dot_id):
+    """Une ligne de statut : pastille coloree + libelle."""
+    return html.Div(className="status-item", children=[
+        html.Span(id=dot_id, className="topbar-dot dot-off"),
+        html.Span(label, className="status-label"),
+    ])
+
+
 def build_layout():
     return html.Div(
         className="dash-root",
@@ -22,12 +30,6 @@ def build_layout():
                     html.Div(className="topbar-dot", id="conn-dot"),
                     html.Span("BMS Dashboard", className="topbar-title"),
                     html.Span(id="conn-label", className="topbar-status"),
-                ]),
-                html.Div(className="topbar-left", children=[
-                    html.Span(id="bms1-dot", className="topbar-dot dot-off"),
-                    html.Span("BMS_1", className="topbar-status"),
-                    html.Span(id="bms2-dot", className="topbar-dot dot-off", style={"marginLeft": "12px"}),
-                    html.Span("BMS_2", className="topbar-status"),
                 ]),
                 html.Div(className="topbar-right", children=[
                     html.Span(id="last-update", className="topbar-ts"),
@@ -176,6 +178,28 @@ def build_layout():
                     ]),
                     dcc.Graph(id="cap-history", figure=_EMPTY_FIG, config={"displayModeBar": False},
                               style={"height": "220px"}),
+                ]),
+            ]),
+
+            # -- Row 4 : Statuts systeme + Terminal Pi temps reel ----------------
+            html.Div(className="row row-term", children=[
+                html.Div(className="card", children=[
+                    html.Div(className="card-header", children=[
+                        html.Span("Statuts systeme", className="card-htitle"),
+                    ]),
+                    html.Div(className="status-list", children=[
+                        _status_row("BMS_1",   "st-bms1"),
+                        _status_row("BMS_2",   "st-bms2"),
+                        _status_row("SIM7600", "st-sim"),
+                        _status_row("MQTT",    "st-mqtt"),
+                    ]),
+                ]),
+                html.Div(className="card", children=[
+                    html.Div(className="card-header", children=[
+                        html.Span("Terminal Pi - temps reel", className="card-htitle"),
+                        html.Span(id="term-count", className="card-hint"),
+                    ]),
+                    html.Div(id="terminal", className="terminal"),
                 ]),
             ]),
         ],
