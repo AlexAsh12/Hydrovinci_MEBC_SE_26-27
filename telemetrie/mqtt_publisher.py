@@ -36,16 +36,29 @@ _client = None
 _connected = False
 # Dernier statut SIM7600 connu (republie a chaque (re)connexion au broker).
 _sim_status = False
+# Dernier etat de connexion des BMS connu (republie a chaque (re)connexion au broker).
+_bms_status = {"BMS_1": False, "BMS_2": False}
+# Lignes de console en attente tant que le MQTT n'est pas connecte (envoyees a la connexion).
+_log_buffer = []
 
 
 def _on_connect(client, userdata, flags, rc, properties=None):
     global _connected
     _connected = (rc == 0)
     if rc == 0:
+        # Envoyer d'abord les lignes de console accumulees avant la connexion (ordre chronologique)
+        for ligne in _log_buffer:
+            try:
+                client.publish(TOPICS["log"], ligne, qos=0)
+            except Exception:
+                pass
+        _log_buffer.clear()
+
         print("[MQTT] Connecté au broker")
         interface_bateau.update_statut("MQTT", True)
-        # Republier le statut SIM7600 (il a pu etre defini avant la connexion au broker)
+        # Republier les statuts (definis avant la connexion au broker)
         publish_sim_connection(_sim_status)
+        publish_bms_connection(_bms_status)
     else:
         print(f"[MQTT] Echec connexion, code: {rc}")
         interface_bateau.update_statut("MQTT", False)
@@ -116,11 +129,14 @@ def publish_bms_connection(bms_status):
     bms_status = {"BMS_1": True, "BMS_2": False}
     Ne lève JAMAIS d'exception.
     """
+    # On retient l'etat de chaque BMS (pour pouvoir le republier a la connexion)
+    _bms_status["BMS_1"] = bms_status["BMS_1"]
+    _bms_status["BMS_2"] = bms_status["BMS_2"]
     if _client is None or not _connected:
         return
 
     try:
-        _client.publish(TOPICS["bms_connection"], json.dumps(bms_status), qos=1)
+        _client.publish(TOPICS["bms_connection"], json.dumps(_bms_status), qos=1, retain=True)
     except Exception:
         pass
 
@@ -159,6 +175,8 @@ def publish_log(ligne):
     NE DOIT JAMAIS appeler print() : ce serait une recursion infinie via la capture console.
     """
     if _client is None or not _connected:
+        _log_buffer.append(ligne)   # pas connecte : on garde la ligne pour l'envoyer a la connexion
+        del _log_buffer[:-200]      # plafonne aux 200 dernieres lignes (pas de fuite memoire)
         return
     try:
         _client.publish(TOPICS["log"], ligne, qos=0)
