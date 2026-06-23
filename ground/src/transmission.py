@@ -26,6 +26,7 @@ TOPICS = {
     "alarms":         "mebc_se/bms/alarms",            # JSON list []
     "bms_connection": "mebc_se/bms/connection",        # JSON {"BMS_1": true, ...}
     "sim_connection": "mebc_se/sim/connection",        # JSON bool
+    "sim_signal":     "mebc_se/sim/signal",            # JSON string "14,99" (AT+CSQ) ou null
     "log":            "mebc_se/log",                   # texte brut (ligne de console Pi)
 }
 
@@ -46,6 +47,7 @@ bms_state = {
     "last_update":   None,
     "bms_connection": {"BMS_1": False, "BMS_2": False},
     "sim_connection": False,
+    "sim_signal":      None,
 }
 
 capacity_history = []

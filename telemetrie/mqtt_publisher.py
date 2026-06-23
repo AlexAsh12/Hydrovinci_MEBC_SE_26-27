@@ -27,6 +27,7 @@ TOPICS = {
     "alarms":        "mebc_se/bms/alarms",
     "bms_connection":"mebc_se/bms/connection",
     "sim_connection":"mebc_se/sim/connection",
+    "sim_signal":    "mebc_se/sim/signal",
     "log":           "mebc_se/log",
 }
 
@@ -135,6 +136,19 @@ def publish_sim_connection(connecte):
         return
     try:
         _client.publish(TOPICS["sim_connection"], json.dumps(_sim_status), qos=1, retain=True)
+    except Exception:
+        pass
+
+
+def publish_sim_signal(valeur):
+    """
+    Publie la qualite du signal SIM7600 (valeur AT+CSQ, ex: "14,99" ou None).
+    Message retenu (retain) : le dashboard recoit la derniere valeur a la connexion.
+    """
+    if _client is None or not _connected:
+        return
+    try:
+        _client.publish(TOPICS["sim_signal"], json.dumps(valeur), qos=0, retain=True)
     except Exception:
         pass
 

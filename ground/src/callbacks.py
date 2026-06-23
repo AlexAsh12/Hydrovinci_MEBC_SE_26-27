@@ -91,6 +91,7 @@ def update_status(n):
     Output("st-bms1", "className"),
     Output("st-bms2", "className"),
     Output("st-sim",  "className"),
+    Output("st-sim-signal", "children"),
     Output("st-mqtt", "className"),
     Input("interval", "n_intervals"),
 )
@@ -101,10 +102,15 @@ def update_statuts(n):
     def dot(ok):
         return "topbar-dot dot-on" if ok else "topbar-dot dot-off"
 
+    # Qualite signal (valeur AT+CSQ, ex: "14,99") -- affichee seulement si connue
+    signal = s.get("sim_signal")
+    signal_txt = f"CSQ {signal}" if signal else ""
+
     return (
         dot(conn.get("BMS_1")),
         dot(conn.get("BMS_2")),
         dot(s.get("sim_connection")),
+        signal_txt,
         dot(s.get("connected")),     # MQTT = connexion du sol au broker
     )
 

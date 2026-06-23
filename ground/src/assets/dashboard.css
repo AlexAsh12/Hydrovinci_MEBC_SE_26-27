@@ -110,6 +110,7 @@ body {
 .status-list  { display: flex; flex-direction: column; gap: 12px; margin-top: 4px; }
 .status-item  { display: flex; align-items: center; gap: 10px; }
 .status-label { font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: #e6edf3; }
+.status-signal { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: #8b949e; margin-left: auto; }
 
 .terminal {
     font-family: 'IBM Plex Mono', monospace;

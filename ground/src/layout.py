@@ -190,7 +190,12 @@ def build_layout():
                     html.Div(className="status-list", children=[
                         _status_row("BMS_1",   "st-bms1"),
                         _status_row("BMS_2",   "st-bms2"),
-                        _status_row("SIM7600", "st-sim"),
+                        # SIM7600 : pastille + libelle + valeur AT+CSQ (qualite signal)
+                        html.Div(className="status-item", children=[
+                            html.Span(id="st-sim", className="topbar-dot dot-off"),
+                            html.Span("SIM7600", className="status-label"),
+                            html.Span(id="st-sim-signal", className="status-signal"),
+                        ]),
                         _status_row("MQTT",    "st-mqtt"),
                     ]),
                 ]),

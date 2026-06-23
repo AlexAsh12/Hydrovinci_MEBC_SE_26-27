@@ -9,6 +9,7 @@ import time
 import config
 from interface import interface_bateau
 from telemetrie import port_serie
+from telemetrie import mqtt_publisher
 
 
 # --- Envoi d'un SMS a la demande du pilote (declenche par un bouton poussoir) ---
@@ -103,6 +104,8 @@ def lire_sms():
             # Lecture de la qualite du signal (AT+CSQ) -> stockee dans le cache de port_serie.
             # L'interface lira cette valeur sans refaire de commande serie.
             port_serie.rafraichir_qualite_signal()
+            # Et on l'envoie au dashboard sol (valeur AT+CSQ, ex: "14,99")
+            mqtt_publisher.publish_sim_signal(port_serie.lire_qualite_signal())
 
             interface_bateau.update_statut("SIM7600", True)  # Le modem est present, meme si aucun SMS n'est recu
             
