@@ -9,32 +9,11 @@ C++ : plus rapide, plus fiable, plus répandu
 
 Note : trouver un moyen autre que d'utiliser sleep() et des fonctions async pour notre solution
 
-*/
-
-#include <iostream>
-#include <stdint.h>
-
-using namespace std;
-
-//entraînement hahaaha
-int main(){
-    cout <<"Bonjour tout le monde"<< endl;
-
-    return 0;
-}
-
-struct dataBMS
-{
-    float tension_bat;
-    float amp_bat;
-    uint8_t pourcent_bat;
-    int8_t temp_bat;
-};
-
 //Lire broche RX(input) pour les sorties des bms
 //Possiblement envoyer par TX(output) si le bms a besoin d'une activation
 
 //framework arduino setup-loop ou esp-idf ? Avec tous les fichiers uart.h à importer
+// => Réponse pour Aaron : on utilise ESP-IDF
 
 #include <stdio.h>
 #include <string.h>
