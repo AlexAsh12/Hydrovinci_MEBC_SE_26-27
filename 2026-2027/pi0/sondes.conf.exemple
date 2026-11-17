@@ -1,0 +1,6 @@
+# Noms des sondes de temperature affiches sur l'ecran.
+# Copier ce fichier en sondes.conf (meme dossier), le completer, puis :
+#   sudo systemctl restart tableau-bord
+# Une ligne par sonde : adresse (16 caracteres, affichee sur l'ecran) puis le nom.
+#
+# 28DC9C9F110000AB Moteur

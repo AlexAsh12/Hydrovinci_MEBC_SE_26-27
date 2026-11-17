@@ -244,19 +244,92 @@ static void j(json_t *s, const char *format, ...)
     s->pos += (size_t)n;
 }
 
-/* Texte venant de l'ESP : on ne garde que l'ASCII imprimable, echappe */
-static void j_texte(json_t *s, const char *t)
+/* Chaine JSON echappee. Les caracteres de controle sont toujours retires ;
+ * utf8 = 0 : ASCII imprimable seulement (texte venant de l'ESP),
+ * utf8 = 1 : accents permis (noms des sondes, fichier local). */
+static void j_texte(json_t *s, const char *t, int utf8)
 {
     j(s, "\"");
     for (; *t; ++t) {
         const unsigned char ch = (unsigned char)*t;
         if (ch == '"' || ch == '\\') {
             j(s, "\\%c", ch);
-        } else if (ch >= 0x20 && ch < 0x7F) {
+        } else if ((ch >= 0x20 && ch < 0x7F) || (utf8 && ch >= 0x80)) {
             j(s, "%c", ch);
         }
     }
     j(s, "\"");
+}
+
+/* ------------------------------------------------------------------ */
+/* Noms des sondes (fichier optionnel, lu au demarrage)                */
+/* ------------------------------------------------------------------ */
+
+#define MAX_NOMS 32
+#define TAILLE_NOM 32
+
+static struct {
+    uint8_t rom[8];
+    char nom[TAILLE_NOM];
+} noms[MAX_NOMS];
+static int nb_noms;
+
+static int hex(char c)
+{
+    if (c >= '0' && c <= '9') return c - '0';
+    if (c >= 'a' && c <= 'f') return c - 'a' + 10;
+    if (c >= 'A' && c <= 'F') return c - 'A' + 10;
+    return -1;
+}
+
+/* Lignes : "28DC9C9F110000AB Moteur". '#' = commentaire. */
+static void charger_noms(const char *chemin)
+{
+    FILE *f = fopen(chemin, "r");
+    if (!f) {
+        journal("pas de fichier %s : sondes affichees par leur adresse", chemin);
+        return;
+    }
+    char ligne[256];
+    int numero = 0;
+    while (fgets(ligne, sizeof ligne, f) && nb_noms < MAX_NOMS) {
+        numero++;
+        char *p = ligne;
+        while (*p == ' ' || *p == '\t') p++;
+        if (*p == '#' || *p == '\n' || *p == '\r' || *p == '\0') continue;
+
+        uint8_t rom[8];
+        int ok = 1;
+        for (int k = 0; k < 8 && ok; ++k) {
+            const int h = hex(p[2 * k]), l = h < 0 ? -1 : hex(p[2 * k + 1]);
+            ok = h >= 0 && l >= 0;
+            rom[k] = (uint8_t)(h * 16 + l);
+        }
+        char *nom = p + 16;
+        if (!ok || (*nom != ' ' && *nom != '\t')) {
+            journal("%s ligne %d ignoree (attendu : adresse de 16 caracteres puis nom)", chemin, numero);
+            continue;
+        }
+        while (*nom == ' ' || *nom == '\t') nom++;
+        size_t n = strcspn(nom, "\r\n");
+        while (n > 0 && (nom[n - 1] == ' ' || nom[n - 1] == '\t')) n--;
+        if (n == 0) continue;
+        if (n >= TAILLE_NOM) n = TAILLE_NOM - 1;
+        memcpy(noms[nb_noms].rom, rom, 8);
+        memcpy(noms[nb_noms].nom, nom, n);
+        noms[nb_noms].nom[n] = '\0';
+        nb_noms++;
+    }
+    fclose(f);
+    journal("%d nom(s) de sonde lu(s) dans %s", nb_noms, chemin);
+}
+
+static const char *nom_sonde(const uint8_t rom[8])
+{
+    for (int i = 0; i < nb_noms; ++i) {
+        if (memcmp(noms[i].rom, rom, 8) == 0) return noms[i].nom;
+    }
+    return NULL;
 }
 
 static void memoriser_et_diffuser(int sorte, const json_t *s)
@@ -335,7 +408,13 @@ static void traiter_trame(const proto_trame_t *t)
             for (int k = 0; k < 8; ++k) {
                 j(&s, "%02X", m.sondes[i].rom[k]);
             }
-            j(&s, "\",\"c\":%d}", m.sondes[i].c_centieme);
+            j(&s, "\",\"c\":%d", m.sondes[i].c_centieme);
+            const char *nom = nom_sonde(m.sondes[i].rom);
+            if (nom) {
+                j(&s, ",\"nom\":");
+                j_texte(&s, nom, 1);
+            }
+            j(&s, "}");
         }
         j(&s, "]}");
         memoriser_et_diffuser(D_TEMP, &s);
@@ -360,7 +439,7 @@ static void traiter_trame(const proto_trame_t *t)
         char niveau, texte[256];
         if (!proto_decoder_log(t->payload, t->len, &niveau, texte, sizeof texte)) return;
         j(&s, "{\"t\":\"log\",\"niveau\":\"%c\",\"texte\":", (niveau >= 0x20 && niveau < 0x7F) ? niveau : '?');
-        j_texte(&s, texte);
+        j_texte(&s, texte, 0);
         j(&s, "}");
         memoriser_et_diffuser(-1, &s);
         break;
@@ -650,7 +729,8 @@ static void usage(const char *nom)
            "  --http N          port HTTP (defaut 8080)\n"
            "  --ecoute ADRESSE  adresse d'ecoute (defaut 127.0.0.1 = ecran local seulement,\n"
            "                    0.0.0.0 = accessible depuis le reseau)\n"
-           "  --web DOSSIER     dossier des pages (defaut ./web)\n",
+           "  --web DOSSIER     dossier des pages (defaut ./web)\n"
+           "  --sondes FICHIER  noms des sondes de temperature (defaut ./sondes.conf, optionnel)\n",
            nom, (unsigned long)PROTO_VITESSE_DEFAUT);
 }
 
@@ -658,6 +738,7 @@ int main(int argc, char **argv)
 {
     const char *adresse = "127.0.0.1";
     const char *dossier_web = "web";
+    const char *fichier_noms = "sondes.conf";
     int port_http = 8080;
 
     for (int i = 1; i < argc; ++i) {
@@ -672,6 +753,8 @@ int main(int argc, char **argv)
             adresse = argv[++i];
         } else if (!strcmp(argv[i], "--web") && reste) {
             dossier_web = argv[++i];
+        } else if (!strcmp(argv[i], "--sondes") && reste) {
+            fichier_noms = argv[++i];
         } else {
             usage(argv[0]);
             return strcmp(argv[i], "--aide") == 0 ? 0 : 2;
@@ -685,6 +768,7 @@ int main(int argc, char **argv)
     if (charger_fichiers(dossier_web) != 0) {
         return 1;
     }
+    charger_noms(fichier_noms);
     fd_ecoute = ouvrir_ecoute(adresse, port_http);
     if (fd_ecoute < 0) {
         return 1;

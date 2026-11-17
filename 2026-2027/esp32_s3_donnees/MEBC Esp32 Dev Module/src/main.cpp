@@ -3,6 +3,8 @@
 
 #include <Arduino.h>
 #include <Wire.h>
+#include <driver/gpio.h>
+#include <esp_rom_sys.h>
 #include <stdarg.h>
 
 #include "app.h"
@@ -56,6 +58,44 @@ bool plateforme_imu_int_actif(void) { return digitalRead(PIN_IMU_INT) == LOW; }
 
 void plateforme_imu_rst(int niveau) { digitalWrite(PIN_IMU_RST, niveau ? HIGH : LOW); }
 
+// 1-Wire : broche en drain ouvert (1 = ligne relachee, tiree au 3,3 V par
+// la resistance). Les creneaux de quelques us sont faits interruptions
+// coupees pour que le timing soit exact.
+static portMUX_TYPE verrou1w = portMUX_INITIALIZER_UNLOCKED;
+static const gpio_num_t BROCHE_1W = static_cast<gpio_num_t>(PIN_ONEWIRE);
+
+bool plateforme_1w_reset(void) {
+    gpio_set_level(BROCHE_1W, 0);
+    esp_rom_delay_us(480);
+    portENTER_CRITICAL(&verrou1w);
+    gpio_set_level(BROCHE_1W, 1);
+    esp_rom_delay_us(70);
+    const bool presence = gpio_get_level(BROCHE_1W) == 0;
+    portEXIT_CRITICAL(&verrou1w);
+    esp_rom_delay_us(410);
+    return presence;
+}
+
+int plateforme_1w_bit(int bit) {
+    int lu = 0;
+    portENTER_CRITICAL(&verrou1w);
+    gpio_set_level(BROCHE_1W, 0);
+    if (bit) {
+        esp_rom_delay_us(6);
+        gpio_set_level(BROCHE_1W, 1);
+        esp_rom_delay_us(9);
+        lu = gpio_get_level(BROCHE_1W);
+        portEXIT_CRITICAL(&verrou1w);
+        esp_rom_delay_us(55);
+    } else {
+        esp_rom_delay_us(60);
+        gpio_set_level(BROCHE_1W, 1);
+        portEXIT_CRITICAL(&verrou1w);
+        esp_rom_delay_us(10);
+    }
+    return lu;
+}
+
 }  // extern "C"
 
 void setup() {
@@ -70,6 +110,11 @@ void setup() {
     digitalWrite(PIN_IMU_RST, HIGH);
     Wire.begin(PIN_I2C_SDA, PIN_I2C_SCL, 400000);
     Wire.setTimeOut(20);
+
+    gpio_reset_pin(BROCHE_1W);
+    gpio_set_direction(BROCHE_1W, GPIO_MODE_INPUT_OUTPUT_OD);
+    gpio_set_pull_mode(BROCHE_1W, GPIO_PULLUP_ONLY);  // en plus de la 4,7 kOhm
+    gpio_set_level(BROCHE_1W, 1);
     delay(100);
     app_init();
 }

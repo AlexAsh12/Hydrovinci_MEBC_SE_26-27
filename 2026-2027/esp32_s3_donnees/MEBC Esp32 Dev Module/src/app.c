@@ -5,6 +5,7 @@
  * Pour l'instant :
  *   - HELLO au demarrage, HB + BMS FACTICE chaque seconde
  *   - IMU BNO085 (roulis, tangage, cap) a 5 Hz
+ *   - sondes de temperature DS18B20 (1-Wire) a 1 Hz
  *   - repond a PING / INFO / CMD (reboot, changement de vitesse, flux de test)
  *   - mode "flux de test" : envoie des trames TEST aussi vite que la
  *     liaison le permet, pour mesurer le debit cote Pi.
@@ -16,9 +17,10 @@
 #include <protocole.h>
 
 #include "bno085.h"
+#include "ds18b20.h"
 
 #define VERSION_FW_MAJEUR 0
-#define VERSION_FW_MINEUR 4
+#define VERSION_FW_MINEUR 5
 #define VERSION_FW_CORRECTIF 0
 
 #if defined(CARTE_WROOM32E)
@@ -130,6 +132,37 @@ static void envoyer_imu(uint32_t maintenant)
     }
     const proto_imu_t m = {b.roulis_cdeg, b.tangage_cdeg, b.cap_cdeg, b.precision};
     envoyer(PROTO_T_IMU, proto_encoder_imu(&m, PAYLOAD, PLACE_PAYLOAD));
+}
+
+/* Apres chaque cycle de mesure, meme sans sonde (nb = 0 : la Pi le sait) */
+static void envoyer_temp(void)
+{
+    static proto_temp_t m;  /* gros : hors de la pile */
+    const int n = ds18b20_nb();
+    m.nb = (uint8_t)(n < PROTO_MAX_SONDES ? n : PROTO_MAX_SONDES);
+    for (int i = 0; i < m.nb; ++i) {
+        const ds18b20_sonde_t *s = ds18b20_sonde(i);
+        memcpy(m.sondes[i].rom, s->rom, 8);
+        m.sondes[i].c_centieme = s->c_centieme == DS18B20_INVALIDE ? PROTO_TEMP_INVALIDE : s->c_centieme;
+    }
+    envoyer(PROTO_T_TEMP, proto_encoder_temp(&m, PAYLOAD, PLACE_PAYLOAD));
+}
+
+static void log_temp(void)
+{
+    const int n = ds18b20_nb();
+    if (n == 0) {
+        plateforme_log("[TEMP] aucune sonde (verifier le fil jaune sur GPIO27 et la 4,7 kOhm)\n");
+        return;
+    }
+    for (int i = 0; i < n; ++i) {
+        const ds18b20_sonde_t *s = ds18b20_sonde(i);
+        if (s->c_centieme == DS18B20_INVALIDE) {
+            plateforme_log("[TEMP] sonde %02X..%02X : lecture ratee\n", s->rom[0], s->rom[7]);
+        } else {
+            plateforme_log("[TEMP] sonde %02X..%02X : %.2f degC\n", s->rom[0], s->rom[7], s->c_centieme / 100.0);
+        }
+    }
 }
 
 static void log_imu(uint32_t maintenant)
@@ -288,6 +321,7 @@ void app_init(void)
                    (unsigned long)vitesse);
     envoyer_hello();
     bno085_init(PERIODE_MESURE_IMU_MS);
+    ds18b20_init();
 }
 
 void app_tick(void)
@@ -316,6 +350,12 @@ void app_tick(void)
                        (unsigned long)vitesse, (unsigned long)decodeur.trames_ok,
                        (unsigned long)decodeur.erreurs_crc);
         log_imu(maintenant);
+        log_temp();
+    }
+
+    ds18b20_tick(maintenant);
+    if (ds18b20_cycle_termine()) {
+        envoyer_temp();
     }
 
     if (maintenant - dernier_envoi_imu_ms >= PERIODE_ENVOI_IMU_MS) {

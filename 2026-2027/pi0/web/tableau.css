@@ -79,11 +79,11 @@ html.kiosque, html.kiosque * { cursor: none; }
 
 .grille {
   display: grid;
-  grid-template-columns: 1.3fr 1fr 1fr;
+  grid-template-columns: repeat(12, 1fr);
   grid-template-rows: 1.7fr 1fr;
   grid-template-areas:
-    "assiette assiette cap"
-    "bms1 bms2 energie";
+    "assiette assiette assiette assiette assiette assiette assiette cap cap cap cap cap"
+    "bms1 bms1 bms1 bms2 bms2 bms2 energie energie energie temp temp temp";
   gap: var(--ecart);
   padding: var(--ecart);
   flex: 1 1 auto;
@@ -95,6 +95,7 @@ html.kiosque, html.kiosque * { cursor: none; }
 #p-bms1 { grid-area: bms1; }
 #p-bms2 { grid-area: bms2; }
 .energie { grid-area: energie; }
+.temperatures { grid-area: temp; }
 
 .panneau {
   position: relative;
@@ -203,6 +204,41 @@ dd { margin: 0; text-align: right; font-weight: 600; }
   text-shadow: 0 1px 2px #000;
 }
 
+/* ---------- Sondes de temperature ---------- */
+
+.sondes {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6vmin;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.sonde {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1vmin;
+  font-size: clamp(12px, 2.1vmin, 22px);
+}
+
+.sonde .nom {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--doux);
+}
+
+.sonde .adresse {
+  font-family: "DejaVu Sans Mono", ui-monospace, monospace;
+  font-size: 0.8em;
+}
+
+.sonde .temp { font-weight: 700; white-space: nowrap; }
+.sonde .temp.chaud { color: var(--attention); }
+.sonde .temp.erreur { color: var(--critique); }
+
 /* ---------- Donnees perimees ---------- */
 
 .voile {
@@ -229,6 +265,6 @@ dd { margin: 0; text-align: right; font-weight: 600; }
       "assiette assiette"
       "cap cap"
       "bms1 bms2"
-      "energie energie";
+      "energie temp";
   }
 }

@@ -177,7 +177,7 @@
   /* ------------------------------------------------------------------ */
 
   const PERIME_MS = 1500;
-  const vu = { imu: 0, bms1: 0, bms2: 0, power: 0, etat: 0 };
+  const vu = { imu: 0, bms1: 0, bms2: 0, power: 0, temp: 0, etat: 0 };
 
   function signe(v, decimales) { return (v > 0 ? '+' : '') + v.toFixed(decimales); }
 
@@ -240,6 +240,45 @@
     texte($('pw-puissance'), (m.mw / 1000).toFixed(1) + ' W');
   }
 
+  /* Sondes de temperature : les lignes ne sont recreees que si la liste change */
+  const SEUIL_CHAUD_C = 60;
+  const TEMP_INVALIDE = -32768;
+  let clesSondes = '';
+  let lignes = [];
+
+  function surTemp(m) {
+    const sondes = m.sondes.slice().sort((a, b) => (a.nom || '~' + a.rom).localeCompare(b.nom || '~' + b.rom));
+    vu.temp = sondes.length ? performance.now() : 0;
+    texte($('voile-temp'), sondes.length ? 'Pas de données' : 'Aucune sonde détectée');
+
+    const cles = sondes.map((s) => s.rom + (s.nom || '')).join('|');
+    if (cles !== clesSondes) {
+      clesSondes = cles;
+      const conteneur = $('sondes');
+      conteneur.replaceChildren();
+      lignes = sondes.map((s) => {
+        const ligne = document.createElement('div');
+        ligne.className = 'sonde';
+        const nom = document.createElement('span');
+        nom.className = s.nom ? 'nom' : 'nom adresse';
+        nom.textContent = s.nom || s.rom;  // sans nom : l'adresse, a recopier dans sondes.conf
+        const temp = document.createElement('span');
+        temp.className = 'temp';
+        ligne.append(nom, temp);
+        conteneur.append(ligne);
+        return temp;
+      });
+    }
+
+    sondes.forEach((s, i) => {
+      const el = lignes[i];
+      const valide = s.c !== TEMP_INVALIDE;
+      texte(el, valide ? (s.c / 100).toFixed(1) + ' °C' : 'erreur');
+      classe(el, 'erreur', !valide);
+      classe(el, 'chaud', valide && s.c / 100 >= SEUIL_CHAUD_C);
+    });
+  }
+
   function duree(ms) {
     const s = Math.floor(ms / 1000);
     const h = Math.floor(s / 3600), mi = Math.floor((s % 3600) / 60);
@@ -279,6 +318,7 @@
       case 'imu': surImu(m); break;
       case 'bms': surBms(m); break;
       case 'power': surPower(m); break;
+      case 'temp': surTemp(m); break;
       case 'hb': texte($('uptime'), 'ESP ' + duree(m.uptime)); break;
       case 'hello': texte($('fw'), 'fw ' + m.fw); break;
       case 'alerte': surAlerte(m); break;
@@ -308,6 +348,7 @@
     classe($('p-bms1'), 'perime', t - vu.bms1 > 3000);
     classe($('p-bms2'), 'perime', t - vu.bms2 > 3000);
     classe($('p-power'), 'perime', t - vu.power > 3000);
+    classe($('p-temp'), 'perime', t - vu.temp > 3000);
     if (t - vu.etat > 3000) etatLiaison('Serveur injoignable', 'perdu');
     if (finAlerte && t > finAlerte) { $('alerte').hidden = true; finAlerte = 0; }
 

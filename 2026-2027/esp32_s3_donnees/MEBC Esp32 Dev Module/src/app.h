@@ -33,6 +33,10 @@ bool plateforme_imu_i2c_lire(uint8_t adresse, uint8_t *data, size_t len);
 bool plateforme_imu_int_actif(void);                     /* INT a 0 = donnees pretes */
 void plateforme_imu_rst(int niveau);
 
+/* Bus 1-Wire (sondes de temperature) */
+bool plateforme_1w_reset(void);                          /* vrai si une sonde repond */
+int plateforme_1w_bit(int bit);                          /* ecrit un bit ; avec 1 : lit le bit */
+
 #ifdef __cplusplus
 }
 #endif

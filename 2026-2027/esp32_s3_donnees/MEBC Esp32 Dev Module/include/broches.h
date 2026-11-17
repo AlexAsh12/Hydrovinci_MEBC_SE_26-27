@@ -14,6 +14,9 @@ constexpr int PIN_I2C_SCL = 22;
 constexpr int PIN_IMU_INT = 4;   // BNO085 INT : a 0 quand une mesure est prete
 constexpr int PIN_IMU_RST = 23;  // BNO085 RST : a 0 = reset
 
+// Bus 1-Wire des sondes DS18B20 (resistance de 4,7 kOhm vers le 3,3 V)
+constexpr int PIN_ONEWIRE = 27;
+
 #elif defined(CARTE_S3)
 // ESP32-S3 DevKitC-1 (carte finale) : a definir avec le routage du PCB HAT
 #error "Broches ESP32-S3 pas encore definies : completer include/broches.h"
