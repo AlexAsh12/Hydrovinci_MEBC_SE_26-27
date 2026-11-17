@@ -8,7 +8,8 @@ data_bms_*.json
 *.code-workspace
 
 # Credentials Google Drive (ne JAMAIS versionner)
-ground/credentials/
-ground/src/client.json
-ground/src/token.json
-ground/data/
+# Les motifs "**/" couvrent tous les dossiers d'annee (2025-2026/, 2026-2027/, ...)
+**/ground/credentials/
+**/ground/src/client.json
+**/ground/src/token.json
+**/ground/data/
