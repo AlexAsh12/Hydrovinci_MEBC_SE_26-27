@@ -15,7 +15,7 @@
 #include <protocole.h>
 
 #define VERSION_FW_MAJEUR 0
-#define VERSION_FW_MINEUR 2
+#define VERSION_FW_MINEUR 3
 #define VERSION_FW_CORRECTIF 0
 
 #if defined(CARTE_WROOM32E)

@@ -31,7 +31,10 @@ extern "C" {
 #define PROTO_MAX_PAYLOAD      1024
 #define PROTO_MAX_TRAME        (PROTO_TAILLE_ENTETE + PROTO_MAX_PAYLOAD + PROTO_TAILLE_CRC)
 
-#define PROTO_VITESSE_DEFAUT   115200u  /* vitesse au demarrage et de repli */
+/* Vitesse de fonctionnement : utilisee des le demarrage par l'ESP32 et la
+ * Pi, et vitesse de repli apres un changement rate. 921600 bauds = 92 ko/s,
+ * valide sans erreur au banc (liaison fiable jusqu'a 3 Mbauds). */
+#define PROTO_VITESSE_DEFAUT   921600u
 #define PROTO_TIMEOUT_LIAISON_MS 3000u  /* plus de trame valide -> liaison perdue */
 
 /* Types de messages */

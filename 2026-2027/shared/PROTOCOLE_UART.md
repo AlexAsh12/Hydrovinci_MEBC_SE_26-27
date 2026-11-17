@@ -11,7 +11,7 @@ ici d'abord, puis dans l'implementation C commune
 | Parametre | Valeur |
 |---|---|
 | Niveau logique | 3,3 V (ESP32 et Pi, pas d'adaptateur) |
-| Vitesse au demarrage | 115200 bauds (`PROTO_VITESSE_DEFAUT`) |
+| Vitesse au demarrage | **921600 bauds** (`PROTO_VITESSE_DEFAUT`), soit 92 ko/s |
 | Vitesses possibles | 115200, 230400, 460800, 921600, 1M, 1,5M, 2M, 2,5M, 3M bauds |
 | Format | 8N1, pas de controle de flux |
 | Cablage | TX ESP -> RX Pi (GPIO15, broche 10), RX ESP <- TX Pi (GPIO14, broche 8), GND commun |
@@ -147,9 +147,9 @@ inconnue, 2 argument invalide, 3 non disponible.
 3. La Pi bascule a son tour, puis envoie un `PING` a la nouvelle vitesse.
 4. Securites cote ESP32 :
    - aucune trame valide de la Pi dans les **3 s** apres le changement :
-     retour a 115200 bauds ;
-   - a une vitesse autre que 115200, Pi silencieuse plus de **10 s** :
-     retour a 115200 bauds.
+     retour a la vitesse par defaut (921600 bauds) ;
+   - a une vitesse autre que celle par defaut, Pi silencieuse plus de
+     **10 s** : retour a la vitesse par defaut.
 
 ### Flux de test (STREAM)
 
