@@ -83,10 +83,12 @@ class Encodeur:
 
     def __init__(self):
         self._seq = 0
+        self.dernier_n = None  # numero 'n' du dernier message encode
 
     def encoder(self, message: dict) -> bytes:
         message = dict(message)
         message["n"] = self._seq
+        self.dernier_n = self._seq
         self._seq = (self._seq + 1) % (SEQ_MAX + 1)
         return encoder_trame(message)
 

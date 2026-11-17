@@ -6,6 +6,10 @@ __pycache__/
 IA/
 data_bms_*.json
 *.code-workspace
+Info.md
+.vscode/
+**/.pio/
+
 
 # Credentials Google Drive (ne JAMAIS versionner)
 # Les motifs "**/" couvrent tous les dossiers d'annee (2025-2026/, 2026-2027/, ...)
