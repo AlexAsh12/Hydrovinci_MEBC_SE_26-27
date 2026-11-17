@@ -10,6 +10,10 @@ Info.md
 .vscode/
 **/.pio/
 
+# Programmes compiles sur la Pi
+**/pi0/liaison_esp32
+**/pi0/tableau_bord
+**/pi0/test_protocole
 
 # Credentials Google Drive (ne JAMAIS versionner)
 # Les motifs "**/" couvrent tous les dossiers d'annee (2025-2026/, 2026-2027/, ...)

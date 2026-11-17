@@ -1,0 +1,234 @@
+:root {
+  --fond: #0a0f15;
+  --panneau: #111a24;
+  --bord: #1e2b3a;
+  --texte: #e9f0f7;
+  --doux: #8193a8;
+  --accent: #3fb6ff;
+  --ok: #2fd27a;
+  --attention: #f5a623;
+  --critique: #ff4d4f;
+  --ecart: 1.2vmin;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  height: 100%;
+  background: var(--fond);
+  color: var(--texte);
+  font-family: system-ui, "DejaVu Sans", "Segoe UI", sans-serif;
+  font-variant-numeric: tabular-nums;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  user-select: none;
+}
+
+html.kiosque, html.kiosque * { cursor: none; }
+
+/* ---------- Barre du haut ---------- */
+
+.barre {
+  display: flex;
+  align-items: center;
+  gap: 2vmin;
+  padding: 1vmin 2vmin;
+  border-bottom: 1px solid var(--bord);
+  font-size: clamp(12px, 2.2vmin, 22px);
+}
+
+.marque { font-weight: 700; letter-spacing: 0.12em; }
+.marque span { color: var(--accent); }
+
+.infos { margin-left: auto; display: flex; gap: 2.5vmin; color: var(--doux); }
+
+.pastille {
+  padding: 0.3em 0.9em;
+  border-radius: 999px;
+  font-weight: 600;
+  border: 1px solid currentColor;
+}
+.pastille.ok { color: var(--ok); }
+.pastille.perdu { color: var(--critique); background: rgba(255, 77, 79, 0.12); }
+.pastille.inconnu { color: var(--attention); }
+
+/* ---------- Alerte ---------- */
+
+.alerte {
+  margin: var(--ecart) var(--ecart) 0;
+  padding: 0.8vmin 2vmin;
+  border-radius: 6px;
+  font-weight: 700;
+  font-size: clamp(14px, 2.6vmin, 26px);
+  background: rgba(245, 166, 35, 0.15);
+  color: var(--attention);
+  border: 1px solid var(--attention);
+}
+.alerte.critique {
+  background: rgba(255, 77, 79, 0.18);
+  color: var(--critique);
+  border-color: var(--critique);
+}
+
+/* ---------- Grille ---------- */
+
+.grille {
+  display: grid;
+  grid-template-columns: 1.3fr 1fr 1fr;
+  grid-template-rows: 1.7fr 1fr;
+  grid-template-areas:
+    "assiette assiette cap"
+    "bms1 bms2 energie";
+  gap: var(--ecart);
+  padding: var(--ecart);
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.assiette { grid-area: assiette; }
+.cap { grid-area: cap; }
+#p-bms1 { grid-area: bms1; }
+#p-bms2 { grid-area: bms2; }
+.energie { grid-area: energie; }
+
+.panneau {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  min-width: 0;
+  padding: 1.2vmin 1.6vmin;
+  background: var(--panneau);
+  border: 1px solid var(--bord);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+h2 {
+  margin: 0 0 0.6vmin;
+  font-size: clamp(11px, 1.8vmin, 18px);
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--doux);
+}
+
+canvas {
+  display: block;
+  flex: 1 1 auto;
+  width: 100%;
+  min-height: 0;
+}
+
+/* ---------- Mesures sous les vues ---------- */
+
+.mesures {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  gap: 2vmin;
+  padding-top: 0.6vmin;
+}
+
+.mesure { display: flex; flex-direction: column; align-items: center; }
+
+.etiquette {
+  font-size: clamp(10px, 1.6vmin, 16px);
+  color: var(--doux);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.valeur {
+  font-size: clamp(22px, 5.5vmin, 64px);
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.sens { font-size: clamp(10px, 1.7vmin, 17px); color: var(--doux); min-height: 1.2em; }
+
+.badge {
+  padding: 0.3em 0.8em;
+  border-radius: 6px;
+  font-size: clamp(10px, 1.7vmin, 17px);
+  font-weight: 600;
+  border: 1px solid currentColor;
+  color: var(--doux);
+}
+.badge.ok { color: var(--ok); }
+.badge.moyen { color: var(--accent); }
+.badge.faible { color: var(--attention); }
+
+/* ---------- Batteries / energie ---------- */
+
+dl {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.5vmin 2vmin;
+  margin: 0;
+  font-size: clamp(12px, 2.1vmin, 22px);
+}
+dt { color: var(--doux); }
+dd { margin: 0; text-align: right; font-weight: 600; }
+
+.soc {
+  position: relative;
+  height: clamp(20px, 4vmin, 44px);
+  margin-bottom: 1vmin;
+  border-radius: 6px;
+  background: #1a2633;
+  overflow: hidden;
+}
+.soc-barre {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 0;
+  background: var(--ok);
+}
+.soc-barre.bas { background: var(--attention); }
+.soc-barre.critique { background: var(--critique); }
+.soc span {
+  position: relative;
+  display: flex;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: clamp(13px, 2.4vmin, 26px);
+  text-shadow: 0 1px 2px #000;
+}
+
+/* ---------- Donnees perimees ---------- */
+
+.voile {
+  position: absolute;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: rgba(10, 15, 21, 0.72);
+  color: var(--attention);
+  font-weight: 700;
+  font-size: clamp(13px, 2.4vmin, 24px);
+}
+.panneau.perime .voile { display: flex; }
+
+/* ---------- Petits ecrans / portrait ---------- */
+
+@media (max-aspect-ratio: 1/1), (max-width: 700px) {
+  body { overflow: auto; }
+  .grille {
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 50vh 40vh auto;
+    grid-template-areas:
+      "assiette assiette"
+      "cap cap"
+      "bms1 bms2"
+      "energie energie";
+  }
+}

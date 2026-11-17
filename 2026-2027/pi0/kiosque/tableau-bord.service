@@ -1,0 +1,36 @@
+# Serveur du tableau de bord : UART ESP32 -> page web locale (127.0.0.1:8080).
+# Installe par installer.sh, qui remplace @UTILISATEUR@ et @PI0@.
+[Unit]
+Description=Tableau de bord Hydrovinci (ESP32 -> ecran)
+After=local-fs.target
+
+[Service]
+Type=simple
+User=@UTILISATEUR@
+SupplementaryGroups=dialout
+WorkingDirectory=@PI0@
+ExecStart=@PI0@/tableau_bord --web @PI0@/web
+Restart=always
+RestartSec=2
+
+# Durcissement : le service ne peut que lire l'UART et ecouter en local
+NoNewPrivileges=yes
+CapabilityBoundingSet=
+ProtectSystem=strict
+ProtectHome=read-only
+PrivateTmp=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+ProtectHostname=yes
+RestrictAddressFamilies=AF_INET AF_UNIX
+RestrictNamespaces=yes
+RestrictRealtime=yes
+RestrictSUIDSGID=yes
+LockPersonality=yes
+MemoryDenyWriteExecute=yes
+SystemCallArchitectures=native
+MemoryMax=32M
+
+[Install]
+WantedBy=multi-user.target

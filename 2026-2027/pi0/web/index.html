@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hydrovinci SE</title>
+<link rel="stylesheet" href="/tableau.css">
+<script src="/bateau.js" defer></script>
+<script src="/tableau.js" defer></script>
+</head>
+<body>
+<header class="barre">
+  <div class="marque">HYDROVINCI <span>SE</span></div>
+  <div id="liaison" class="pastille inconnu">Connexion…</div>
+  <div class="infos">
+    <span id="fw">fw —</span>
+    <span id="uptime">ESP —</span>
+    <span id="heure">--:--:--</span>
+  </div>
+</header>
+
+<div id="alerte" class="alerte" hidden></div>
+
+<main class="grille">
+  <section class="panneau assiette" id="p-imu">
+    <h2>Assiette</h2>
+    <canvas id="vue3d"></canvas>
+    <div class="mesures">
+      <div class="mesure">
+        <span class="etiquette">Roulis</span>
+        <span class="valeur" id="roulis">—</span>
+        <span class="sens" id="roulis-sens"></span>
+      </div>
+      <div class="mesure">
+        <span class="etiquette">Tangage</span>
+        <span class="valeur" id="tangage">—</span>
+        <span class="sens" id="tangage-sens"></span>
+      </div>
+    </div>
+    <div class="voile">IMU sans données</div>
+  </section>
+
+  <section class="panneau cap" id="p-cap">
+    <h2>Cap</h2>
+    <canvas id="compas"></canvas>
+    <div class="mesures">
+      <div class="mesure">
+        <span class="valeur" id="cap">—</span>
+        <span class="sens" id="cardinal"></span>
+      </div>
+      <div id="calib" class="badge">—</div>
+    </div>
+    <div class="voile">IMU sans données</div>
+  </section>
+
+  <section class="panneau bms" id="p-bms1">
+    <h2>Batterie 1</h2>
+    <div class="soc"><div class="soc-barre" id="b1-soc-barre"></div><span id="b1-soc">—</span></div>
+    <dl>
+      <dt>Tension</dt><dd id="b1-tension">—</dd>
+      <dt>Courant</dt><dd id="b1-courant">—</dd>
+      <dt>Restant</dt><dd id="b1-restant">—</dd>
+      <dt>Cellules</dt><dd id="b1-cellules">—</dd>
+      <dt>Écart</dt><dd id="b1-ecart">—</dd>
+      <dt>Temp. max</dt><dd id="b1-temp">—</dd>
+    </dl>
+    <div class="voile">Pas de données</div>
+  </section>
+
+  <section class="panneau bms" id="p-bms2">
+    <h2>Batterie 2</h2>
+    <div class="soc"><div class="soc-barre" id="b2-soc-barre"></div><span id="b2-soc">—</span></div>
+    <dl>
+      <dt>Tension</dt><dd id="b2-tension">—</dd>
+      <dt>Courant</dt><dd id="b2-courant">—</dd>
+      <dt>Restant</dt><dd id="b2-restant">—</dd>
+      <dt>Cellules</dt><dd id="b2-cellules">—</dd>
+      <dt>Écart</dt><dd id="b2-ecart">—</dd>
+      <dt>Temp. max</dt><dd id="b2-temp">—</dd>
+    </dl>
+    <div class="voile">Pas de données</div>
+  </section>
+
+  <section class="panneau energie" id="p-power">
+    <h2>Énergie</h2>
+    <dl>
+      <dt>Tension</dt><dd id="pw-tension">—</dd>
+      <dt>Courant</dt><dd id="pw-courant">—</dd>
+      <dt>Puissance</dt><dd id="pw-puissance">—</dd>
+    </dl>
+    <div class="voile">Pas de données</div>
+  </section>
+</main>
+</body>
+</html>
