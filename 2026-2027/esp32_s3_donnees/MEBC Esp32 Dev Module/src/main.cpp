@@ -2,6 +2,7 @@
 // Toute la logique est en C dans app.c.
 
 #include <Arduino.h>
+#include <Wire.h>
 #include <stdarg.h>
 
 #include "app.h"
@@ -36,6 +37,25 @@ void plateforme_log(const char* format, ...) {
     Serial.print(ligne);
 }
 
+bool plateforme_imu_i2c_ecrire(uint8_t adresse, const uint8_t* data, size_t len) {
+    Wire.beginTransmission(adresse);
+    Wire.write(data, len);
+    return Wire.endTransmission() == 0;
+}
+
+bool plateforme_imu_i2c_lire(uint8_t adresse, uint8_t* data, size_t len) {
+    if (Wire.requestFrom(adresse, len) != len) {
+        while (Wire.available()) Wire.read();
+        return false;
+    }
+    for (size_t i = 0; i < len; ++i) data[i] = static_cast<uint8_t>(Wire.read());
+    return true;
+}
+
+bool plateforme_imu_int_actif(void) { return digitalRead(PIN_IMU_INT) == LOW; }
+
+void plateforme_imu_rst(int niveau) { digitalWrite(PIN_IMU_RST, niveau ? HIGH : LOW); }
+
 }  // extern "C"
 
 void setup() {
@@ -44,6 +64,12 @@ void setup() {
     portPi.setRxBufferSize(4096);
     portPi.setTxBufferSize(8192);
     portPi.begin(PROTO_VITESSE_DEFAUT, SERIAL_8N1, PIN_UART_PI_RX, PIN_UART_PI_TX);
+
+    pinMode(PIN_IMU_INT, INPUT_PULLUP);
+    pinMode(PIN_IMU_RST, OUTPUT);
+    digitalWrite(PIN_IMU_RST, HIGH);
+    Wire.begin(PIN_I2C_SDA, PIN_I2C_SCL, 400000);
+    Wire.setTimeOut(20);
     delay(100);
     app_init();
 }

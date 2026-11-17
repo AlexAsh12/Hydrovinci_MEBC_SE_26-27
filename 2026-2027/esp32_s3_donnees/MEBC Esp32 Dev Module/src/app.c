@@ -4,6 +4,7 @@
  *
  * Pour l'instant :
  *   - HELLO au demarrage, HB + BMS FACTICE chaque seconde
+ *   - IMU BNO085 (roulis, tangage, cap) a 5 Hz
  *   - repond a PING / INFO / CMD (reboot, changement de vitesse, flux de test)
  *   - mode "flux de test" : envoie des trames TEST aussi vite que la
  *     liaison le permet, pour mesurer le debit cote Pi.
@@ -14,8 +15,10 @@
 
 #include <protocole.h>
 
+#include "bno085.h"
+
 #define VERSION_FW_MAJEUR 0
-#define VERSION_FW_MINEUR 3
+#define VERSION_FW_MINEUR 4
 #define VERSION_FW_CORRECTIF 0
 
 #if defined(CARTE_WROOM32E)
@@ -34,6 +37,11 @@
 #define DELAI_SILENCE_PI_MS 10000u
 #define DUREE_MAX_FLUX_MS 30000u
 
+/* IMU : le capteur mesure a 10 Hz, la Pi recoit la derniere mesure a 5 Hz */
+#define PERIODE_MESURE_IMU_MS 100u
+#define PERIODE_ENVOI_IMU_MS 200u
+#define AGE_MAX_MESURE_IMU_MS 500u
+
 static proto_decodeur_t decodeur;
 static uint8_t trame[PROTO_MAX_TRAME];
 static uint16_t sequence;
@@ -43,6 +51,7 @@ static int attente_confirmation;
 static uint32_t echeance_confirmation;
 static uint32_t derniere_trame_pi_ms;
 static uint32_t dernier_envoi_ms;
+static uint32_t dernier_envoi_imu_ms;
 
 static struct {
     int actif;
@@ -110,6 +119,33 @@ static void envoyer_bms_factice(uint32_t maintenant)
     m.temps_dixieme[0] = 250;
     m.temps_dixieme[1] = 261;
     envoyer(PROTO_T_BMS, proto_encoder_bms(&m, PAYLOAD, PLACE_PAYLOAD));
+}
+
+/* Rien n'est envoye si la mesure est trop vieille : la Pi voit l'absence. */
+static void envoyer_imu(uint32_t maintenant)
+{
+    bno085_mesure_t b;
+    if (!bno085_mesure(maintenant, AGE_MAX_MESURE_IMU_MS, &b)) {
+        return;
+    }
+    const proto_imu_t m = {b.roulis_cdeg, b.tangage_cdeg, b.cap_cdeg, b.precision};
+    envoyer(PROTO_T_IMU, proto_encoder_imu(&m, PAYLOAD, PLACE_PAYLOAD));
+}
+
+static void log_imu(uint32_t maintenant)
+{
+    static const char *const PRECISION[] = {"non fiable", "faible", "moyenne", "haute"};
+    const bno085_stats_t *s = bno085_stats();
+    bno085_mesure_t b;
+    if (bno085_mesure(maintenant, AGE_MAX_MESURE_IMU_MS, &b)) {
+        plateforme_log("[IMU] roulis %7.2f  tangage %7.2f  cap %6.2f  (precision %s) | %lu mesures\n",
+                       b.roulis_cdeg / 100.0, b.tangage_cdeg / 100.0, b.cap_cdeg / 100.0,
+                       PRECISION[b.precision & 3], (unsigned long)s->mesures);
+    } else {
+        plateforme_log("[IMU] pas de mesure (%s) | resets %lu, erreurs I2C %lu\n",
+                       bno085_en_marche() ? "en marche" : "demarrage",
+                       (unsigned long)s->redemarrages, (unsigned long)s->erreurs_i2c);
+    }
 }
 
 static void revenir_vitesse_defaut(const char *raison)
@@ -251,11 +287,14 @@ void app_init(void)
                    VERSION_FW_MAJEUR, VERSION_FW_MINEUR, VERSION_FW_CORRECTIF, PROTO_VERSION,
                    (unsigned long)vitesse);
     envoyer_hello();
+    bno085_init(PERIODE_MESURE_IMU_MS);
 }
 
 void app_tick(void)
 {
     const uint32_t maintenant = plateforme_millis();
+
+    bno085_tick(maintenant);
 
     if (flux.actif) {
         continuer_flux(maintenant);
@@ -276,5 +315,11 @@ void app_tick(void)
         plateforme_log("[UART] %lu bauds | recu de la Pi : %lu ok, %lu erreurs CRC\n",
                        (unsigned long)vitesse, (unsigned long)decodeur.trames_ok,
                        (unsigned long)decodeur.erreurs_crc);
+        log_imu(maintenant);
+    }
+
+    if (maintenant - dernier_envoi_imu_ms >= PERIODE_ENVOI_IMU_MS) {
+        dernier_envoi_imu_ms = maintenant;
+        envoyer_imu(maintenant);
     }
 }

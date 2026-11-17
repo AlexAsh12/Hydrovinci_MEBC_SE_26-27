@@ -403,6 +403,7 @@ size_t proto_encoder_imu(const proto_imu_t *m, uint8_t *p, size_t taille)
     proto_e_i16(&e, m->roulis_cdeg);
     proto_e_i16(&e, m->tangage_cdeg);
     proto_e_u16(&e, m->cap_cdeg);
+    proto_e_u8(&e, m->precision);
     return FIN_ENCODAGE(e);
 }
 
@@ -413,6 +414,8 @@ bool proto_decoder_imu(const uint8_t *p, size_t len, proto_imu_t *m)
     m->roulis_cdeg = proto_l_i16(&l);
     m->tangage_cdeg = proto_l_i16(&l);
     m->cap_cdeg = proto_l_u16(&l);
+    /* Champ ajoute apres coup : absent chez un ancien emetteur */
+    m->precision = l.pos < len ? proto_l_u8(&l) : PROTO_IMU_PRECISION_INCONNUE;
     return !l.erreur;
 }
 

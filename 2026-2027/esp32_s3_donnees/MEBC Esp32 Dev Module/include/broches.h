@@ -8,6 +8,12 @@
 constexpr int PIN_UART_PI_RX = 16;  // UART2 RX  <- TX de la Pi (GPIO14, broche 8)
 constexpr int PIN_UART_PI_TX = 17;  // UART2 TX  -> RX de la Pi (GPIO15, broche 10)
 
+// Bus I2C (IMU BNO085 en 0x4A, plus tard INA226)
+constexpr int PIN_I2C_SDA = 21;
+constexpr int PIN_I2C_SCL = 22;
+constexpr int PIN_IMU_INT = 4;   // BNO085 INT : a 0 quand une mesure est prete
+constexpr int PIN_IMU_RST = 23;  // BNO085 RST : a 0 = reset
+
 #elif defined(CARTE_S3)
 // ESP32-S3 DevKitC-1 (carte finale) : a definir avec le routage du PCB HAT
 #error "Broches ESP32-S3 pas encore definies : completer include/broches.h"

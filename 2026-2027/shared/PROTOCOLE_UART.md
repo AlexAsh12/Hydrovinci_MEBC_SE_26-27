@@ -86,7 +86,7 @@ Temperature indisponible : `INT16_MIN` (-32768).
 | 0x10 | BMS | 1 Hz par BMS | voir ci-dessous |
 | 0x11 | TEMP | 1 Hz | `u8 nb` puis nb x (`u8 rom[8], i16 temp`) |
 | 0x12 | POWER | 1 Hz | `u16 tension_mv, i32 courant_ma, i32 puissance_mw` |
-| 0x13 | IMU | 5 Hz | `i16 roulis, i16 tangage, u16 cap` (0 a 35999) |
+| 0x13 | IMU | 5 Hz | `i16 roulis, i16 tangage, u16 cap` (0 a 35999), `u8 precision` du cap (0 non fiable a 3 haute) |
 | 0x14 | PILOT | Changement + 1 Hz | `u8 ok, u8 boutons, u8 voyants` (bit i = element i) |
 | 0x20 | ALERT | A chaque alerte | `u8 code, u8 niveau, u8 source, i32 valeur` |
 | 0x21 | LOG | Ponctuel | `u8 niveau` ('D','I','W','E') puis texte ASCII sans `\0` |

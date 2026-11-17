@@ -219,7 +219,11 @@ typedef struct {
     int16_t roulis_cdeg;           /* en 0,01 degre */
     int16_t tangage_cdeg;
     uint16_t cap_cdeg;             /* 0 a 35999 */
+    uint8_t precision;             /* calibration du cap : 0 non fiable .. 3 haute,
+                                      PROTO_IMU_PRECISION_INCONNUE si absent */
 } proto_imu_t;
+
+#define PROTO_IMU_PRECISION_INCONNUE 0xFF
 
 typedef struct {
     uint8_t ok;                    /* 0 = noeud pilote muet sur le CAN */

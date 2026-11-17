@@ -6,6 +6,7 @@
 #ifndef APP_H
 #define APP_H
 
+#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 
@@ -25,6 +26,12 @@ void plateforme_attendre_fin_emission(void);
 void plateforme_changer_vitesse(uint32_t vitesse);
 void plateforme_redemarrer(void);
 void plateforme_log(const char *format, ...);            /* debug sur l'USB */
+
+/* IMU BNO085 : bus I2C et broches INT / RST */
+bool plateforme_imu_i2c_ecrire(uint8_t adresse, const uint8_t *data, size_t len);
+bool plateforme_imu_i2c_lire(uint8_t adresse, uint8_t *data, size_t len);
+bool plateforme_imu_int_actif(void);                     /* INT a 0 = donnees pretes */
+void plateforme_imu_rst(int niveau);
 
 #ifdef __cplusplus
 }
