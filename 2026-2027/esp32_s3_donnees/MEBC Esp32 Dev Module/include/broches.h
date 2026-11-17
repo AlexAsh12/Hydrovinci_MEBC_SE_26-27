@@ -16,4 +16,4 @@ constexpr int PIN_UART_PI_TX = 17;  // UART2 TX  -> RX de la Pi (GPIO15, broche 
 #error "Aucune carte definie : utiliser un environnement de platformio.ini"
 #endif
 
-constexpr unsigned long VITESSE_UART_PI = 115200;
+// La vitesse de la liaison Pi est definie par le protocole (PROTO_VITESSE_DEFAUT).
