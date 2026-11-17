@@ -26,7 +26,9 @@
 
 #define EXE_RESET_COMPLETE 0x01
 #define CMD_SET_FEATURE 0xFD
-#define RAPPORT_ROTATION 0x05
+#define RAPPORT_GYROSCOPE 0x02     /* vitesses de rotation calibrees */
+#define RAPPORT_ACCELERATION 0x04  /* acceleration lineaire, sans la gravite */
+#define RAPPORT_ROTATION 0x05      /* orientation (fusion avec le magnetometre) */
 #define RAPPORT_HORODATAGE 0xFB
 #define RAPPORT_RECALAGE 0xFA
 
@@ -53,6 +55,9 @@ static uint8_t paquet_canal;
 
 static bno085_mesure_t mesure;
 static bool mesure_valide;
+static bno085_mouvement_t mouvement;
+static uint32_t date_acceleration_ms, date_gyroscope_ms;
+static bool acceleration_recue, gyroscope_recu;
 static bno085_stats_t stats;
 
 /* ------------------------------------------------------------------ */
@@ -118,12 +123,12 @@ static bool lire_paquet(void)
 /* SH-2                                                                */
 /* ------------------------------------------------------------------ */
 
-static bool activer_rotation(void)
+static bool activer(uint8_t rapport)
 {
     uint8_t c[17];
     memset(c, 0, sizeof c);
     c[0] = CMD_SET_FEATURE;
-    c[1] = RAPPORT_ROTATION;
+    c[1] = rapport;
     c[5] = (uint8_t)(periode_us);
     c[6] = (uint8_t)(periode_us >> 8);
     c[7] = (uint8_t)(periode_us >> 16);
@@ -134,6 +139,38 @@ static bool activer_rotation(void)
 static int16_t l_i16(const uint8_t *p) { return (int16_t)(p[0] | (p[1] << 8)); }
 
 static int32_t arrondi(float x) { return (int32_t)(x < 0 ? x - 0.5f : x + 0.5f); }
+
+/* Arrondi borne a un int16 (une valeur hors plage est ecretee, pas repliee) */
+static int16_t sat16(float x)
+{
+    const int32_t v = arrondi(x);
+    return (int16_t)(v > 32767 ? 32767 : v < -32767 ? -32767 : v);
+}
+
+/* Acceleration lineaire (sans gravite), Q8 en m/s2. Axes de la carte :
+ * X = tribord, Y = avant, Z = haut. */
+static void lire_acceleration(const uint8_t *r, uint32_t maintenant)
+{
+    const float vers_cms2 = 100.0f / 256.0f;
+    mouvement.acc_lateral_cms2 = sat16(l_i16(r + 4) * vers_cms2);
+    mouvement.acc_avant_cms2 = sat16(l_i16(r + 6) * vers_cms2);
+    mouvement.acc_vertical_cms2 = sat16(l_i16(r + 8) * vers_cms2);
+    date_acceleration_ms = maintenant;
+    acceleration_recue = true;
+}
+
+/* Gyroscope calibre, Q9 en rad/s -> 0,1 degre/s. Regle de la main droite :
+ * autour de Y (avant) + = tribord qui descend, autour de X (tribord) + =
+ * avant qui monte, autour de Z (haut) + = virage vers babord, d'ou le signe. */
+static void lire_gyroscope(const uint8_t *r, uint32_t maintenant)
+{
+    const float vers_ddps = 572.957795f / 512.0f;
+    mouvement.vit_tangage_ddps = sat16(l_i16(r + 4) * vers_ddps);
+    mouvement.vit_roulis_ddps = sat16(l_i16(r + 6) * vers_ddps);
+    mouvement.giration_ddps = sat16(-l_i16(r + 8) * vers_ddps);
+    date_gyroscope_ms = maintenant;
+    gyroscope_recu = true;
+}
 
 /* Quaternion (Q14) -> angles. La matrice R(q) passe du repere de la carte
  * au repere terrestre Est / Nord / Haut. */
@@ -168,6 +205,10 @@ static void convertir(const uint8_t *r, uint32_t maintenant)
     mesure.tangage_cdeg = (int16_t)arrondi(tangage * 100.0f);
     mesure.cap_cdeg = (uint16_t)cap_cdeg;
     mesure.precision = (uint8_t)(r[2] & 0x03);
+    /* Incertitude estimee du cap par le capteur, Q12 en radians */
+    const int16_t incertitude = l_i16(r + 12);
+    mesure.incertitude_cdeg = incertitude < 0 ? BNO085_INCERTITUDE_INCONNUE
+                                              : (uint16_t)arrondi(incertitude * (5729.57795f / 4096.0f));
     mesure.date_ms = maintenant;
     mesure_valide = true;
     derniere_mesure_ms = maintenant;
@@ -185,6 +226,14 @@ static void traiter_rapports(uint32_t maintenant)
             if (i + 14 > paquet_len) break;
             convertir(paquet + i, maintenant);
             i = (uint16_t)(i + 14);
+        } else if (id == RAPPORT_ACCELERATION) {
+            if (i + 10 > paquet_len) break;
+            lire_acceleration(paquet + i, maintenant);
+            i = (uint16_t)(i + 10);
+        } else if (id == RAPPORT_GYROSCOPE) {
+            if (i + 10 > paquet_len) break;
+            lire_gyroscope(paquet + i, maintenant);
+            i = (uint16_t)(i + 10);
         } else {
             break;  /* rapport non demande : on ignore la suite du paquet */
         }
@@ -212,7 +261,7 @@ static void lancer_reset(uint32_t maintenant)
 
 static void configurer(uint32_t maintenant)
 {
-    if (activer_rotation()) {
+    if (activer(RAPPORT_ROTATION) && activer(RAPPORT_ACCELERATION) && activer(RAPPORT_GYROSCOPE)) {
         plateforme_log("[IMU] BNO085 pret, mesure toutes les %lu ms\n", (unsigned long)(periode_us / 1000u));
     } else {
         plateforme_log("[IMU] echec de configuration (I2C)\n");
@@ -287,6 +336,18 @@ bool bno085_mesure(uint32_t maintenant, uint32_t age_max_ms, bno085_mesure_t *m)
         return false;
     }
     *m = mesure;
+    return true;
+}
+
+/* Uniquement si l'acceleration ET le gyroscope sont recents : jamais de
+ * melange avec une vieille valeur. */
+bool bno085_mouvement(uint32_t maintenant, uint32_t age_max_ms, bno085_mouvement_t *m)
+{
+    if (!acceleration_recue || !gyroscope_recu || maintenant - date_acceleration_ms > age_max_ms ||
+        maintenant - date_gyroscope_ms > age_max_ms) {
+        return false;
+    }
+    *m = mouvement;
     return true;
 }
 

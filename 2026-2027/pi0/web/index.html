@@ -13,6 +13,7 @@
   <div class="marque">HYDROVINCI <span>SE</span></div>
   <div id="liaison" class="pastille inconnu">Connexion…</div>
   <div class="infos">
+    <span id="lien">UART —</span>
     <span id="fw">fw —</span>
     <span id="uptime">ESP —</span>
     <span id="heure">--:--:--</span>
@@ -40,13 +41,30 @@
     <div class="voile">IMU sans données</div>
   </section>
 
+  <section class="panneau mouvement" id="p-mouv">
+    <h2>Mouvement</h2>
+    <h3>Accélération</h3>
+    <dl>
+      <dt>Avant</dt><dd id="acc-avant">—</dd>
+      <dt>Latérale</dt><dd id="acc-lateral">—</dd>
+      <dt>Verticale</dt><dd id="acc-vertical">—</dd>
+    </dl>
+    <h3>Rotation</h3>
+    <dl>
+      <dt>Giration</dt><dd id="giration">—</dd>
+      <dt>Roulis</dt><dd id="vit-roulis">—</dd>
+      <dt>Tangage</dt><dd id="vit-tangage">—</dd>
+    </dl>
+    <div class="voile">IMU sans données</div>
+  </section>
+
   <section class="panneau cap" id="p-cap">
     <h2>Cap</h2>
     <canvas id="compas"></canvas>
     <div class="mesures">
       <div class="mesure">
         <span class="valeur" id="cap">—</span>
-        <span class="sens" id="cardinal"></span>
+        <span class="sens"><span id="cardinal"></span> <span id="cap-incertitude"></span></span>
       </div>
       <div id="calib" class="badge">—</div>
     </div>

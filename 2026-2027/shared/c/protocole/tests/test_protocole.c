@@ -130,12 +130,22 @@ static void test_messages(void)
     VERIF(n == 10 && proto_decoder_power(p, n, &pw2));
     VERIF(pw2.tension_mv == 12900 && pw2.courant_ma == -1800 && pw2.puissance_mw == -23220);
 
-    proto_imu_t im = {-250, 120, 35999, 2}, im2;
+    proto_imu_t im = {-250, 120, 35999, 2, 450}, im2;
     n = proto_encoder_imu(&im, p, sizeof p);
-    VERIF(n == 7 && proto_decoder_imu(p, n, &im2));
-    VERIF(im2.roulis_cdeg == -250 && im2.cap_cdeg == 35999 && im2.precision == 2);
-    /* ancien format, sans la precision */
-    VERIF(proto_decoder_imu(p, 6, &im2) && im2.precision == PROTO_IMU_PRECISION_INCONNUE);
+    VERIF(n == 9 && proto_decoder_imu(p, n, &im2));
+    VERIF(im2.roulis_cdeg == -250 && im2.cap_cdeg == 35999 && im2.precision == 2 &&
+          im2.incertitude_cdeg == 450);
+    /* anciens formats : sans l'incertitude, puis sans la precision */
+    VERIF(proto_decoder_imu(p, 7, &im2) && im2.precision == 2 &&
+          im2.incertitude_cdeg == PROTO_IMU_INCERTITUDE_INCONNUE);
+    VERIF(proto_decoder_imu(p, 6, &im2) && im2.precision == PROTO_IMU_PRECISION_INCONNUE &&
+          im2.incertitude_cdeg == PROTO_IMU_INCERTITUDE_INCONNUE);
+
+    proto_mouvement_t mv = {-981, 12, 30000, -1234, 56, -32000}, mv2;
+    n = proto_encoder_mouvement(&mv, p, sizeof p);
+    VERIF(n == 12 && proto_decoder_mouvement(p, n, &mv2));
+    VERIF(memcmp(&mv, &mv2, sizeof mv) == 0);
+    VERIF(!proto_decoder_mouvement(p, 11, &mv2));
 
     proto_pilot_t pi = {1, 0x04, 0x08}, pi2;
     n = proto_encoder_pilot(&pi, p, sizeof p);

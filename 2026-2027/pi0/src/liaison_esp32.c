@@ -537,6 +537,15 @@ static int rappel_moniteur(const proto_trame_t *t, void *ctx)
         }
         break;
     }
+    case PROTO_T_MOUVEMENT: {
+        proto_mouvement_t m;
+        if (proto_decoder_mouvement(t->payload, t->len, &m)) {
+            printf("mouv  acc %.2f %.2f %.2f m/s2  rot %.1f %.1f %.1f deg/s\n", m.acc_avant_cms2 / 100.0,
+                   m.acc_lateral_cms2 / 100.0, m.acc_vertical_cms2 / 100.0, m.vit_roulis_ddps / 10.0,
+                   m.vit_tangage_ddps / 10.0, m.giration_ddps / 10.0);
+        }
+        break;
+    }
     case PROTO_T_PILOT: {
         proto_pilot_t p;
         if (proto_decoder_pilot(t->payload, t->len, &p)) {

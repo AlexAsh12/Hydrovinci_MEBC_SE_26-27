@@ -177,7 +177,7 @@
   /* ------------------------------------------------------------------ */
 
   const PERIME_MS = 1500;
-  const vu = { imu: 0, bms1: 0, bms2: 0, power: 0, temp: 0, etat: 0 };
+  const vu = { imu: 0, mouv: 0, bms1: 0, bms2: 0, power: 0, temp: 0, etat: 0 };
 
   function signe(v, decimales) { return (v > 0 ? '+' : '') + v.toFixed(decimales); }
 
@@ -203,12 +203,25 @@
     texte($('cap'), String(Math.round(cible.cap) % 360).padStart(3, '0') + '°');
     texte($('cardinal'), CARDINAUX[Math.round(cible.cap / 22.5) % 16]);
 
+    // Incertitude du cap estimee par le capteur (-1 = non transmise)
+    texte($('cap-incertitude'), m.incertitude >= 0 ? '± ' + (m.incertitude / 100).toFixed(m.incertitude < 1000 ? 1 : 0) + '°' : '');
+
     const badge = $('calib');
     const p = PRECISION[m.precision];
     texte(badge, p ? p[0] : 'Calibration inconnue');
     const niveau = p ? p[1] : '';
     for (const n of ['ok', 'moyen', 'faible']) classe(badge, n, n === niveau);
     relancer();
+  }
+
+  function surMouvement(m) {
+    vu.mouv = performance.now();
+    texte($('acc-avant'), signe(m.acc_avant / 100, 2) + ' m/s²');
+    texte($('acc-lateral'), signe(m.acc_lateral / 100, 2) + ' m/s²');
+    texte($('acc-vertical'), signe(m.acc_vertical / 100, 2) + ' m/s²');
+    texte($('giration'), signe(m.giration / 10, 1) + ' °/s');
+    texte($('vit-roulis'), signe(m.vit_roulis / 10, 1) + ' °/s');
+    texte($('vit-tangage'), signe(m.vit_tangage / 10, 1) + ' °/s');
   }
 
   function surBms(m) {
@@ -319,11 +332,13 @@
       case 'bms': surBms(m); break;
       case 'power': surPower(m); break;
       case 'temp': surTemp(m); break;
+      case 'mouv': surMouvement(m); break;
       case 'hb': texte($('uptime'), 'ESP ' + duree(m.uptime)); break;
       case 'hello': texte($('fw'), 'fw ' + m.fw); break;
       case 'alerte': surAlerte(m); break;
       case 'etat':
         vu.etat = performance.now();
+        texte($('lien'), 'UART ' + m.crc + (m.crc > 1 ? ' erreurs' : ' erreur'));
         if (m.esp) etatLiaison('ESP32 connecté', 'ok');
         else if (!m.uart) etatLiaison('UART indisponible', 'perdu');
         else etatLiaison('ESP32 perdu', 'perdu');
@@ -345,6 +360,7 @@
     const t = performance.now();
     classe($('p-imu'), 'perime', t - vu.imu > PERIME_MS);
     classe($('p-cap'), 'perime', t - vu.imu > PERIME_MS);
+    classe($('p-mouv'), 'perime', t - vu.mouv > PERIME_MS);
     classe($('p-bms1'), 'perime', t - vu.bms1 > 3000);
     classe($('p-bms2'), 'perime', t - vu.bms2 > 3000);
     classe($('p-power'), 'perime', t - vu.power > 3000);

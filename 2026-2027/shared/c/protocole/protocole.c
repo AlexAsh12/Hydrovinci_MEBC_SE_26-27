@@ -404,6 +404,7 @@ size_t proto_encoder_imu(const proto_imu_t *m, uint8_t *p, size_t taille)
     proto_e_i16(&e, m->tangage_cdeg);
     proto_e_u16(&e, m->cap_cdeg);
     proto_e_u8(&e, m->precision);
+    proto_e_u16(&e, m->incertitude_cdeg);
     return FIN_ENCODAGE(e);
 }
 
@@ -414,8 +415,35 @@ bool proto_decoder_imu(const uint8_t *p, size_t len, proto_imu_t *m)
     m->roulis_cdeg = proto_l_i16(&l);
     m->tangage_cdeg = proto_l_i16(&l);
     m->cap_cdeg = proto_l_u16(&l);
-    /* Champ ajoute apres coup : absent chez un ancien emetteur */
-    m->precision = l.pos < len ? proto_l_u8(&l) : PROTO_IMU_PRECISION_INCONNUE;
+    /* Champs ajoutes apres coup : absents chez un ancien emetteur */
+    m->precision = l.pos + 1 <= len ? proto_l_u8(&l) : PROTO_IMU_PRECISION_INCONNUE;
+    m->incertitude_cdeg = l.pos + 2 <= len ? proto_l_u16(&l) : PROTO_IMU_INCERTITUDE_INCONNUE;
+    return !l.erreur;
+}
+
+size_t proto_encoder_mouvement(const proto_mouvement_t *m, uint8_t *p, size_t taille)
+{
+    proto_ecrivain_t e;
+    proto_ecrivain_init(&e, p, taille);
+    proto_e_i16(&e, m->acc_avant_cms2);
+    proto_e_i16(&e, m->acc_lateral_cms2);
+    proto_e_i16(&e, m->acc_vertical_cms2);
+    proto_e_i16(&e, m->vit_roulis_ddps);
+    proto_e_i16(&e, m->vit_tangage_ddps);
+    proto_e_i16(&e, m->giration_ddps);
+    return FIN_ENCODAGE(e);
+}
+
+bool proto_decoder_mouvement(const uint8_t *p, size_t len, proto_mouvement_t *m)
+{
+    proto_lecteur_t l;
+    proto_lecteur_init(&l, p, len);
+    m->acc_avant_cms2 = proto_l_i16(&l);
+    m->acc_lateral_cms2 = proto_l_i16(&l);
+    m->acc_vertical_cms2 = proto_l_i16(&l);
+    m->vit_roulis_ddps = proto_l_i16(&l);
+    m->vit_tangage_ddps = proto_l_i16(&l);
+    m->giration_ddps = proto_l_i16(&l);
     return !l.erreur;
 }
 

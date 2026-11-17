@@ -73,6 +73,8 @@ Valeurs entieres a virgule fixe : pas de flottants sur le fil.
 | Temperature sonde 1-Wire | 0,01 degC |
 | Tension / courant / puissance INA226 | mV / mA / mW |
 | Angles IMU | 0,01 degre |
+| Accelerations IMU | 0,01 m/s2 |
+| Vitesses de rotation IMU | 0,1 degre/s |
 | Temps | ms |
 
 Temperature indisponible : `INT16_MIN` (-32768).
@@ -86,8 +88,13 @@ Temperature indisponible : `INT16_MIN` (-32768).
 | 0x10 | BMS | 1 Hz par BMS | voir ci-dessous |
 | 0x11 | TEMP | 1 Hz | `u8 nb` puis nb x (`u8 rom[8], i16 temp`) |
 | 0x12 | POWER | 1 Hz | `u16 tension_mv, i32 courant_ma, i32 puissance_mw` |
-| 0x13 | IMU | 5 Hz | `i16 roulis, i16 tangage, u16 cap` (0 a 35999), `u8 precision` du cap (0 non fiable a 3 haute) |
+| 0x13 | IMU | 5 Hz | `i16 roulis, i16 tangage, u16 cap` (0 a 35999), `u8 precision` du cap (0 non fiable a 3 haute), `u16 incertitude` du cap (0xFFFF inconnue) |
 | 0x14 | PILOT | Changement + 1 Hz | `u8 ok, u8 boutons, u8 voyants` (bit i = element i) |
+| 0x15 | MOUVEMENT | 5 Hz | `i16 acc_avant, i16 acc_lateral, i16 acc_vertical, i16 vit_roulis, i16 vit_tangage, i16 giration` |
+
+**MOUVEMENT** : repere du bateau. Accelerations sans la gravite (+ = vers
+l'avant, vers tribord, vers le haut). Vitesses de rotation : + = tribord qui
+descend, avant qui monte, bateau qui tourne vers tribord.
 | 0x20 | ALERT | A chaque alerte | `u8 code, u8 niveau, u8 source, i32 valeur` |
 | 0x21 | LOG | Ponctuel | `u8 niveau` ('D','I','W','E') puis texte ASCII sans `\0` |
 | 0x30 | ACK | Reponse a une commande | `u16 ref, u8 ok, u8 erreur` |

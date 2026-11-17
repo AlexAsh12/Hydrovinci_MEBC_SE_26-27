@@ -82,7 +82,7 @@ html.kiosque, html.kiosque * { cursor: none; }
   grid-template-columns: repeat(12, 1fr);
   grid-template-rows: 1.7fr 1fr;
   grid-template-areas:
-    "assiette assiette assiette assiette assiette assiette assiette cap cap cap cap cap"
+    "assiette assiette assiette assiette assiette mouv mouv mouv cap cap cap cap"
     "bms1 bms1 bms1 bms2 bms2 bms2 energie energie energie temp temp temp";
   gap: var(--ecart);
   padding: var(--ecart);
@@ -96,6 +96,15 @@ html.kiosque, html.kiosque * { cursor: none; }
 #p-bms2 { grid-area: bms2; }
 .energie { grid-area: energie; }
 .temperatures { grid-area: temp; }
+.mouvement { grid-area: mouv; }
+
+h3 {
+  margin: 1vmin 0 0.4vmin;
+  font-size: clamp(10px, 1.5vmin, 15px);
+  font-weight: 600;
+  color: var(--accent);
+}
+.mouvement h3:first-of-type { margin-top: 0; }
 
 .panneau {
   position: relative;
@@ -263,7 +272,7 @@ dd { margin: 0; text-align: right; font-weight: 600; }
     grid-template-rows: 50vh 40vh auto;
     grid-template-areas:
       "assiette assiette"
-      "cap cap"
+      "cap mouv"
       "bms1 bms2"
       "energie temp";
   }

@@ -97,7 +97,7 @@ static uint64_t derniere_trame_ms;
 static int esp_present;
 
 /* Dernier evenement de chaque sorte, envoye a tout nouveau client */
-enum { D_HELLO, D_HB, D_IMU, D_BMS1, D_BMS2, D_POWER, D_TEMP, D_PILOT, NB_DERNIERS };
+enum { D_HELLO, D_HB, D_IMU, D_MOUV, D_BMS1, D_BMS2, D_POWER, D_TEMP, D_PILOT, NB_DERNIERS };
 static char derniers[NB_DERNIERS][TAILLE_EVENEMENT];
 
 static volatile sig_atomic_t arret;
@@ -368,10 +368,21 @@ static void traiter_trame(const proto_trame_t *t)
     case PROTO_T_IMU: {
         proto_imu_t m;
         if (!proto_decoder_imu(t->payload, t->len, &m)) return;
-        j(&s, "{\"t\":\"imu\",\"roulis\":%d,\"tangage\":%d,\"cap\":%u,\"precision\":%d}",
+        j(&s, "{\"t\":\"imu\",\"roulis\":%d,\"tangage\":%d,\"cap\":%u,\"precision\":%d,\"incertitude\":%d}",
           m.roulis_cdeg, m.tangage_cdeg, m.cap_cdeg,
-          m.precision == PROTO_IMU_PRECISION_INCONNUE ? -1 : (int)m.precision);
+          m.precision == PROTO_IMU_PRECISION_INCONNUE ? -1 : (int)m.precision,
+          m.incertitude_cdeg == PROTO_IMU_INCERTITUDE_INCONNUE ? -1 : (int)m.incertitude_cdeg);
         memoriser_et_diffuser(D_IMU, &s);
+        break;
+    }
+    case PROTO_T_MOUVEMENT: {
+        proto_mouvement_t m;
+        if (!proto_decoder_mouvement(t->payload, t->len, &m)) return;
+        j(&s, "{\"t\":\"mouv\",\"acc_avant\":%d,\"acc_lateral\":%d,\"acc_vertical\":%d,"
+              "\"vit_roulis\":%d,\"vit_tangage\":%d,\"giration\":%d}",
+          m.acc_avant_cms2, m.acc_lateral_cms2, m.acc_vertical_cms2, m.vit_roulis_ddps,
+          m.vit_tangage_ddps, m.giration_ddps);
+        memoriser_et_diffuser(D_MOUV, &s);
         break;
     }
     case PROTO_T_BMS: {

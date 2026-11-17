@@ -47,6 +47,7 @@ enum {
     PROTO_T_POWER      = 0x12,
     PROTO_T_IMU        = 0x13,
     PROTO_T_PILOT      = 0x14,
+    PROTO_T_MOUVEMENT  = 0x15,
     PROTO_T_ALERT      = 0x20,
     PROTO_T_LOG        = 0x21,
     PROTO_T_ACK        = 0x30,
@@ -221,9 +222,23 @@ typedef struct {
     uint16_t cap_cdeg;             /* 0 a 35999 */
     uint8_t precision;             /* calibration du cap : 0 non fiable .. 3 haute,
                                       PROTO_IMU_PRECISION_INCONNUE si absent */
+    uint16_t incertitude_cdeg;     /* incertitude estimee du cap, en 0,01 degre,
+                                      PROTO_IMU_INCERTITUDE_INCONNUE si absent */
 } proto_imu_t;
 
 #define PROTO_IMU_PRECISION_INCONNUE 0xFF
+#define PROTO_IMU_INCERTITUDE_INCONNUE 0xFFFF
+
+/* Mouvement mesure par l'IMU, dans le repere du bateau.
+ * Accelerations sans la gravite. */
+typedef struct {
+    int16_t acc_avant_cms2;        /* en 0,01 m/s2, + = vers l'avant */
+    int16_t acc_lateral_cms2;      /* + = vers tribord */
+    int16_t acc_vertical_cms2;     /* + = vers le haut */
+    int16_t vit_roulis_ddps;       /* en 0,1 degre/s, + = tribord qui descend */
+    int16_t vit_tangage_ddps;      /* + = avant qui monte */
+    int16_t giration_ddps;         /* + = le bateau tourne vers tribord */
+} proto_mouvement_t;
 
 typedef struct {
     uint8_t ok;                    /* 0 = noeud pilote muet sur le CAN */
@@ -270,6 +285,8 @@ size_t proto_encoder_power(const proto_power_t *m, uint8_t *p, size_t taille);
 bool proto_decoder_power(const uint8_t *p, size_t len, proto_power_t *m);
 size_t proto_encoder_imu(const proto_imu_t *m, uint8_t *p, size_t taille);
 bool proto_decoder_imu(const uint8_t *p, size_t len, proto_imu_t *m);
+size_t proto_encoder_mouvement(const proto_mouvement_t *m, uint8_t *p, size_t taille);
+bool proto_decoder_mouvement(const uint8_t *p, size_t len, proto_mouvement_t *m);
 size_t proto_encoder_pilot(const proto_pilot_t *m, uint8_t *p, size_t taille);
 bool proto_decoder_pilot(const uint8_t *p, size_t len, proto_pilot_t *m);
 size_t proto_encoder_alert(const proto_alert_t *m, uint8_t *p, size_t taille);
