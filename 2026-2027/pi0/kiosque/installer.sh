@@ -37,6 +37,22 @@ apt-get update
 if apt-cache show chromium >/dev/null 2>&1; then CHROMIUM=chromium; else CHROMIUM=chromium-browser; fi
 apt-get install -y --no-install-recommends build-essential cage "$CHROMIUM" fonts-dejavu-core
 
+echo "== Reglages imposes a Chromium (kiosque)"
+# Politique d'entreprise : prioritaire sur tout le reste, aucun bandeau ne
+# peut reapparaitre (traduction, mots de passe, plantage precedent...)
+mkdir -p /etc/chromium/policies/managed
+cat > /etc/chromium/policies/managed/kiosque-hydrovinci.json <<'EOF'
+{
+  "TranslateEnabled": false,
+  "PasswordManagerEnabled": false,
+  "AutofillAddressEnabled": false,
+  "AutofillCreditCardEnabled": false,
+  "BrowserSignin": 0,
+  "MetricsReportingEnabled": false,
+  "SpellcheckEnabled": false
+}
+EOF
+
 echo "== Compilation"
 sudo -u "$UTILISATEUR" make -C "$PI0" tableau_bord test_protocole
 sudo -u "$UTILISATEUR" "$PI0/test_protocole" >/dev/null

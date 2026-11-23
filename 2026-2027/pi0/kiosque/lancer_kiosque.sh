@@ -35,8 +35,10 @@ cage -d -- "$NAVIGATEUR" \
     --noerrdialogs \
     --disable-infobars \
     --no-first-run \
+    --lang=fr \
+    --accept-lang=fr-FR,fr \
     --disable-translate \
-    --disable-features=Translate,MediaRouter,OptimizationHints \
+    --disable-features=Translate,TranslateUI,MediaRouter,OptimizationHints \
     --disable-sync \
     --disable-extensions \
     --disable-background-networking \
