@@ -6,7 +6,13 @@ __pycache__/
 IA/
 data_bms_*.json
 *.code-workspace
+
+# Secrets : JAMAIS dans git. Modeles versionnes : .env.example, secrets.example.h
 Info.md
+.env
+.env.*
+!.env.example
+**/secrets.h
 .vscode/
 **/.pio/
 
