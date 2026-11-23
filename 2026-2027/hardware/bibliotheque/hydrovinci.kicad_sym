@@ -1,0 +1,1071 @@
+(kicad_symbol_lib
+	(version 20251024)
+	(generator "kicad_symbol_editor")
+	(generator_version "10.0")
+	(symbol "ESP32_DevKit"
+		(pin_numbers
+			(hide yes)
+		)
+		(pin_names
+			(offset 1.016)
+		)
+		(exclude_from_sim yes)
+		(in_bom no)
+		(on_board no)
+		(property "Reference" "ESP"
+			(at 0 16.51 0)
+			(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		)
+		(property "Value" "ESP32-WROOM-32E DevKit"
+			(at 0 -16.51 0)
+			(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		)
+		(property "Footprint" ""
+			(at 0 0 0)
+			(hide yes)
+			(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		)
+		(property "Datasheet" ""
+			(at 0 0 0)
+			(hide yes)
+			(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		)
+		(property "Description" "Carte ESP32 DevKit : numeros serigraphies (= GPIO). Seules les broches utilisees sont dessinees."
+			(at 0 0 0)
+			(hide yes)
+			(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		)
+		(symbol "ESP32_DevKit_0_1"
+			(rectangle
+				(start -12.7 15.24)
+				(end 12.7 -15.24)
+				(stroke
+					(width 0.254)
+					(type default)
+				)
+				(fill
+					(type background)
+				)
+			)
+		)
+		(symbol "ESP32_DevKit_1_1"
+			(pin passive line
+				(at -15.24 10.16 0)
+				(length 2.54)
+				(name "3V3"
+					(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+				)
+				(number "3V3"
+					(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+				)
+			)
+			(pin passive line
+				(at -15.24 5.08 0)
+				(length 2.54)
+				(name "GND"
+					(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+				)
+				(number "GND"
+					(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+				)
+			)
+			(pin passive line
+				(at -15.24 0 0)
+				(length 2.54)
+				(name "27_1WIRE"
+					(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+				)
+				(number "27"
+					(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+				)
+			)
+			(pin passive line
+				(at -15.24 -10.16 0)
+				(length 2.54)
+				(name "USB"
+					(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+				)
+				(number "USB"
+					(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+				)
+			)
+			(pin passive line
+				(at 15.24 12.7 180)
+				(length 2.54)
+				(name "17_TX2"
+					(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+				)
+				(number "17"
+					(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+				)
+			)
+			(pin passive line
+				(at 15.24 10.16 180)
+				(length 2.54)
+				(name "16_RX2"
+					(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+				)
+				(number "16"
+					(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+				)
+			)
+			(pin passive line
+				(at 15.24 5.08 180)
+				(length 2.54)
+				(name "21_SDA"
+					(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+				)
+				(number "21"
+					(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+				)
+			)
+			(pin passive line
+				(at 15.24 2.54 180)
+				(length 2.54)
+				(name "22_SCL"
+					(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+				)
+				(number "22"
+					(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+				)
+			)
+			(pin passive line
+				(at 15.24 -2.54 180)
+				(length 2.54)
+				(name "4_INT_IMU"
+					(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+				)
+				(number "4"
+					(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+				)
+			)
+			(pin passive line
+				(at 15.24 -5.08 180)
+				(length 2.54)
+				(name "23_RST_IMU"
+					(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+				)
+				(number "23"
+					(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+				)
+			)
+		)
+		(embedded_fonts no)
+	)
+	(symbol "Pi_Zero_2W"
+		(pin_numbers
+			(hide yes)
+		)
+		(pin_names
+			(offset 1.016)
+		)
+		(exclude_from_sim yes)
+		(in_bom no)
+		(on_board no)
+		(property "Reference" "PI"
+			(at 0 11.43 0)
+			(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		)
+		(property "Value" "Raspberry Pi Zero 2W"
+			(at 0 -11.43 0)
+			(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		)
+		(property "Footprint" ""
+			(at 0 0 0)
+			(hide yes)
+			(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		)
+		(property "Datasheet" ""
+			(at 0 0 0)
+			(hide yes)
+			(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		)
+		(property "Description" "Raspberry Pi Zero 2W : broches physiques du connecteur 40 broches."
+			(at 0 0 0)
+			(hide yes)
+			(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		)
+		(symbol "Pi_Zero_2W_0_1"
+			(rectangle
+				(start -20.32 10.16)
+				(end 20.32 -10.16)
+				(stroke
+					(width 0.254)
+					(type default)
+				)
+				(fill
+					(type background)
+				)
+			)
+		)
+		(symbol "Pi_Zero_2W_1_1"
+			(pin passive line
+				(at -22.86 7.62 0)
+				(length 2.54)
+				(name "P8_TXD_GPIO14"
+					(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+				)
+				(number "8"
+					(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+				)
+			)
+			(pin passive line
+				(at -22.86 5.08 0)
+				(length 2.54)
+				(name "P10_RXD_GPIO15"
+					(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+				)
+				(number "10"
+					(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+				)
+			)
+			(pin passive line
+				(at -22.86 2.54 0)
+				(length 2.54)
+				(name "P6_GND"
+					(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+				)
+				(number "6"
+					(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+				)
+			)
+			(pin passive line
+				(at 22.86 5.08 180)
+				(length 2.54)
+				(name "PWR_IN"
+					(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+				)
+				(number "PWR"
+					(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+				)
+			)
+			(pin passive line
+				(at 22.86 -7.62 180)
+				(length 2.54)
+				(name "MINI_HDMI"
+					(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+				)
+				(number "HDMI"
+					(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+				)
+			)
+		)
+		(embedded_fonts no)
+	)
+	(symbol "BNO085_Adafruit"
+		(pin_numbers
+			(hide yes)
+		)
+		(pin_names
+			(offset 1.016)
+		)
+		(exclude_from_sim yes)
+		(in_bom no)
+		(on_board no)
+		(property "Reference" "IMU"
+			(at 0 16.51 0)
+			(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		)
+		(property "Value" "Adafruit BNO085 (4754)"
+			(at 0 -16.51 0)
+			(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		)
+		(property "Footprint" ""
+			(at 0 0 0)
+			(hide yes)
+			(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		)
+		(property "Datasheet" ""
+			(at 0 0 0)
+			(hide yes)
+			(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		)
+		(property "Description" "IMU 9 axes Adafruit BNO085, mode I2C (adresse 0x4A)."
+			(at 0 0 0)
+			(hide yes)
+			(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		)
+		(symbol "BNO085_Adafruit_0_1"
+			(rectangle
+				(start -10.16 15.24)
+				(end 10.16 -15.24)
+				(stroke
+					(width 0.254)
+					(type default)
+				)
+				(fill
+					(type background)
+				)
+			)
+		)
+		(symbol "BNO085_Adafruit_1_1"
+			(pin passive line
+				(at -12.7 12.7 0)
+				(length 2.54)
+				(name "VIN"
+					(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+				)
+				(number "1"
+					(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+				)
+			)
+			(pin passive line
+				(at -12.7 10.16 0)
+				(length 2.54)
+				(name "3Vo"
+					(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+				)
+				(number "2"
+					(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+				)
+			)
+			(pin passive line
+				(at -12.7 7.62 0)
+				(length 2.54)
+				(name "GND"
+					(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+				)
+				(number "3"
+					(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+				)
+			)
+			(pin passive line
+				(at -12.7 2.54 0)
+				(length 2.54)
+				(name "SCL"
+					(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+				)
+				(number "4"
+					(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+				)
+			)
+			(pin passive line
+				(at -12.7 0 0)
+				(length 2.54)
+				(name "SDA"
+					(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+				)
+				(number "5"
+					(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+				)
+			)
+			(pin passive line
+				(at -12.7 -5.08 0)
+				(length 2.54)
+				(name "INT"
+					(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+				)
+				(number "6"
+					(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+				)
+			)
+			(pin passive line
+				(at -12.7 -7.62 0)
+				(length 2.54)
+				(name "RST"
+					(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+				)
+				(number "7"
+					(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+				)
+			)
+			(pin passive line
+				(at -12.7 -10.16 0)
+				(length 2.54)
+				(name "DI"
+					(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+				)
+				(number "8"
+					(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+				)
+			)
+			(pin passive line
+				(at -12.7 -12.7 0)
+				(length 2.54)
+				(name "CS"
+					(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+				)
+				(number "9"
+					(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+				)
+			)
+			(pin passive line
+				(at 12.7 2.54 180)
+				(length 2.54)
+				(name "P0"
+					(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+				)
+				(number "10"
+					(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+				)
+			)
+			(pin passive line
+				(at 12.7 0 180)
+				(length 2.54)
+				(name "P1"
+					(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+				)
+				(number "11"
+					(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+				)
+			)
+		)
+		(embedded_fonts no)
+	)
+	(symbol "Sonde_DS18B20"
+		(pin_numbers
+			(hide yes)
+		)
+		(pin_names
+			(offset 1.016)
+		)
+		(exclude_from_sim yes)
+		(in_bom no)
+		(on_board no)
+		(property "Reference" "SONDE"
+			(at 0 6.35 0)
+			(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		)
+		(property "Value" "DS18B20 etanche"
+			(at 0 -6.35 0)
+			(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		)
+		(property "Footprint" ""
+			(at 0 0 0)
+			(hide yes)
+			(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		)
+		(property "Datasheet" ""
+			(at 0 0 0)
+			(hide yes)
+			(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		)
+		(property "Description" "Sonde de temperature DS18B20, cable 3 fils."
+			(at 0 0 0)
+			(hide yes)
+			(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		)
+		(symbol "Sonde_DS18B20_0_1"
+			(rectangle
+				(start -10.16 5.08)
+				(end 10.16 -5.08)
+				(stroke
+					(width 0.254)
+					(type default)
+				)
+				(fill
+					(type background)
+				)
+			)
+		)
+		(symbol "Sonde_DS18B20_1_1"
+			(pin passive line
+				(at 12.7 2.54 180)
+				(length 2.54)
+				(name "ROUGE_VDD"
+					(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+				)
+				(number "1"
+					(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+				)
+			)
+			(pin passive line
+				(at 12.7 0 180)
+				(length 2.54)
+				(name "NOIR_GND"
+					(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+				)
+				(number "2"
+					(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+				)
+			)
+			(pin passive line
+				(at 12.7 -2.54 180)
+				(length 2.54)
+				(name "JAUNE_DQ"
+					(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+				)
+				(number "3"
+					(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+				)
+			)
+		)
+		(embedded_fonts no)
+	)
+	(symbol "Alim_5V"
+		(pin_numbers
+			(hide yes)
+		)
+		(pin_names
+			(offset 1.016)
+		)
+		(exclude_from_sim yes)
+		(in_bom no)
+		(on_board no)
+		(property "Reference" "ALIM"
+			(at 0 3.81 0)
+			(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		)
+		(property "Value" "Alimentation 5 V"
+			(at 0 -3.81 0)
+			(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		)
+		(property "Footprint" ""
+			(at 0 0 0)
+			(hide yes)
+			(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		)
+		(property "Datasheet" ""
+			(at 0 0 0)
+			(hide yes)
+			(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		)
+		(property "Description" "Alimentation 5 V de la Pi (micro-USB PWR IN)."
+			(at 0 0 0)
+			(hide yes)
+			(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		)
+		(symbol "Alim_5V_0_1"
+			(rectangle
+				(start -7.62 2.54)
+				(end 7.62 -2.54)
+				(stroke
+					(width 0.254)
+					(type default)
+				)
+				(fill
+					(type background)
+				)
+			)
+		)
+		(symbol "Alim_5V_1_1"
+			(pin passive line
+				(at -10.16 0 0)
+				(length 2.54)
+				(name "5V"
+					(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+				)
+				(number "1"
+					(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+				)
+			)
+		)
+		(embedded_fonts no)
+	)
+	(symbol "Ecran_HDMI"
+		(pin_numbers
+			(hide yes)
+		)
+		(pin_names
+			(offset 1.016)
+		)
+		(exclude_from_sim yes)
+		(in_bom no)
+		(on_board no)
+		(property "Reference" "ECRAN"
+			(at 0 3.81 0)
+			(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		)
+		(property "Value" "Ecran HDMI"
+			(at 0 -3.81 0)
+			(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		)
+		(property "Footprint" ""
+			(at 0 0 0)
+			(hide yes)
+			(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		)
+		(property "Datasheet" ""
+			(at 0 0 0)
+			(hide yes)
+			(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		)
+		(property "Description" "Ecran HDMI (adaptateur mini-HDMI vers HDMI)."
+			(at 0 0 0)
+			(hide yes)
+			(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		)
+		(symbol "Ecran_HDMI_0_1"
+			(rectangle
+				(start -7.62 2.54)
+				(end 7.62 -2.54)
+				(stroke
+					(width 0.254)
+					(type default)
+				)
+				(fill
+					(type background)
+				)
+			)
+		)
+		(symbol "Ecran_HDMI_1_1"
+			(pin passive line
+				(at -10.16 0 0)
+				(length 2.54)
+				(name "HDMI"
+					(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+				)
+				(number "1"
+					(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+				)
+			)
+		)
+		(embedded_fonts no)
+	)
+	(symbol "PC_USB"
+		(pin_numbers
+			(hide yes)
+		)
+		(pin_names
+			(offset 1.016)
+		)
+		(exclude_from_sim yes)
+		(in_bom no)
+		(on_board no)
+		(property "Reference" "PC"
+			(at 0 3.81 0)
+			(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		)
+		(property "Value" "PC (flash, journaux)"
+			(at 0 -3.81 0)
+			(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		)
+		(property "Footprint" ""
+			(at 0 0 0)
+			(hide yes)
+			(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		)
+		(property "Datasheet" ""
+			(at 0 0 0)
+			(hide yes)
+			(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		)
+		(property "Description" "PC de developpement : flash et journaux de l'ESP32 (COM3)."
+			(at 0 0 0)
+			(hide yes)
+			(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		)
+		(symbol "PC_USB_0_1"
+			(rectangle
+				(start -7.62 2.54)
+				(end 7.62 -2.54)
+				(stroke
+					(width 0.254)
+					(type default)
+				)
+				(fill
+					(type background)
+				)
+			)
+		)
+		(symbol "PC_USB_1_1"
+			(pin passive line
+				(at 10.16 0 180)
+				(length 2.54)
+				(name "USB"
+					(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+				)
+				(number "1"
+					(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+				)
+			)
+		)
+		(embedded_fonts no)
+	)
+)

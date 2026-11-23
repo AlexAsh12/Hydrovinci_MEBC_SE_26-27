@@ -1,0 +1,2438 @@
+(kicad_sch
+	(version 20250610)
+	(generator "eeschema")
+	(generator_version "10.0")
+	(uuid "1c128566-2887-4190-99d4-a69b5f1c27c2")
+	(paper "A4")
+	(title_block
+		(title "Cablage SE Hydrovinci 2026-2027")
+		(date "2026-11-23")
+		(rev "1")
+		(company "Hydrovinci")
+		(comment 1 "Genere depuis CABLAGE.md")
+	)
+	(lib_symbols
+		(symbol "hydrovinci:ESP32_DevKit"
+			(pin_numbers
+				(hide yes)
+			)
+			(pin_names
+				(offset 1.016)
+			)
+			(exclude_from_sim yes)
+			(in_bom no)
+			(on_board no)
+			(property "Reference" "ESP"
+				(at 0 16.51 0)
+				(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+			)
+			(property "Value" "ESP32-WROOM-32E DevKit"
+				(at 0 -16.51 0)
+				(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+			)
+			(property "Footprint" ""
+				(at 0 0 0)
+				(hide yes)
+				(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+			)
+			(property "Datasheet" ""
+				(at 0 0 0)
+				(hide yes)
+				(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+			)
+			(property "Description" "Carte ESP32 DevKit : numeros serigraphies (= GPIO). Seules les broches utilisees sont dessinees."
+				(at 0 0 0)
+				(hide yes)
+				(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+			)
+			(symbol "ESP32_DevKit_0_1"
+				(rectangle
+					(start -12.7 15.24)
+					(end 12.7 -15.24)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type background)
+					)
+				)
+			)
+			(symbol "ESP32_DevKit_1_1"
+				(pin passive line
+					(at -15.24 10.16 0)
+					(length 2.54)
+					(name "3V3"
+						(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+					)
+					(number "3V3"
+						(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+					)
+				)
+				(pin passive line
+					(at -15.24 5.08 0)
+					(length 2.54)
+					(name "GND"
+						(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+					)
+					(number "GND"
+						(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+					)
+				)
+				(pin passive line
+					(at -15.24 0 0)
+					(length 2.54)
+					(name "27_1WIRE"
+						(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+					)
+					(number "27"
+						(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+					)
+				)
+				(pin passive line
+					(at -15.24 -10.16 0)
+					(length 2.54)
+					(name "USB"
+						(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+					)
+					(number "USB"
+						(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+					)
+				)
+				(pin passive line
+					(at 15.24 12.7 180)
+					(length 2.54)
+					(name "17_TX2"
+						(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+					)
+					(number "17"
+						(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+					)
+				)
+				(pin passive line
+					(at 15.24 10.16 180)
+					(length 2.54)
+					(name "16_RX2"
+						(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+					)
+					(number "16"
+						(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+					)
+				)
+				(pin passive line
+					(at 15.24 5.08 180)
+					(length 2.54)
+					(name "21_SDA"
+						(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+					)
+					(number "21"
+						(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+					)
+				)
+				(pin passive line
+					(at 15.24 2.54 180)
+					(length 2.54)
+					(name "22_SCL"
+						(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+					)
+					(number "22"
+						(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+					)
+				)
+				(pin passive line
+					(at 15.24 -2.54 180)
+					(length 2.54)
+					(name "4_INT_IMU"
+						(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+					)
+					(number "4"
+						(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+					)
+				)
+				(pin passive line
+					(at 15.24 -5.08 180)
+					(length 2.54)
+					(name "23_RST_IMU"
+						(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+					)
+					(number "23"
+						(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
+		(symbol "hydrovinci:Pi_Zero_2W"
+			(pin_numbers
+				(hide yes)
+			)
+			(pin_names
+				(offset 1.016)
+			)
+			(exclude_from_sim yes)
+			(in_bom no)
+			(on_board no)
+			(property "Reference" "PI"
+				(at 0 11.43 0)
+				(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+			)
+			(property "Value" "Raspberry Pi Zero 2W"
+				(at 0 -11.43 0)
+				(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+			)
+			(property "Footprint" ""
+				(at 0 0 0)
+				(hide yes)
+				(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+			)
+			(property "Datasheet" ""
+				(at 0 0 0)
+				(hide yes)
+				(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+			)
+			(property "Description" "Raspberry Pi Zero 2W : broches physiques du connecteur 40 broches."
+				(at 0 0 0)
+				(hide yes)
+				(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+			)
+			(symbol "Pi_Zero_2W_0_1"
+				(rectangle
+					(start -20.32 10.16)
+					(end 20.32 -10.16)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type background)
+					)
+				)
+			)
+			(symbol "Pi_Zero_2W_1_1"
+				(pin passive line
+					(at -22.86 7.62 0)
+					(length 2.54)
+					(name "P8_TXD_GPIO14"
+						(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+					)
+					(number "8"
+						(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+					)
+				)
+				(pin passive line
+					(at -22.86 5.08 0)
+					(length 2.54)
+					(name "P10_RXD_GPIO15"
+						(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+					)
+					(number "10"
+						(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+					)
+				)
+				(pin passive line
+					(at -22.86 2.54 0)
+					(length 2.54)
+					(name "P6_GND"
+						(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+					)
+					(number "6"
+						(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+					)
+				)
+				(pin passive line
+					(at 22.86 5.08 180)
+					(length 2.54)
+					(name "PWR_IN"
+						(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+					)
+					(number "PWR"
+						(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+					)
+				)
+				(pin passive line
+					(at 22.86 -7.62 180)
+					(length 2.54)
+					(name "MINI_HDMI"
+						(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+					)
+					(number "HDMI"
+						(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
+		(symbol "hydrovinci:BNO085_Adafruit"
+			(pin_numbers
+				(hide yes)
+			)
+			(pin_names
+				(offset 1.016)
+			)
+			(exclude_from_sim yes)
+			(in_bom no)
+			(on_board no)
+			(property "Reference" "IMU"
+				(at 0 16.51 0)
+				(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+			)
+			(property "Value" "Adafruit BNO085 (4754)"
+				(at 0 -16.51 0)
+				(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+			)
+			(property "Footprint" ""
+				(at 0 0 0)
+				(hide yes)
+				(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+			)
+			(property "Datasheet" ""
+				(at 0 0 0)
+				(hide yes)
+				(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+			)
+			(property "Description" "IMU 9 axes Adafruit BNO085, mode I2C (adresse 0x4A)."
+				(at 0 0 0)
+				(hide yes)
+				(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+			)
+			(symbol "BNO085_Adafruit_0_1"
+				(rectangle
+					(start -10.16 15.24)
+					(end 10.16 -15.24)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type background)
+					)
+				)
+			)
+			(symbol "BNO085_Adafruit_1_1"
+				(pin passive line
+					(at -12.7 12.7 0)
+					(length 2.54)
+					(name "VIN"
+						(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+					)
+					(number "1"
+						(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+					)
+				)
+				(pin passive line
+					(at -12.7 10.16 0)
+					(length 2.54)
+					(name "3Vo"
+						(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+					)
+					(number "2"
+						(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+					)
+				)
+				(pin passive line
+					(at -12.7 7.62 0)
+					(length 2.54)
+					(name "GND"
+						(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+					)
+					(number "3"
+						(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+					)
+				)
+				(pin passive line
+					(at -12.7 2.54 0)
+					(length 2.54)
+					(name "SCL"
+						(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+					)
+					(number "4"
+						(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+					)
+				)
+				(pin passive line
+					(at -12.7 0 0)
+					(length 2.54)
+					(name "SDA"
+						(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+					)
+					(number "5"
+						(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+					)
+				)
+				(pin passive line
+					(at -12.7 -5.08 0)
+					(length 2.54)
+					(name "INT"
+						(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+					)
+					(number "6"
+						(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+					)
+				)
+				(pin passive line
+					(at -12.7 -7.62 0)
+					(length 2.54)
+					(name "RST"
+						(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+					)
+					(number "7"
+						(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+					)
+				)
+				(pin passive line
+					(at -12.7 -10.16 0)
+					(length 2.54)
+					(name "DI"
+						(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+					)
+					(number "8"
+						(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+					)
+				)
+				(pin passive line
+					(at -12.7 -12.7 0)
+					(length 2.54)
+					(name "CS"
+						(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+					)
+					(number "9"
+						(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+					)
+				)
+				(pin passive line
+					(at 12.7 2.54 180)
+					(length 2.54)
+					(name "P0"
+						(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+					)
+					(number "10"
+						(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+					)
+				)
+				(pin passive line
+					(at 12.7 0 180)
+					(length 2.54)
+					(name "P1"
+						(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+					)
+					(number "11"
+						(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
+		(symbol "hydrovinci:Sonde_DS18B20"
+			(pin_numbers
+				(hide yes)
+			)
+			(pin_names
+				(offset 1.016)
+			)
+			(exclude_from_sim yes)
+			(in_bom no)
+			(on_board no)
+			(property "Reference" "SONDE"
+				(at 0 6.35 0)
+				(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+			)
+			(property "Value" "DS18B20 etanche"
+				(at 0 -6.35 0)
+				(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+			)
+			(property "Footprint" ""
+				(at 0 0 0)
+				(hide yes)
+				(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+			)
+			(property "Datasheet" ""
+				(at 0 0 0)
+				(hide yes)
+				(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+			)
+			(property "Description" "Sonde de temperature DS18B20, cable 3 fils."
+				(at 0 0 0)
+				(hide yes)
+				(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+			)
+			(symbol "Sonde_DS18B20_0_1"
+				(rectangle
+					(start -10.16 5.08)
+					(end 10.16 -5.08)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type background)
+					)
+				)
+			)
+			(symbol "Sonde_DS18B20_1_1"
+				(pin passive line
+					(at 12.7 2.54 180)
+					(length 2.54)
+					(name "ROUGE_VDD"
+						(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+					)
+					(number "1"
+						(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+					)
+				)
+				(pin passive line
+					(at 12.7 0 180)
+					(length 2.54)
+					(name "NOIR_GND"
+						(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+					)
+					(number "2"
+						(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+					)
+				)
+				(pin passive line
+					(at 12.7 -2.54 180)
+					(length 2.54)
+					(name "JAUNE_DQ"
+						(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+					)
+					(number "3"
+						(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
+		(symbol "hydrovinci:Alim_5V"
+			(pin_numbers
+				(hide yes)
+			)
+			(pin_names
+				(offset 1.016)
+			)
+			(exclude_from_sim yes)
+			(in_bom no)
+			(on_board no)
+			(property "Reference" "ALIM"
+				(at 0 3.81 0)
+				(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+			)
+			(property "Value" "Alimentation 5 V"
+				(at 0 -3.81 0)
+				(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+			)
+			(property "Footprint" ""
+				(at 0 0 0)
+				(hide yes)
+				(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+			)
+			(property "Datasheet" ""
+				(at 0 0 0)
+				(hide yes)
+				(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+			)
+			(property "Description" "Alimentation 5 V de la Pi (micro-USB PWR IN)."
+				(at 0 0 0)
+				(hide yes)
+				(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+			)
+			(symbol "Alim_5V_0_1"
+				(rectangle
+					(start -7.62 2.54)
+					(end 7.62 -2.54)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type background)
+					)
+				)
+			)
+			(symbol "Alim_5V_1_1"
+				(pin passive line
+					(at -10.16 0 0)
+					(length 2.54)
+					(name "5V"
+						(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+					)
+					(number "1"
+						(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
+		(symbol "hydrovinci:Ecran_HDMI"
+			(pin_numbers
+				(hide yes)
+			)
+			(pin_names
+				(offset 1.016)
+			)
+			(exclude_from_sim yes)
+			(in_bom no)
+			(on_board no)
+			(property "Reference" "ECRAN"
+				(at 0 3.81 0)
+				(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+			)
+			(property "Value" "Ecran HDMI"
+				(at 0 -3.81 0)
+				(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+			)
+			(property "Footprint" ""
+				(at 0 0 0)
+				(hide yes)
+				(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+			)
+			(property "Datasheet" ""
+				(at 0 0 0)
+				(hide yes)
+				(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+			)
+			(property "Description" "Ecran HDMI (adaptateur mini-HDMI vers HDMI)."
+				(at 0 0 0)
+				(hide yes)
+				(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+			)
+			(symbol "Ecran_HDMI_0_1"
+				(rectangle
+					(start -7.62 2.54)
+					(end 7.62 -2.54)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type background)
+					)
+				)
+			)
+			(symbol "Ecran_HDMI_1_1"
+				(pin passive line
+					(at -10.16 0 0)
+					(length 2.54)
+					(name "HDMI"
+						(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+					)
+					(number "1"
+						(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
+		(symbol "hydrovinci:PC_USB"
+			(pin_numbers
+				(hide yes)
+			)
+			(pin_names
+				(offset 1.016)
+			)
+			(exclude_from_sim yes)
+			(in_bom no)
+			(on_board no)
+			(property "Reference" "PC"
+				(at 0 3.81 0)
+				(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+			)
+			(property "Value" "PC (flash, journaux)"
+				(at 0 -3.81 0)
+				(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+			)
+			(property "Footprint" ""
+				(at 0 0 0)
+				(hide yes)
+				(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+			)
+			(property "Datasheet" ""
+				(at 0 0 0)
+				(hide yes)
+				(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+			)
+			(property "Description" "PC de developpement : flash et journaux de l'ESP32 (COM3)."
+				(at 0 0 0)
+				(hide yes)
+				(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+			)
+			(symbol "PC_USB_0_1"
+				(rectangle
+					(start -7.62 2.54)
+					(end 7.62 -2.54)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type background)
+					)
+				)
+			)
+			(symbol "PC_USB_1_1"
+				(pin passive line
+					(at 10.16 0 180)
+					(length 2.54)
+					(name "USB"
+						(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+					)
+					(number "1"
+						(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
+		(symbol "Device:R"
+			(pin_numbers
+				(hide yes)
+			)
+			(pin_names
+				(offset 0)
+			)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(in_pos_files yes)
+			(duplicate_pin_numbers_are_jumpers no)
+			(property "Reference" "R"
+				(at 2.032 0 90)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Value" "R"
+				(at 0 0 90)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" ""
+				(at -1.778 0 90)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Datasheet" ""
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Description" "Resistor"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "ki_keywords" "R res resistor"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "ki_fp_filters" "R_*"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(symbol "R_0_1"
+				(rectangle
+					(start -1.016 -2.54)
+					(end 1.016 2.54)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+			)
+			(symbol "R_1_1"
+				(pin passive line
+					(at 0 3.81 270)
+					(length 1.27)
+					(name ""
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 0 -3.81 90)
+					(length 1.27)
+					(name ""
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
+	)
+	(wire
+		(pts
+			(xy 116.84 88.9) (xy 121.92 88.9)
+		)
+		(stroke
+			(width 0)
+			(type solid)
+		)
+		(uuid "bea38be0-ab4d-461d-b69d-33fc67da081a")
+	)
+	(wire
+		(pts
+			(xy 193.04 50.8) (xy 187.96 50.8)
+		)
+		(stroke
+			(width 0)
+			(type solid)
+		)
+		(uuid "b85c9b8e-e38a-46cc-9f52-14b00c43ba4c")
+	)
+	(wire
+		(pts
+			(xy 116.84 91.44) (xy 121.92 91.44)
+		)
+		(stroke
+			(width 0)
+			(type solid)
+		)
+		(uuid "1c957ecd-f496-465b-a293-b8e619479365")
+	)
+	(wire
+		(pts
+			(xy 193.04 48.26) (xy 187.96 48.26)
+		)
+		(stroke
+			(width 0)
+			(type solid)
+		)
+		(uuid "4bb8d1b9-c599-4f3c-812c-47a802e3b0a5")
+	)
+	(wire
+		(pts
+			(xy 193.04 53.34) (xy 187.96 53.34)
+		)
+		(stroke
+			(width 0)
+			(type solid)
+		)
+		(uuid "2be48497-ad8d-4552-948b-a571aad9c367")
+	)
+	(wire
+		(pts
+			(xy 116.84 96.52) (xy 121.92 96.52)
+		)
+		(stroke
+			(width 0)
+			(type solid)
+		)
+		(uuid "6febc8a8-5677-4264-b84d-0e4726f9061d")
+	)
+	(wire
+		(pts
+			(xy 203.2 116.84) (xy 198.12 116.84)
+		)
+		(stroke
+			(width 0)
+			(type solid)
+		)
+		(uuid "d054c418-7808-4308-8fc0-0a17399bdcb4")
+	)
+	(wire
+		(pts
+			(xy 116.84 99.06) (xy 121.92 99.06)
+		)
+		(stroke
+			(width 0)
+			(type solid)
+		)
+		(uuid "a82f1605-c33f-481c-91b4-13eb0042bec3")
+	)
+	(wire
+		(pts
+			(xy 203.2 114.3) (xy 198.12 114.3)
+		)
+		(stroke
+			(width 0)
+			(type solid)
+		)
+		(uuid "93a4cda2-48d4-4e02-a07a-3ab3ae5985e5")
+	)
+	(wire
+		(pts
+			(xy 116.84 104.14) (xy 121.92 104.14)
+		)
+		(stroke
+			(width 0)
+			(type solid)
+		)
+		(uuid "7246d279-67b0-4eb1-a078-c57c7147c615")
+	)
+	(wire
+		(pts
+			(xy 203.2 121.92) (xy 198.12 121.92)
+		)
+		(stroke
+			(width 0)
+			(type solid)
+		)
+		(uuid "616e98a9-d493-4eb4-9685-92ebbc458236")
+	)
+	(wire
+		(pts
+			(xy 116.84 106.68) (xy 121.92 106.68)
+		)
+		(stroke
+			(width 0)
+			(type solid)
+		)
+		(uuid "415df2c2-96c1-4393-af49-2b27a822a03d")
+	)
+	(wire
+		(pts
+			(xy 203.2 124.46) (xy 198.12 124.46)
+		)
+		(stroke
+			(width 0)
+			(type solid)
+		)
+		(uuid "c4c068ec-a4a3-41e7-b330-d2aab201d0b8")
+	)
+	(wire
+		(pts
+			(xy 203.2 104.14) (xy 198.12 104.14)
+		)
+		(stroke
+			(width 0)
+			(type solid)
+		)
+		(uuid "faaf0f82-bed2-4d1b-bfc4-d047d2c82e08")
+	)
+	(wire
+		(pts
+			(xy 203.2 109.22) (xy 198.12 109.22)
+		)
+		(stroke
+			(width 0)
+			(type solid)
+		)
+		(uuid "9a4107c8-c294-441c-b4ed-224e17353a35")
+	)
+	(wire
+		(pts
+			(xy 86.36 91.44) (xy 81.28 91.44)
+		)
+		(stroke
+			(width 0)
+			(type solid)
+		)
+		(uuid "d265d577-dda7-4eae-9a55-391d55cf8dcd")
+	)
+	(wire
+		(pts
+			(xy 86.36 96.52) (xy 81.28 96.52)
+		)
+		(stroke
+			(width 0)
+			(type solid)
+		)
+		(uuid "b4d22145-51d7-440f-8690-82c5c3158b38")
+	)
+	(wire
+		(pts
+			(xy 86.36 101.6) (xy 81.28 101.6)
+		)
+		(stroke
+			(width 0)
+			(type solid)
+		)
+		(uuid "2a79cb0e-e087-4f11-9397-47eb5504d9d1")
+	)
+	(wire
+		(pts
+			(xy 63.5 149.86) (xy 68.58 149.86)
+		)
+		(stroke
+			(width 0)
+			(type solid)
+		)
+		(uuid "621a6185-65fb-48ba-84dd-00b3f4a92f6b")
+	)
+	(wire
+		(pts
+			(xy 63.5 152.4) (xy 68.58 152.4)
+		)
+		(stroke
+			(width 0)
+			(type solid)
+		)
+		(uuid "8c8b259e-c713-48e3-a52c-507d711247ba")
+	)
+	(wire
+		(pts
+			(xy 63.5 154.94) (xy 68.58 154.94)
+		)
+		(stroke
+			(width 0)
+			(type solid)
+		)
+		(uuid "3eaaec64-b4d5-4022-be2c-5e443f0170fa")
+	)
+	(wire
+		(pts
+			(xy 93.98 148.59) (xy 93.98 146.05)
+		)
+		(stroke
+			(width 0)
+			(type solid)
+		)
+		(uuid "7ffae871-ae80-4ea5-af97-2d60fadc7f64")
+	)
+	(wire
+		(pts
+			(xy 93.98 156.21) (xy 93.98 158.75)
+		)
+		(stroke
+			(width 0)
+			(type solid)
+		)
+		(uuid "f57d22ed-c9a3-478b-9760-9e8bebc581ec")
+	)
+	(wire
+		(pts
+			(xy 238.76 50.8) (xy 254 50.8)
+		)
+		(stroke
+			(width 0)
+			(type solid)
+		)
+		(uuid "7b89803b-25f6-4902-bb42-2472eb1010b5")
+	)
+	(wire
+		(pts
+			(xy 238.76 63.5) (xy 254 63.5)
+		)
+		(stroke
+			(width 0)
+			(type solid)
+		)
+		(uuid "b7149d82-1270-4acf-80dd-869ca81be4a9")
+	)
+	(wire
+		(pts
+			(xy 68.58 111.76) (xy 86.36 111.76)
+		)
+		(stroke
+			(width 0)
+			(type solid)
+		)
+		(uuid "7dc9c6c5-d84e-4566-a028-66fff2afbb36")
+	)
+	(no_connect
+		(at 203.2 106.68)
+		(uuid "4b14492f-8d96-4642-902b-56ae4bbc4220")
+	)
+	(no_connect
+		(at 203.2 127)
+		(uuid "c71a5745-128d-4dfb-8746-329754c87365")
+	)
+	(no_connect
+		(at 203.2 129.54)
+		(uuid "8e0f61c3-986f-4a45-ae26-71620509f739")
+	)
+	(no_connect
+		(at 228.6 114.3)
+		(uuid "53d500f7-9537-4174-bc10-600f16e559af")
+	)
+	(no_connect
+		(at 228.6 116.84)
+		(uuid "3d12e121-2312-4106-9aed-13dcdc057854")
+	)
+	(label "U1_ESP_TX_vers_PI_RX"
+		(at 121.92 88.9 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "f0c62cc4-bf86-4d77-bb1d-8067e6d7e3f3")
+	)
+	(label "U1_ESP_TX_vers_PI_RX"
+		(at 187.96 50.8 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "95b8c86b-df5d-4559-a501-473e4b00d2e4")
+	)
+	(label "U2_PI_TX_vers_ESP_RX"
+		(at 121.92 91.44 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "93e3f5d3-3dd0-4db6-9782-7cb0ec57a73c")
+	)
+	(label "U2_PI_TX_vers_ESP_RX"
+		(at 187.96 48.26 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "63ba320d-b25a-4b34-9f35-9ebbe0165e55")
+	)
+	(label "GND"
+		(at 187.96 53.34 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "47783512-2ef3-4bbf-9278-cd182326bb1e")
+	)
+	(label "I3_SDA"
+		(at 121.92 96.52 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "ce85926d-68d5-4ff3-a2c2-6a79789d921b")
+	)
+	(label "I3_SDA"
+		(at 198.12 116.84 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "6e80f284-ab32-4682-80ef-6533a8a21589")
+	)
+	(label "I4_SCL"
+		(at 121.92 99.06 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "32694fed-b680-4338-be58-4a7c61712d82")
+	)
+	(label "I4_SCL"
+		(at 198.12 114.3 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "0c74e02a-0664-40aa-a906-3f06bffca8e3")
+	)
+	(label "I5_INT"
+		(at 121.92 104.14 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "0d8afd39-0785-4f31-b47e-c434e1c2af2e")
+	)
+	(label "I5_INT"
+		(at 198.12 121.92 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "6698aa3a-ba7c-4e5b-8a3c-bade47f81294")
+	)
+	(label "I6_RST"
+		(at 121.92 106.68 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "cbde7f03-92a7-4e8a-bfb0-7b5c104a0f0f")
+	)
+	(label "I6_RST"
+		(at 198.12 124.46 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "a2614463-10b8-4e42-b76b-fe500de44014")
+	)
+	(label "3V3"
+		(at 198.12 104.14 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "ba51b795-d2a4-48e0-a176-995cac576bfb")
+	)
+	(label "GND"
+		(at 198.12 109.22 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "ea52199f-ec0b-496b-86e1-b9f50bad0bea")
+	)
+	(label "3V3"
+		(at 81.28 91.44 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "130fa351-a887-4337-a040-9c77c63b8fad")
+	)
+	(label "GND"
+		(at 81.28 96.52 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "122ebde5-92ee-4778-8efb-797ac6f6588c")
+	)
+	(label "S3_1WIRE"
+		(at 81.28 101.6 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "1ce99b19-f7f4-44a8-a2d6-b9bb0c797e68")
+	)
+	(label "3V3"
+		(at 68.58 149.86 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "48ccb98d-a312-46b4-83c8-fe8b94467c89")
+	)
+	(label "GND"
+		(at 68.58 152.4 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "904e716c-b2d9-4f47-9ccd-22edac6965ea")
+	)
+	(label "S3_1WIRE"
+		(at 68.58 154.94 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "c90f168e-9b69-45a0-9614-f3a9f3e4d8b7")
+	)
+	(label "3V3"
+		(at 93.98 146.05 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "ee195e35-ebe4-4ee7-90d6-d02c246237c3")
+	)
+	(label "S3_1WIRE"
+		(at 93.98 158.75 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "d45e8251-c741-41c3-b871-f145265baea0")
+	)
+	(label "A1_5V_PI"
+		(at 241.3 50.8 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "39bb59c3-f4ca-4e8e-8fdc-3283d9d73ba1")
+	)
+	(label "E1_HDMI"
+		(at 241.3 63.5 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "8dd0835e-a052-46ad-ba84-052b17c6ec9a")
+	)
+	(label "P1_USB"
+		(at 71.12 111.76 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "02c640f2-fc19-498e-b508-6c45f9421281")
+	)
+	(text "Cablage du systeme embarque - saison 2026-2027 (montage provisoire ESP32-WROOM-32E)"
+		(exclude_from_sim no)
+		(at 15.24 22.86 0)
+		(effects
+			(font
+				(size 2.54 2.54)
+				(bold yes)
+			)
+			(justify left bottom)
+		)
+		(uuid "f362aa74-1a08-45c5-a56a-d75d229cae15")
+	)
+	(text "Reperes des fils (U1, I3, S3...) : voir CABLAGE.md dans le meme dossier."
+		(exclude_from_sim no)
+		(at 15.24 29.21 0)
+		(effects
+			(font
+				(size 1.5 1.5)
+			)
+			(justify left bottom)
+		)
+		(uuid "97bd62e8-bcd4-43cc-8073-fc9a56280971")
+	)
+	(text "Deux labels de meme nom = le meme fil. ESP32 : numeros serigraphies sur la DevKit (= GPIO)."
+		(exclude_from_sim no)
+		(at 15.24 33.02 0)
+		(effects
+			(font
+				(size 1.5 1.5)
+			)
+			(justify left bottom)
+		)
+		(uuid "45b00494-128a-4a91-8a20-1d5603ef6b64")
+	)
+	(text "Pi : numeros de broche physique du connecteur 40 broches (1 a 40)."
+		(exclude_from_sim no)
+		(at 15.24 36.83 0)
+		(effects
+			(font
+				(size 1.5 1.5)
+			)
+			(justify left bottom)
+		)
+		(uuid "8ebe9cd3-c495-4deb-877a-1ee4c44a2b82")
+	)
+	(text "BNO085 : ne rien brancher sur 3Vo, DI, CS, P0, P1 (croix)."
+		(exclude_from_sim no)
+		(at 15.24 40.64 0)
+		(effects
+			(font
+				(size 1.5 1.5)
+			)
+			(justify left bottom)
+		)
+		(uuid "40c58250-8455-4e54-943f-cc2f6baa7bc5")
+	)
+	(text "R1 = 4,7 kOhm entre le fil jaune (S3) et le 3V3, une seule pour tout le bus 1-Wire."
+		(exclude_from_sim no)
+		(at 40.64 170.18 0)
+		(effects
+			(font
+				(size 1.5 1.5)
+			)
+			(justify left bottom)
+		)
+		(uuid "4a9b83ba-d596-4496-b68e-1fb531c59f24")
+	)
+	(text "Alimentation de l'ESP32 sur le bateau : a definir (aujourd'hui USB du PC)."
+		(exclude_from_sim no)
+		(at 40.64 125.73 0)
+		(effects
+			(font
+				(size 1.5 1.5)
+			)
+			(justify left bottom)
+		)
+		(uuid "90e21435-bf26-454c-b235-bdb0b0dfbfad")
+	)
+	(symbol
+		(lib_id "hydrovinci:ESP32_DevKit")
+		(at 101.6 101.6 0)
+		(unit 1)
+		(exclude_from_sim yes)
+		(in_bom no)
+		(on_board no)
+		(dnp no)
+		(uuid "be9f41ee-e343-4c26-8f6e-2b53f6a02483")
+		(property "Reference" "ESP1"
+			(at 101.6 85.09 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "ESP32-WROOM-32E DevKit"
+			(at 101.6 118.11 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 101.6 101.6 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 101.6 101.6 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 101.6 101.6 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "3V3"
+			(uuid "20614b5e-2d1f-46b5-acb2-79e0dd3843c3")
+		)
+		(pin "GND"
+			(uuid "86e76846-19e1-4136-bf4d-10f243e9f126")
+		)
+		(pin "27"
+			(uuid "08dcd224-1762-47ec-ae1b-cfaae5d55978")
+		)
+		(pin "USB"
+			(uuid "43d5d98f-55b8-4d85-8dc9-569b607a6c5a")
+		)
+		(pin "17"
+			(uuid "115d2bb0-5ae3-45bf-a563-9d7e8703e19b")
+		)
+		(pin "16"
+			(uuid "7ba17213-a17e-48a6-8097-c65dcb3d78b7")
+		)
+		(pin "21"
+			(uuid "686b109d-73cb-4d39-b26a-bf0053721e0e")
+		)
+		(pin "22"
+			(uuid "f29ccf36-7fa7-4afb-84ce-a9589ec4f63e")
+		)
+		(pin "4"
+			(uuid "7b06f997-a8d4-4a65-bf48-157f89dfccb3")
+		)
+		(pin "23"
+			(uuid "69218235-6564-4e0e-9888-07b1a05a1a1e")
+		)
+		(instances
+			(project "schema_electrique"
+				(path "/1c128566-2887-4190-99d4-a69b5f1c27c2"
+					(reference "ESP1")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "hydrovinci:Pi_Zero_2W")
+		(at 215.9 55.88 0)
+		(unit 1)
+		(exclude_from_sim yes)
+		(in_bom no)
+		(on_board no)
+		(dnp no)
+		(uuid "e6910aed-ace1-49b2-8b53-15b36428d701")
+		(property "Reference" "PI1"
+			(at 215.9 44.45 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "Raspberry Pi Zero 2W"
+			(at 215.9 67.31 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 215.9 55.88 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 215.9 55.88 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 215.9 55.88 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "8"
+			(uuid "a988b05c-6054-4f53-a9bb-c38a570e2f50")
+		)
+		(pin "10"
+			(uuid "307628f0-29e2-474d-a9b5-923b062b059d")
+		)
+		(pin "6"
+			(uuid "8dec5e2a-ae47-4096-86c7-6663805ed8bd")
+		)
+		(pin "PWR"
+			(uuid "66f49c98-9558-4b81-8e9d-06d2108d42e2")
+		)
+		(pin "HDMI"
+			(uuid "c5a3c07d-0a05-4698-ae03-6ee4c734ad59")
+		)
+		(instances
+			(project "schema_electrique"
+				(path "/1c128566-2887-4190-99d4-a69b5f1c27c2"
+					(reference "PI1")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "hydrovinci:BNO085_Adafruit")
+		(at 215.9 116.84 0)
+		(unit 1)
+		(exclude_from_sim yes)
+		(in_bom no)
+		(on_board no)
+		(dnp no)
+		(uuid "441c72ba-5789-4da4-b133-1cb94a5cf6c9")
+		(property "Reference" "IMU1"
+			(at 215.9 100.33 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "Adafruit BNO085 (4754)"
+			(at 215.9 133.35 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 215.9 116.84 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 215.9 116.84 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 215.9 116.84 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "492406f3-958b-41f9-86f4-e4a6580cbd0a")
+		)
+		(pin "2"
+			(uuid "a5629dd4-9a7a-45d8-923f-4d5f68275146")
+		)
+		(pin "3"
+			(uuid "cf6969f4-ecfc-4f6a-b974-41b96e2d5dab")
+		)
+		(pin "4"
+			(uuid "53b646f7-3d93-45d8-8e89-212ad2bc40e0")
+		)
+		(pin "5"
+			(uuid "f8fb6e85-85a8-48e8-84da-1014413a0eb2")
+		)
+		(pin "6"
+			(uuid "e5271015-4eb4-4c74-b37b-a6269be347b0")
+		)
+		(pin "7"
+			(uuid "15f797fe-0847-4491-a05d-14501df77aeb")
+		)
+		(pin "8"
+			(uuid "88ae9971-f236-4d8e-b757-76f29c0e309e")
+		)
+		(pin "9"
+			(uuid "7a47d34b-05f5-48ca-ac1d-b49972f494bd")
+		)
+		(pin "10"
+			(uuid "53aaf0bc-9580-4d17-b484-ca0a7bfb1f40")
+		)
+		(pin "11"
+			(uuid "fee69133-9846-412d-a776-c7633cbe6804")
+		)
+		(instances
+			(project "schema_electrique"
+				(path "/1c128566-2887-4190-99d4-a69b5f1c27c2"
+					(reference "IMU1")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "hydrovinci:Sonde_DS18B20")
+		(at 50.8 152.4 0)
+		(unit 1)
+		(exclude_from_sim yes)
+		(in_bom no)
+		(on_board no)
+		(dnp no)
+		(uuid "eba8c32f-d2da-49c4-b46d-4a8877a0e1ed")
+		(property "Reference" "SONDE1"
+			(at 50.8 146.05 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "DS18B20 etanche"
+			(at 50.8 158.75 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 50.8 152.4 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 50.8 152.4 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 50.8 152.4 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "3e97aa99-c7ee-4725-990e-909431f0e346")
+		)
+		(pin "2"
+			(uuid "fce78680-e1a1-44c5-af78-408a8048e54e")
+		)
+		(pin "3"
+			(uuid "24b2e02e-49a9-44e7-83e5-ab69bfefe795")
+		)
+		(instances
+			(project "schema_electrique"
+				(path "/1c128566-2887-4190-99d4-a69b5f1c27c2"
+					(reference "SONDE1")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "hydrovinci:Alim_5V")
+		(at 264.16 50.8 0)
+		(unit 1)
+		(exclude_from_sim yes)
+		(in_bom no)
+		(on_board no)
+		(dnp no)
+		(uuid "cbf03f60-c89f-41a8-bf80-e1895200ef2b")
+		(property "Reference" "ALIM1"
+			(at 264.16 46.99 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "Alimentation 5 V"
+			(at 264.16 54.61 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 264.16 50.8 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 264.16 50.8 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 264.16 50.8 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "b3b1cffd-1865-42c8-ba8a-c83f96a14b92")
+		)
+		(instances
+			(project "schema_electrique"
+				(path "/1c128566-2887-4190-99d4-a69b5f1c27c2"
+					(reference "ALIM1")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "hydrovinci:Ecran_HDMI")
+		(at 264.16 63.5 0)
+		(unit 1)
+		(exclude_from_sim yes)
+		(in_bom no)
+		(on_board no)
+		(dnp no)
+		(uuid "2a7c2398-1c58-4e3e-90c8-5c3b56946e55")
+		(property "Reference" "ECRAN1"
+			(at 264.16 59.69 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "Ecran HDMI"
+			(at 264.16 67.31 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 264.16 63.5 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 264.16 63.5 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 264.16 63.5 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "8235446b-6ab2-4bbc-aa87-20a9d4603306")
+		)
+		(instances
+			(project "schema_electrique"
+				(path "/1c128566-2887-4190-99d4-a69b5f1c27c2"
+					(reference "ECRAN1")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "hydrovinci:PC_USB")
+		(at 58.42 111.76 0)
+		(unit 1)
+		(exclude_from_sim yes)
+		(in_bom no)
+		(on_board no)
+		(dnp no)
+		(uuid "800b0139-6b49-41ad-8934-3d99ba847c9e")
+		(property "Reference" "PC1"
+			(at 58.42 107.95 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "PC (flash, journaux)"
+			(at 58.42 115.57 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 58.42 111.76 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 58.42 111.76 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 58.42 111.76 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "12e780fe-e869-423e-9ffc-68bfc588ccf5")
+		)
+		(instances
+			(project "schema_electrique"
+				(path "/1c128566-2887-4190-99d4-a69b5f1c27c2"
+					(reference "PC1")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:R")
+		(at 93.98 152.4 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "ab0a3253-2d54-431b-b0ee-20c685347ab2")
+		(property "Reference" "R1"
+			(at 96.52 151.13 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			(justify left)
+			)
+		)
+		(property "Value" "4,7k"
+			(at 96.52 153.67 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			(justify left)
+			)
+		)
+		(property "Footprint" ""
+			(at 93.98 152.4 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 93.98 152.4 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 93.98 152.4 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "5514bdc9-d49d-4f1f-b2e3-693baa7904bb")
+		)
+		(pin "2"
+			(uuid "d95000e7-6fc2-47a0-9e9e-4d573db3b1b2")
+		)
+		(instances
+			(project "schema_electrique"
+				(path "/1c128566-2887-4190-99d4-a69b5f1c27c2"
+					(reference "R1")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(sheet_instances
+		(path "/"
+			(page "1")
+		)
+	)
+	(embedded_fonts no)
+)

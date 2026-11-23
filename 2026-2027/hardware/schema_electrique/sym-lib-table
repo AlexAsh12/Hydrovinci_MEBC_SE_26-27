@@ -1,0 +1,4 @@
+(sym_lib_table
+	(version 7)
+	(lib (name "hydrovinci") (type "KiCad") (uri "${KIPRJMOD}/../bibliotheque/hydrovinci.kicad_sym") (options "") (descr "Cartes et modules du projet Hydrovinci"))
+)
