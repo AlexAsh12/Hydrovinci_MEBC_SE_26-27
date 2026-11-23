@@ -17,6 +17,14 @@ Info.md
 # Configuration propre a chaque bateau (modele : sondes.conf.exemple)
 **/pi0/sondes.conf
 
+# KiCad : sauvegardes, fichiers temporaires et reglages locaux d'affichage
+*-backups/
+*.kicad_prl
+fp-info-cache
+*.lck
+_autosave-*
+\#auto_saved_files#
+
 # Credentials Google Drive (ne JAMAIS versionner)
 # Les motifs "**/" couvrent tous les dossiers d'annee (2025-2026/, 2026-2027/, ...)
 **/ground/credentials/
