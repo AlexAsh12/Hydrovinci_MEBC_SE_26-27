@@ -1,4 +1,5 @@
-# Serveur du tableau de bord : UART ESP32 -> page web locale (127.0.0.1:8080).
+# Serveur du tableau de bord : UART ESP32 + module 4G/GPS USB -> page web
+# locale (127.0.0.1:8080). Lit ../../.env (SIM_NUMEROS, SIM_PIN).
 # Installe par installer.sh, qui remplace @UTILISATEUR@ et @PI0@.
 [Unit]
 Description=Tableau de bord Hydrovinci (ESP32 -> ecran)
@@ -13,7 +14,7 @@ ExecStart=@PI0@/tableau_bord --web @PI0@/web
 Restart=always
 RestartSec=2
 
-# Durcissement : le service ne peut que lire l'UART et ecouter en local
+# Durcissement : le service ne peut que lire les ports serie et ecouter en local
 NoNewPrivileges=yes
 CapabilityBoundingSet=
 ProtectSystem=strict

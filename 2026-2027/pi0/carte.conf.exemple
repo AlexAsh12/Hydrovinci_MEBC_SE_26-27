@@ -1,0 +1,19 @@
+# Fond de la carte GPS affichee sur l'ecran (facultatif).
+# Sans ce fichier, la carte montre la trace du bateau sur une grille.
+#
+# 1. Sur https://www.openstreetmap.org, cadrer le plan d'eau, puis
+#    "Partager" > "Image" > format PNG (ou un export IGN, nord en haut).
+#    Noter les 4 bords de cette meme vue, en degres decimaux (onglet
+#    "Exporter" d'OpenStreetMap, "Selectionner manuellement une zone").
+# 2. Copier ce fichier en carte.conf (meme dossier) et le completer.
+# 3. sudo systemctl restart tableau-bord
+#
+# image : chemin depuis le dossier pi0 (png, jpg ou webp, 8 Mo max)
+# nord / sud : latitudes des bords haut et bas
+# ouest / est : longitudes des bords gauche et droit (negatif = ouest)
+#
+# image carte/plan_eau.png
+# nord 47.2700
+# sud 47.2500
+# ouest -1.5500
+# est -1.5200

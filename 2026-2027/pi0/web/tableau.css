@@ -77,12 +77,27 @@ html.kiosque, html.kiosque * { cursor: none; }
 
 /* ---------- Grille ---------- */
 
+.message {
+  margin: var(--ecart) var(--ecart) 0;
+  padding: 0.8vmin 2vmin;
+  border-radius: 6px;
+  font-weight: 700;
+  font-size: clamp(14px, 2.8vmin, 28px);
+  background: rgba(63, 182, 255, 0.15);
+  color: var(--accent);
+  border: 1px solid var(--accent);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .grille {
   display: grid;
   grid-template-columns: repeat(12, 1fr);
-  grid-template-rows: 1.7fr 1fr;
+  grid-template-rows: 1fr 1fr 1.05fr;
   grid-template-areas:
-    "assiette assiette assiette assiette assiette mouv mouv mouv cap cap cap cap"
+    "vitesse vitesse vitesse assiette assiette assiette assiette carte carte carte carte carte"
+    "cap cap cap mouv mouv mouv mouv carte carte carte carte carte"
     "bms1 bms1 bms1 bms2 bms2 bms2 energie energie energie temp temp temp";
   gap: var(--ecart);
   padding: var(--ecart);
@@ -90,6 +105,8 @@ html.kiosque, html.kiosque * { cursor: none; }
   min-height: 0;
 }
 
+.vitesse { grid-area: vitesse; }
+.carte { grid-area: carte; }
 .assiette { grid-area: assiette; }
 .cap { grid-area: cap; }
 #p-bms1 { grid-area: bms1; }
@@ -173,6 +190,53 @@ canvas {
 .badge.ok { color: var(--ok); }
 .badge.moyen { color: var(--accent); }
 .badge.faible { color: var(--attention); }
+
+/* ---------- Vitesse ---------- */
+
+.vitesse { justify-content: center; }
+.vitesse h2 { position: absolute; top: 1.2vmin; left: 1.6vmin; }
+
+.vitesse-grande {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 1vmin;
+}
+.vitesse-grande .valeur { font-size: clamp(40px, 13vmin, 150px); line-height: 1; }
+.vitesse-grande .unite { font-size: clamp(12px, 2.4vmin, 24px); color: var(--doux); }
+.vitesse-petite {
+  text-align: center;
+  font-size: clamp(14px, 3.2vmin, 32px);
+  font-weight: 600;
+  color: var(--doux);
+}
+.vitesse-source {
+  text-align: center;
+  margin-top: 0.6vmin;
+  font-size: clamp(10px, 1.6vmin, 16px);
+  color: var(--doux);
+}
+.vitesse-source .faible { color: var(--attention); }
+
+/* ---------- Carte ---------- */
+
+.carte-bas {
+  display: flex;
+  justify-content: space-between;
+  gap: 2vmin;
+  padding-top: 0.6vmin;
+  font-size: clamp(10px, 1.7vmin, 17px);
+  color: var(--doux);
+}
+.carte-bas > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dernier-sms { color: var(--accent); }
+
+/* ---------- Etat 4G dans la barre ---------- */
+
+.etat-sim.ok { color: var(--ok); }
+.etat-sim.attention { color: var(--attention); }
+#gps.ok { color: var(--ok); }
+#gps.attention { color: var(--attention); }
 
 /* ---------- Batteries / energie ---------- */
 
@@ -269,8 +333,10 @@ dd { margin: 0; text-align: right; font-weight: 600; }
   body { overflow: auto; }
   .grille {
     grid-template-columns: 1fr 1fr;
-    grid-template-rows: 50vh 40vh auto;
+    grid-template-rows: 30vh 50vh 50vh 40vh auto;
     grid-template-areas:
+      "vitesse vitesse"
+      "carte carte"
       "assiette assiette"
       "cap mouv"
       "bms1 bms2"

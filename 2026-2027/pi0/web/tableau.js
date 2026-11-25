@@ -177,7 +177,7 @@
   /* ------------------------------------------------------------------ */
 
   const PERIME_MS = 1500;
-  const vu = { imu: 0, mouv: 0, bms1: 0, bms2: 0, power: 0, temp: 0, etat: 0 };
+  const vu = { imu: 0, mouv: 0, bms1: 0, bms2: 0, power: 0, temp: 0, etat: 0, vitesse: 0, sim: 0 };
 
   function signe(v, decimales) { return (v > 0 ? '+' : '') + v.toFixed(decimales); }
 
@@ -292,6 +292,106 @@
     });
   }
 
+  /* ------------------------------------------------------------------ */
+  /* Vitesse, GPS, 4G, SMS (module SIM7600)                              */
+  /* ------------------------------------------------------------------ */
+
+  const carte = window.Carte.creer($('carte'));
+  new ResizeObserver(() => carte.redimensionner()).observe($('p-carte'));
+
+  const NOEUDS = 1.943844;   // m/s -> noeuds
+  const SOURCES_VITESSE = { 'gps+imu': 'GPS + IMU', gps: 'GPS seul', imu: 'IMU seule : GPS perdu' };
+  let etatSim = null;
+  let finMessage = 0;
+
+  function surVitesse(m) {
+    if (m.src === 'aucune') { vu.vitesse = 0; return; }
+    vu.vitesse = performance.now();
+    texte($('vit-noeuds'), (m.ms * NOEUDS).toFixed(1));
+    texte($('vit-kmh'), (m.ms * 3.6).toFixed(1));
+    const source = $('vit-source');
+    texte(source, SOURCES_VITESSE[m.src] || m.src);
+    classe(source, 'faible', m.src === 'imu');
+    texte($('vit-incertitude'), '± ' + (m.sigma * NOEUDS).toFixed(1) + ' nd');
+  }
+
+  function formatPosition(lat, lon) {
+    return Math.abs(lat).toFixed(5) + '° ' + (lat >= 0 ? 'N' : 'S') + '   ' +
+      Math.abs(lon).toFixed(5) + '° ' + (lon >= 0 ? 'E' : 'O');
+  }
+
+  /* Cap du bateau sur la carte : IMU si a jour, sinon route GPS */
+  function capBateau(m) {
+    if (performance.now() - vu.imu < PERIME_MS) return cible.cap;
+    return m.cap >= 0 ? m.cap : null;
+  }
+
+  function surGps(m) {
+    if (!m.fix) { carte.perdu(); return; }
+    if (m.pt) carte.ajouterPoint(m.lat, m.lon);
+    carte.position(m.lat, m.lon, capBateau(m), 1);
+    texte($('position'), formatPosition(m.lat, m.lon) + (m.heure ? '   ' + m.heure + ' UTC' : ''));
+  }
+
+  function barres(rssi) {
+    if (rssi < 0) return '?';
+    const n = rssi >= 20 ? 4 : rssi >= 15 ? 3 : rssi >= 10 ? 2 : rssi >= 2 ? 1 : 0;
+    return '▂▄▆█'.slice(0, n) + '·'.repeat(4 - n);
+  }
+
+  function surSim(m) {
+    vu.sim = performance.now();
+    etatSim = m;
+    let t, niveau = 'attention';
+    if (!m.actif) { t = '4G désactivé'; niveau = ''; }
+    else if (!m.present) t = '4G absent';
+    else if (m.carte === 'absente') t = 'Pas de carte SIM';
+    else if (m.carte === 'pin') t = 'SIM : code PIN';
+    else if (m.carte === 'bloquee') t = 'SIM bloquée (PUK)';
+    else if (!m.reseau) t = 'Pas de réseau ' + barres(m.signal);
+    else { t = (m.techno || 'Réseau') + ' ' + barres(m.signal) + (m.operateur ? ' ' + m.operateur : ''); niveau = 'ok'; }
+    if (m.attente > 0) t += ' · ' + m.attente + ' SMS en attente';
+    const el = $('sim');
+    texte(el, t);
+    classe(el, 'ok', niveau === 'ok');
+    classe(el, 'attention', niveau === 'attention');
+
+    const g = $('gps');
+    const present = m.actif && m.present;
+    texte(g, !present ? 'GPS —' : m.fix ? 'GPS ok' : m.gps ? 'GPS : recherche' : 'GPS éteint');
+    classe(g, 'ok', present && m.fix);
+    classe(g, 'attention', present && !m.fix);
+  }
+
+  /* Pourquoi pas de vitesse / pas de carte */
+  function raisonSansGps() {
+    const m = etatSim;
+    if (!m || performance.now() - vu.sim > 3000) return 'Serveur injoignable';
+    if (!m.actif) return 'Module 4G désactivé';
+    if (!m.present) return 'Module 4G/GPS absent';
+    if (!m.gps) return 'GPS éteint';
+    if (!m.fix) return 'Recherche GPS…';
+    return 'Vitesse inconnue';
+  }
+
+  function surSms(m) {
+    texte($('dernier-sms'), 'SMS ' + m.heure + ' : ' + m.texte);
+    if (m.ancien) return;   // deja recu avant l'ouverture de la page : pas de bandeau
+    const el = $('message');
+    texte(el, 'SMS ' + m.de + ' (' + m.heure + ') : ' + m.texte);
+    el.hidden = false;
+    finMessage = performance.now() + 30000;
+  }
+
+  /* Envoye a chaque (re)connexion au serveur : fond de carte et trace complete */
+  function surCarte(m) {
+    carte.definirFond(m.fond ? m : null);
+    fetch('/trace', { cache: 'no-store' })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => { if (d && Array.isArray(d.points)) carte.chargerTrace(d.points); })
+      .catch(() => {});
+  }
+
   function duree(ms) {
     const s = Math.floor(ms / 1000);
     const h = Math.floor(s / 3600), mi = Math.floor((s % 3600) / 60);
@@ -336,6 +436,11 @@
       case 'hb': texte($('uptime'), 'ESP ' + duree(m.uptime)); break;
       case 'hello': texte($('fw'), 'fw ' + m.fw); break;
       case 'alerte': surAlerte(m); break;
+      case 'vitesse': surVitesse(m); break;
+      case 'gps': surGps(m); break;
+      case 'sim': surSim(m); break;
+      case 'sms': surSms(m); break;
+      case 'carte': surCarte(m); break;
       case 'etat':
         vu.etat = performance.now();
         texte($('lien'), 'UART ' + m.crc + (m.crc > 1 ? ' erreurs' : ' erreur'));
@@ -365,8 +470,13 @@
     classe($('p-bms2'), 'perime', t - vu.bms2 > 3000);
     classe($('p-power'), 'perime', t - vu.power > 3000);
     classe($('p-temp'), 'perime', t - vu.temp > 3000);
+    classe($('p-vitesse'), 'perime', t - vu.vitesse > PERIME_MS);
+    texte($('voile-vitesse'), raisonSansGps());
+    classe($('p-carte'), 'perime', !carte.aDesDonnees());
+    texte($('voile-carte'), raisonSansGps() === 'Vitesse inconnue' ? 'En attente du GPS' : raisonSansGps());
     if (t - vu.etat > 3000) etatLiaison('Serveur injoignable', 'perdu');
     if (finAlerte && t > finAlerte) { $('alerte').hidden = true; finAlerte = 0; }
+    if (finMessage && t > finMessage) { $('message').hidden = true; finMessage = 0; }
 
     const d = new Date();
     texte($('heure'), [d.getHours(), d.getMinutes(), d.getSeconds()].map((x) => String(x).padStart(2, '0')).join(':'));

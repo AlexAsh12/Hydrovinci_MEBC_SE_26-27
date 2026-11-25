@@ -1,6 +1,7 @@
 #!/bin/bash
 # Installe tout ce qu'il faut sur la Pi (Raspberry Pi OS Lite) :
 #   - UART materiel pour l'ESP32 (sans console serie, Bluetooth coupe)
+#   - module 4G/GPS SIM7600 en USB laisse a tableau_bord (pas a ModemManager)
 #   - compile tableau_bord et le lance au demarrage (service systemd)
 #   - affiche la page en plein ecran sur le HDMI des la mise sous tension
 #     (connexion automatique sur tty1 + cage + Chromium)
@@ -53,9 +54,18 @@ cat > /etc/chromium/policies/managed/kiosque-hydrovinci.json <<'EOF'
 }
 EOF
 
+echo "== Module 4G/GPS SIM7600 (USB)"
+# ModemManager (s'il est installe) ne doit pas prendre les ports du module :
+# c'est tableau_bord qui lui parle. 1e0e = SimTech.
+cat > /etc/udev/rules.d/77-hydrovinci-sim7600.rules <<'EOF'
+ATTRS{idVendor}=="1e0e", ENV{ID_MM_DEVICE_IGNORE}="1"
+EOF
+udevadm control --reload-rules || true
+
 echo "== Compilation"
-sudo -u "$UTILISATEUR" make -C "$PI0" tableau_bord test_protocole
+sudo -u "$UTILISATEUR" make -C "$PI0" tableau_bord test_protocole test_pi
 sudo -u "$UTILISATEUR" "$PI0/test_protocole" >/dev/null
+sudo -u "$UTILISATEUR" "$PI0/test_pi" >/dev/null
 
 echo "== Service tableau-bord"
 sed -e "s|@UTILISATEUR@|$UTILISATEUR|g" -e "s|@PI0@|$PI0|g" \

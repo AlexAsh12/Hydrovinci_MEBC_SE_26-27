@@ -7,6 +7,7 @@
 <title>Hydrovinci SE</title>
 <link rel="stylesheet" href="/tableau.css">
 <script src="/bateau.js" defer></script>
+<script src="/carte.js" defer></script>
 <script src="/tableau.js" defer></script>
 </head>
 <body>
@@ -14,6 +15,8 @@
   <div class="marque">HYDROVINCI <span>SE</span></div>
   <div id="liaison" class="pastille inconnu">Connexion…</div>
   <div class="infos">
+    <span id="sim" class="etat-sim">4G —</span>
+    <span id="gps">GPS —</span>
     <span id="lien">UART —</span>
     <span id="fw">fw —</span>
     <span id="uptime">ESP —</span>
@@ -22,8 +25,27 @@
 </header>
 
 <div id="alerte" class="alerte" hidden></div>
+<div id="message" class="message" hidden></div>
 
 <main class="grille">
+  <section class="panneau vitesse" id="p-vitesse">
+    <h2>Vitesse</h2>
+    <div class="vitesse-grande"><span class="valeur" id="vit-noeuds">—</span><span class="unite">nœuds</span></div>
+    <div class="vitesse-petite"><span id="vit-kmh">—</span> km/h</div>
+    <div class="vitesse-source"><span id="vit-source">—</span> <span id="vit-incertitude"></span></div>
+    <div class="voile" id="voile-vitesse">Pas de GPS</div>
+  </section>
+
+  <section class="panneau carte" id="p-carte">
+    <h2>Carte</h2>
+    <canvas id="carte"></canvas>
+    <div class="carte-bas">
+      <span id="position">—</span>
+      <span id="dernier-sms" class="dernier-sms"></span>
+    </div>
+    <div class="voile" id="voile-carte">En attente du GPS</div>
+  </section>
+
   <section class="panneau assiette" id="p-imu">
     <h2>Assiette</h2>
     <canvas id="vue3d"></canvas>
