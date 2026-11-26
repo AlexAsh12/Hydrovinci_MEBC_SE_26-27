@@ -111,7 +111,11 @@ static void chercher_candidats(sim7600_t *s)
     const struct dirent *e;
     while ((e = readdir(d)) != NULL && s->nb_candidats < SIM7600_MAX_CANDIDATS) {
         if (contient(e->d_name, "simtech") || contient(e->d_name, "simcom") || contient(e->d_name, "sim7600")) {
-            snprintf(s->candidats[s->nb_candidats++], SIM7600_TAILLE_CHEMIN, "%s/%s", DOSSIER_PAR_ID, e->d_name);
+            const size_t l = strlen(e->d_name);
+            if (sizeof DOSSIER_PAR_ID + l >= SIM7600_TAILLE_CHEMIN) continue;  /* nom trop long : ignore */
+            char *c = s->candidats[s->nb_candidats++];
+            memcpy(c, DOSSIER_PAR_ID "/", sizeof DOSSIER_PAR_ID);
+            memcpy(c + sizeof DOSSIER_PAR_ID, e->d_name, l + 1);
         }
     }
     closedir(d);

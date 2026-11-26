@@ -475,7 +475,9 @@ static int faux_ecrire(void *ctx, const char *data, size_t n)
             if (c == 0x1A) {
                 faux.recu[faux.nr] = '\0';
                 if (faux.nb_envoyes < 4) {
-                    snprintf(faux.envoyes[faux.nb_envoyes], 200, "%s", faux.recu);
+                    const size_t l = faux.nr < 199 ? faux.nr : 199;
+                    memcpy(faux.envoyes[faux.nb_envoyes], faux.recu, l);
+                    faux.envoyes[faux.nb_envoyes][l] = '\0';
                     snprintf(faux.envoyes_a[faux.nb_envoyes], 24, "%s", faux.numero_saisie);
                     faux.nb_envoyes++;
                 }
