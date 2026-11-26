@@ -62,6 +62,13 @@ ATTRS{idVendor}=="1e0e", ENV{ID_MM_DEVICE_IGNORE}="1"
 EOF
 udevadm control --reload-rules || true
 
+echo "== Demarrage plus rapide"
+# cloud-init n'a servi qu'au premier demarrage (reglages de Raspberry Pi
+# Imager) mais tourne a chaque demarrage (~5 s) ; personne n'a besoin
+# d'attendre que le reseau soit en ligne (NetworkManager-wait-online).
+if [ -d /etc/cloud ]; then touch /etc/cloud/cloud-init.disabled; fi
+systemctl disable NetworkManager-wait-online.service 2>/dev/null || true
+
 echo "== Compilation"
 sudo -u "$UTILISATEUR" make -C "$PI0" tableau_bord test_protocole test_pi
 sudo -u "$UTILISATEUR" "$PI0/test_protocole" >/dev/null
