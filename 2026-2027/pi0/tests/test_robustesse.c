@@ -259,7 +259,7 @@ static size_t plausible(char *t, size_t taille)
         AJOUT("\r\n");
         for (int i = (int)entre(4); i > 0; --i) {
             char l[200];
-            snprintf(l, sizeof l, "+CMGL: %u,\"REC UNREAD\",\"%s\",,\"26/11/26,14:32:05+04\"\r\n%s\r\n", entre(30),
+            snprintf(l, sizeof l, "+CMGL: %u,\"REC UNREAD\",\"%s\",,\"26/11/26,14:32:05+04\"\r\n%s\r\n", (unsigned)entre(30),
                      entre(4) ? "+33612345678" : "Operateur", corps[entre(sizeof corps / sizeof corps[0])]);
             AJOUT(l);
         }
