@@ -116,7 +116,7 @@ l'autre continue de s'afficher.
 | Fonction | Fonctionnement |
 |---|---|
 | Vitesse | Filtre de Kalman : vitesse GPS (1 Hz) + accélération avant de l'IMU (5 Hz). Le filtre apprend le biais de l'accéléromètre. GPS perdu : accéléromètre seul quelques secondes, puis « vitesse inconnue ». Pas d'IMU : vitesse GPS lissée |
-| Carte | Trace du bateau (un point tous les 3 m), position, cap, nord en haut. Fond facultatif : `carte.conf` |
+| Carte | Plan IGN stocké sur la Pi pour les zones de navigation (Monaco, Seine à Nanterre), sans Internet. Suit le bateau : flèche et ligne de cap, trace (un point tous les 3 m), nord en haut. Hors des zones : grille |
 | SMS reçus | Seuls les numéros de `SIM_NUMEROS` (`.env`) sont écoutés. Une commande reçoit une réponse, tout autre texte s'affiche 30 s en bandeau |
 | SMS envoyés | File d'attente : partent quand carte SIM et réseau sont là, abandonnés après 15 min |
 
@@ -138,13 +138,20 @@ nano ~/Hydrovinci_MEBC_SE_26-27/.env
 sudo systemctl restart tableau-bord
 ```
 
-Fond de carte (facultatif) :
+Ajouter une zone de carte (avec Internet, par le Wi-Fi) : une ligne dans
+`carte/zones.conf` (le fichier explique le format), puis :
 
 ```bash
 cd ~/Hydrovinci_MEBC_SE_26-27/2026-2027/pi0
-cp carte.conf.exemple carte.conf     # puis suivre les explications du fichier
+sudo apt install -y pngquant         # facultatif : tuiles 3 fois plus legeres
+make telecharger_carte
+./telecharger_carte --compter        # nombre de tuiles, sans telecharger
+./telecharger_carte                  # telecharge seulement ce qui manque
 sudo systemctl restart tableau-bord
 ```
+
+Garder le zoom 16 pour l'eau et les quais : chaque zoom de plus multiplie
+le nombre de tuiles par 4.
 
 Vérifier : `journalctl -u tableau-bord -f` doit afficher
 `SIM7600 : port de commandes ...`, `SIM7600 pret`, `carte SIM : prete`,
@@ -166,6 +173,7 @@ puis `GPS : position trouvee` (dehors, environ 1 minute).
 | « 4G absent » | `ls /dev/serial/by-id/` doit montrer des `usb-SimTech...`. Sinon : voyant PWR du HAT, pogo pins sur leurs pastilles, `dmesg \| tail` |
 | « Pas de carte SIM » / « SIM : code PIN » | Carte insérée hors tension ? Code dans `SIM_PIN` du `.env` |
 | « Pas de réseau » | Antenne LTE sur `Main`, forfait actif. Le voyant NET doit clignoter 1 fois par seconde |
+| Carte en grille, sans plan | Bateau hors des zones de `carte/zones.conf` : ajouter la zone (voir plus haut). `journalctl -u tableau-bord -b \| grep carte` liste les zones lues |
 | « Recherche GPS… » qui dure | Antenne GPS sur `GNSS`, à l'extérieur, ciel dégagé (1 min environ) |
 | SMS reçus sans effet | Numéro absent de `SIM_NUMEROS` : `journalctl -u tableau-bord \| grep SMS` |
 | Tout réparer / réinstaller | `sudo ./kiosque/installer.sh` puis `sudo reboot` (sans risque, peut être relancé) |

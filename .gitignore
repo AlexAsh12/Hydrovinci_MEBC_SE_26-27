@@ -21,9 +21,10 @@ Info.md
 **/pi0/tableau_bord
 **/pi0/test_protocole
 **/pi0/test_pi
-# Configuration propre a chaque bateau (modeles : sondes.conf.exemple, carte.conf.exemple)
+**/pi0/telecharger_carte
+**/pi0/carte/tuiles/**/*.tmp.png
+# Configuration propre a chaque bateau (modele : sondes.conf.exemple)
 **/pi0/sondes.conf
-**/pi0/carte.conf
 
 # KiCad : sauvegardes, fichiers temporaires et reglages locaux d'affichage
 *-backups/

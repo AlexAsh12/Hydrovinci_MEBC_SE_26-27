@@ -383,9 +383,9 @@
     finMessage = performance.now() + 30000;
   }
 
-  /* Envoye a chaque (re)connexion au serveur : fond de carte et trace complete */
+  /* Envoye a chaque (re)connexion au serveur : zones de carte et trace complete */
   function surCarte(m) {
-    carte.definirFond(m.fond ? m : null);
+    carte.definirZones(m.zones);
     fetch('/trace', { cache: 'no-store' })
       .then((r) => (r.ok ? r.json() : null))
       .then((d) => { if (d && Array.isArray(d.points)) carte.chargerTrace(d.points); })

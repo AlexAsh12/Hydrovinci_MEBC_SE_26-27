@@ -31,12 +31,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <strings.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
 #include <time.h>
 #include <unistd.h>
 
+#include "carte_zones.h"
 #include "env.h"
 #include "kalman_vitesse.h"
 #include "protocole.h"
@@ -45,7 +45,7 @@
 #include "trace.h"
 #include "uart.h"
 
-#define MAX_CLIENTS 8
+#define MAX_CLIENTS 16   /* l'ecran charge plusieurs tuiles de carte a la fois */
 #define TAILLE_REQUETE 2048
 #define TAILLE_SORTIE 16384
 #define DELAI_REQUETE_MS 5000u
@@ -126,9 +126,12 @@ static uint64_t t_puissance;
 
 #define PERIODE_VITESSE_MS 200u
 #define PAS_TRACE_M 3.0
-#define TAILLE_TRACE_JSON 40960   /* TRACE_MAX points de 25 caracteres au plus */
+/* Tampon propre a chaque client : trace GPS (TRACE_MAX points de 25
+ * caracteres au plus) ou tuile de carte (32 ko apres reduction a 64 couleurs) */
+#define TAILLE_TAMPON_CLIENT 65536
 #define MAX_NUMEROS 8
-#define TAILLE_MAX_FOND (8u * 1024u * 1024u)
+#define MAX_RECTS_CARTE 64
+#define MAX_ZONES_CARTE 8
 
 static sim7600_t sim;
 static int sim_actif = 1;
@@ -138,15 +141,10 @@ static sim_gps_t dernier_gps;
 static int gps_fix;
 static char numeros[MAX_NUMEROS][SIM_TAILLE_NUMERO];  /* SIM_NUMEROS du .env */
 static int nb_numeros;
-static char trace_json_client[MAX_CLIENTS][TAILLE_TRACE_JSON];
+static char tampon_client[MAX_CLIENTS][TAILLE_TAMPON_CLIENT];
 
-/* Fond de carte facultatif (carte.conf) */
-static struct {
-    char *data;
-    size_t taille;
-    const char *type;
-    double nord, sud, ouest, est;
-} fond;
+/* Carte reelle : tuiles Plan IGN dans <dossier_carte>/tuiles/Z/X/Y.png */
+static const char *dossier_carte = "carte";
 
 static volatile sig_atomic_t arret;
 
@@ -663,90 +661,81 @@ static void diffuser_sim(void)
 }
 
 /* ------------------------------------------------------------------ */
-/* Fond de carte (carte.conf, facultatif)                              */
+/* Carte reelle (carte/zones.conf et carte/tuiles)                     */
 /* ------------------------------------------------------------------ */
 
-static const char *type_image(const char *chemin)
+/* Annonce aux ecrans les zones dont la carte est stockee (rectangles de
+ * meme nom reunis) et les zooms disponibles. Sans zones.conf : grille. */
+static void charger_carte(void)
 {
-    const char *point = strrchr(chemin, '.');
-    if (!point) return NULL;
-    if (!strcasecmp(point, ".png")) return "image/png";
-    if (!strcasecmp(point, ".jpg") || !strcasecmp(point, ".jpeg")) return "image/jpeg";
-    if (!strcasecmp(point, ".webp")) return "image/webp";
-    return NULL;
-}
-
-/* Lignes "cle valeur" : image, nord, sud, ouest, est. '#' = commentaire. */
-static void charger_carte(const char *chemin)
-{
-    char tampon[160];
-    json_t s = {tampon, sizeof tampon, 0, 0};
-    tampon[0] = '\0';
-    j(&s, "{\"t\":\"carte\",\"fond\":0}");
-    memoriser_et_diffuser(D_CARTE, &s);
-
+    char chemin[512];
+    snprintf(chemin, sizeof chemin, "%s/zones.conf", dossier_carte);
+    static char texte[16384];
+    static cz_rect_t rects[MAX_RECTS_CARTE];
+    int nb = 0, invalides = 0;
     FILE *f = fopen(chemin, "r");
-    if (!f) {
-        journal("pas de fichier %s : carte sans fond (trace et grille)", chemin);
-        return;
+    if (f) {
+        texte[fread(texte, 1, sizeof texte - 1, f)] = '\0';
+        fclose(f);
+        nb = cz_lire(texte, rects, MAX_RECTS_CARTE, &invalides);
+        if (invalides) journal("%s : %d ligne(s) invalide(s) ignoree(s)", chemin, invalides);
+    } else {
+        journal("pas de fichier %s : carte sans fond (grille)", chemin);
     }
-    char ligne[512], image[384] = "";
-    double bornes[4] = {0};
-    static const char *const cles[4] = {"nord", "sud", "ouest", "est"};
-    int vues = 0;
-    while (fgets(ligne, sizeof ligne, f)) {
-        char cle[16], valeur[384];
-        if (ligne[0] == '#' || sscanf(ligne, "%15s %383s", cle, valeur) != 2) continue;
-        if (!strcmp(cle, "image")) {
-            snprintf(image, sizeof image, "%s", valeur);
+
+    cz_rect_t zones[MAX_ZONES_CARTE];
+    int nb_zones = 0;
+    for (int i = 0; i < nb; ++i) {
+        const cz_rect_t *r = &rects[i];
+        int k = 0;
+        while (k < nb_zones && strcmp(zones[k].nom, r->nom) != 0) k++;
+        if (k == nb_zones) {
+            if (nb_zones < MAX_ZONES_CARTE) zones[nb_zones++] = *r;
             continue;
         }
-        for (int i = 0; i < 4; ++i) {
-            if (!strcmp(cle, cles[i])) {
-                char *fin;
-                bornes[i] = strtod(valeur, &fin);
-                if (*fin == '\0') vues |= 1 << i;
-            }
-        }
+        cz_rect_t *z = &zones[k];
+        if (r->sud < z->sud) z->sud = r->sud;
+        if (r->nord > z->nord) z->nord = r->nord;
+        if (r->ouest < z->ouest) z->ouest = r->ouest;
+        if (r->est > z->est) z->est = r->est;
+        if (r->zmin < z->zmin) z->zmin = r->zmin;
+        if (r->zmax > z->zmax) z->zmax = r->zmax;
     }
-    fclose(f);
 
-    const double nord = bornes[0], sud = bornes[1], ouest = bornes[2], est = bornes[3];
-    if (!image[0] || vues != 15 || !(nord > sud) || !(est > ouest) || nord > 85.0 || sud < -85.0 ||
-        ouest < -180.0 || est > 180.0) {
-        journal("%s incomplet ou invalide (image, nord > sud, est > ouest) : carte sans fond", chemin);
-        return;
+    char tampon[TAILLE_EVENEMENT];
+    json_t s = {tampon, sizeof tampon, 0, 0};
+    tampon[0] = '\0';
+    j(&s, "{\"t\":\"carte\",\"zones\":[");
+    for (int k = 0; k < nb_zones; ++k) {
+        j(&s, "%s{\"nom\":", k ? "," : "");
+        j_texte(&s, zones[k].nom, 0);
+        j(&s, ",\"s\":%.5f,\"n\":%.5f,\"o\":%.5f,\"e\":%.5f,\"zmin\":%d,\"zmax\":%d}", zones[k].sud, zones[k].nord,
+          zones[k].ouest, zones[k].est, zones[k].zmin, zones[k].zmax);
     }
-    const char *type = type_image(image);
-    FILE *fi = type ? fopen(image, "rb") : NULL;
-    struct stat st;
-    if (!fi || fstat(fileno(fi), &st) != 0 || st.st_size <= 0 || (size_t)st.st_size > TAILLE_MAX_FOND) {
-        journal("image de carte %s illisible, trop grosse (8 Mo max) ou pas en png/jpg/webp", image);
-        if (fi) fclose(fi);
-        return;
-    }
-    fond.data = malloc((size_t)st.st_size);
-    if (!fond.data || fread(fond.data, 1, (size_t)st.st_size, fi) != (size_t)st.st_size) {
-        journal("lecture impossible : %s", image);
-        free(fond.data);
-        fond.data = NULL;
-        fclose(fi);
-        return;
-    }
-    fclose(fi);
-    fond.taille = (size_t)st.st_size;
-    fond.type = type;
-    fond.nord = nord;
-    fond.sud = sud;
-    fond.ouest = ouest;
-    fond.est = est;
-
-    s.pos = 0;
-    s.erreur = 0;
-    j(&s, "{\"t\":\"carte\",\"fond\":1,\"nord\":%.7f,\"sud\":%.7f,\"ouest\":%.7f,\"est\":%.7f}", nord, sud, ouest,
-      est);
+    j(&s, "]}");
     memoriser_et_diffuser(D_CARTE, &s);
-    journal("fond de carte %s charge (%zu ko)", image, fond.taille / 1024u);
+    for (int k = 0; k < nb_zones; ++k) {
+        journal("carte : zone %s, zoom %d a %d", zones[k].nom, zones[k].zmin, zones[k].zmax);
+    }
+}
+
+static void repondre_donnees(client_t *c, const char *type, const char *data, size_t taille);
+
+/* Tuile Z/X/Y lue sur la carte SD dans le tampon du client.
+ * Faux si absente ou trop grosse. */
+static int servir_tuile(client_t *c, int z, int x, int y)
+{
+    char fichier[512];
+    snprintf(fichier, sizeof fichier, "%s/tuiles/%d/%d/%d.png", dossier_carte, z, x, y);
+    FILE *f = fopen(fichier, "rb");
+    if (!f) return 0;
+    char *tampon = tampon_client[c - clients];
+    const size_t n = fread(tampon, 1, TAILLE_TAMPON_CLIENT, f);
+    const int complet = n > 0 && n < TAILLE_TAMPON_CLIENT && feof(f);
+    fclose(f);
+    if (!complet) return 0;
+    repondre_donnees(c, "image/png", tampon, n);
+    return 1;
 }
 
 /* SIM_NUMEROS et SIM_PIN du .env */
@@ -937,8 +926,8 @@ static void traiter_requete(client_t *c)
     }
     if (strcmp(chemin, "/trace") == 0) {
         /* Trace GPS complete, pour un ecran qui (re)demarre ; tampon propre au client */
-        char *tampon = trace_json_client[c - clients];
-        const size_t n = trace_json(&trace, tampon, TAILLE_TRACE_JSON);
+        char *tampon = tampon_client[c - clients];
+        const size_t n = trace_json(&trace, tampon, TAILLE_TAMPON_CLIENT);
         if (n == 0) {
             repondre_erreur(c, "500 Internal Server Error");
         } else {
@@ -946,8 +935,11 @@ static void traiter_requete(client_t *c)
         }
         return;
     }
-    if (strcmp(chemin, "/carte/fond") == 0 && fond.data) {
-        repondre_donnees(c, fond.type, fond.data, fond.taille);
+    int tz, tx, ty;
+    if (cz_analyser_url(chemin, &tz, &tx, &ty)) {
+        if (!servir_tuile(c, tz, tx, ty)) {
+            repondre_erreur(c, "404 Not Found");  /* hors des zones telechargees */
+        }
         return;
     }
     for (size_t i = 0; i < NB_FICHIERS; ++i) {
@@ -1083,7 +1075,7 @@ static void usage(const char *nom)
            "                    0.0.0.0 = accessible depuis le reseau)\n"
            "  --web DOSSIER     dossier des pages (defaut ./web)\n"
            "  --sondes FICHIER  noms des sondes de temperature (defaut ./sondes.conf, optionnel)\n"
-           "  --carte FICHIER   fond de carte GPS (defaut ./carte.conf, optionnel)\n"
+           "  --carte DOSSIER   carte reelle : zones.conf et tuiles/ (defaut ./carte)\n"
            "  --env FICHIER     secrets : SIM_NUMEROS, SIM_PIN (defaut ../../.env)\n"
            "  --sim-port CHEMIN port AT du SIM7600 (defaut : recherche automatique)\n"
            "  --sans-sim        ne pas utiliser le module 4G/GPS\n",
@@ -1095,7 +1087,6 @@ int main(int argc, char **argv)
     const char *adresse = "127.0.0.1";
     const char *dossier_web = "web";
     const char *fichier_noms = "sondes.conf";
-    const char *fichier_carte = "carte.conf";
     const char *fichier_env = "../../.env";
     const char *port_sim = NULL;
     int port_http = 8080;
@@ -1115,7 +1106,7 @@ int main(int argc, char **argv)
         } else if (!strcmp(argv[i], "--sondes") && reste) {
             fichier_noms = argv[++i];
         } else if (!strcmp(argv[i], "--carte") && reste) {
-            fichier_carte = argv[++i];
+            dossier_carte = argv[++i];
         } else if (!strcmp(argv[i], "--env") && reste) {
             fichier_env = argv[++i];
         } else if (!strcmp(argv[i], "--sim-port") && reste) {
@@ -1136,7 +1127,7 @@ int main(int argc, char **argv)
         return 1;
     }
     charger_noms(fichier_noms);
-    charger_carte(fichier_carte);
+    charger_carte();
 
     kv_init(&kalman);
     trace_init(&trace, PAS_TRACE_M);

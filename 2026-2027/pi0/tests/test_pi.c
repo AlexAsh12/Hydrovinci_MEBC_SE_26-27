@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "carte_zones.h"
 #include "env.h"
 #include "kalman_vitesse.h"
 #include "sim_analyse.h"
@@ -248,6 +249,50 @@ static void test_trace(void)
     VERIF(trace_json(&trace, json, sizeof json) > 0);
     VERIF(strncmp(json, "{\"pas\":6,\"points\":[[470000000,-10000000],", 41) == 0);
     VERIF(trace_json(&trace, json, 20) == 0);
+}
+
+/* ------------------------------------------------------------------ */
+
+static void test_carte(void)
+{
+    const char *conf =
+        "# commentaire\n"
+        "monaco    43.7180 43.7450 7.4050 7.4450 13 16   # port\n"
+        "\n"
+        "nanterre  48.8850 48.9030 2.1550 2.1850 15 16\n"
+        "faux      48.9 48.8 2.1 2.2 13 16\n"          /* sud > nord */
+        "court     48.8 48.9 2.1\n"
+        "trop      48.8 48.9 2.1 2.2 13 20\n";         /* zoom > 19 */
+    cz_rect_t r[8];
+    int invalides = -1;
+    VERIF(cz_lire(conf, r, 8, &invalides) == 2);
+    VERIF(invalides == 3);
+    TEXTE(r[0].nom, "monaco");
+    PROCHE(r[0].est, 7.445, 1e-12);
+    VERIF(r[0].zmin == 13 && r[0].zmax == 16);
+    TEXTE(r[1].nom, "nanterre");
+    VERIF(cz_lire(conf, r, 1, NULL) == 1);
+
+    int x, y;
+    /* Tuiles telechargees pour le port Hercule (carte/tuiles/16/34119/...) */
+    VERIF(cz_tuile(43.7350, 7.4235, 16, &x, &y) && x == 34119);
+    VERIF(cz_tuile(0.0, 0.0, 1, &x, &y) && x == 1 && y == 1);
+    VERIF(cz_tuile(85.0, -180.0, 3, &x, &y) && x == 0 && y == 0);
+    VERIF(cz_tuile(-85.0, 179.9999, 3, &x, &y) && x == 7 && y == 7);
+    VERIF(!cz_tuile(89.0, 0.0, 3, &x, &y) && !cz_tuile(0.0, 0.0, 20, &x, &y));
+    int x0, y0, x1, y1;
+    cz_etendue(&r[0], 16, &x0, &y0, &x1, &y1);
+    VERIF(x0 <= x1 && y0 <= y1 && x1 - x0 < 10 && y1 - y0 < 10);
+
+    int z;
+    VERIF(cz_analyser_url("/tuiles/16/34119/23899.png", &z, &x, &y) && z == 16 && x == 34119 && y == 23899);
+    VERIF(!cz_analyser_url("/tuiles/16/34119/23899.tmp.png", &z, &x, &y));
+    VERIF(!cz_analyser_url("/tuiles/16/../../etc/passwd", &z, &x, &y));
+    VERIF(!cz_analyser_url("/tuiles/2/4/0.png", &z, &x, &y));        /* x >= 2^z */
+    VERIF(!cz_analyser_url("/tuiles/20/0/0.png", &z, &x, &y));
+    VERIF(!cz_analyser_url("/tuiles/16/-1/0.png", &z, &x, &y));
+    VERIF(!cz_analyser_url("/tuiles/16/1/2.png?x", &z, &x, &y));
+    VERIF(!cz_analyser_url("/tuiles//1/2.png", &z, &x, &y));
 }
 
 /* ------------------------------------------------------------------ */
@@ -657,6 +702,7 @@ int main(int argc, char **argv)
     test_analyse();
     test_kalman();
     test_trace();
+    test_carte();
     test_sms_commandes();
     test_moteur();
     printf("%d verifications, %d echec(s)\n", verifs, echecs);
