@@ -37,7 +37,28 @@ test: test_protocole test_pi
 	./test_protocole
 	./test_pi
 
-clean:
-	rm -f liaison_esp32 tableau_bord test_protocole test_pi telecharger_carte
+# Robustesse : des millions d'entrees aleatoires, avec detection des
+# debordements memoire (AddressSanitizer) et des calculs indefinis (UBSan)
+SANITIZE := -O1 -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=all
+test_robustesse: tests/test_robustesse.c $(MODULES) $(MODULES:.c=.h) $(PROTO)/protocole.c $(PROTO)/protocole.h
+	$(CC) -std=gnu99 -Wall -Wextra $(SANITIZE) -Isrc -I$(PROTO) -o $@ tests/test_robustesse.c $(MODULES) \
+		$(PROTO)/protocole.c -lm
 
-.PHONY: all test clean
+robustesse: test_robustesse
+	./test_robustesse
+
+# Performance : capacite de chaque traitement face au besoin reel
+perf_pi: tests/perf_pi.c $(MODULES) $(MODULES:.c=.h) $(PROTO)/protocole.c $(PROTO)/protocole.h
+	$(CC) $(CFLAGS) -Isrc -I$(PROTO) -o $@ tests/perf_pi.c $(MODULES) $(PROTO)/protocole.c -lm
+
+perf: perf_pi
+	./perf_pi
+
+# Test de charge du serveur en marche (voir src/stress_tableau.c)
+stress_tableau: src/stress_tableau.c
+	$(CC) $(CFLAGS) -o $@ src/stress_tableau.c
+
+clean:
+	rm -f liaison_esp32 tableau_bord test_protocole test_pi telecharger_carte test_robustesse perf_pi stress_tableau
+
+.PHONY: all test robustesse perf clean

@@ -6,7 +6,11 @@ Description=Tableau de bord Hydrovinci (ESP32 -> ecran)
 After=local-fs.target
 
 [Service]
-Type=simple
+# notify + chien de garde : si la boucle du serveur se fige plus de 10 s,
+# systemd le tue et le relance (2 s plus tard), sans toucher au reste
+Type=notify
+NotifyAccess=main
+WatchdogSec=10
 User=@UTILISATEUR@
 SupplementaryGroups=dialout
 WorkingDirectory=@PI0@

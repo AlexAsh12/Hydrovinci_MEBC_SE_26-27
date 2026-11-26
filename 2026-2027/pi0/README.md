@@ -157,6 +157,28 @@ Vérifier : `journalctl -u tableau-bord -f` doit afficher
 `SIM7600 : port de commandes ...`, `SIM7600 pret`, `carte SIM : prete`,
 puis `GPS : position trouvee` (dehors, environ 1 minute).
 
+## Tests de robustesse et de performance
+
+| Commande | Ce qu'elle vérifie | Durée |
+|---|---|---|
+| `make test` | Tests de chaque module (protocole, Kalman, SMS, faux SIM7600, carte) | quelques s |
+| `make robustesse` | Des millions d'entrées aléatoires ou piégées (ESP32, SIM7600, SMS, `.env`, URL) : aucun plantage, aucun débordement mémoire (AddressSanitizer, UBSan) | ~1 min |
+| `make perf` | Capacité de chaque traitement face au besoin réel, en % d'un cœur | ~5 s |
+| `make stress_tableau && ./stress_tableau --pid $(pidof tableau_bord)` | Service lancé : attaque le serveur web pendant 20 s, vérifie que l'écran reçoit toujours ses données et que le serveur répond après | 20 s |
+
+`./test_robustesse 10` fait 10 fois plus d'essais.
+
+Isolement des pannes :
+- ESP32 et SIM7600 sont indépendants : l'un absent, débranché ou qui
+  envoie n'importe quoi ne gêne pas l'autre.
+- Un navigateur lent ou malveillant est déconnecté sans bloquer les
+  autres ; au-delà de 16 connexions, les nouvelles sont refusées.
+- Si la boucle du serveur se figeait plus de 10 s, systemd le relance
+  (chien de garde, `WatchdogSec`) : relancer `sudo ./kiosque/installer.sh`
+  une fois pour l'activer.
+- À l'écran, chaque panneau est isolé : une erreur dans l'un n'empêche
+  pas les autres de se mettre à jour.
+
 ## Dépannage
 
 | Symptôme | Que faire |

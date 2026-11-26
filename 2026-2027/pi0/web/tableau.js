@@ -20,6 +20,12 @@
   function texte(el, v) { if (el.textContent !== v) el.textContent = v; }
   function classe(el, nom, actif) { if (el.classList.contains(nom) !== actif) el.classList.toggle(nom, actif); }
 
+  /* Une erreur dans un panneau reste dans ce panneau : le reste de l'ecran
+   * continue d'etre mis a jour */
+  function isole(nom, f) {
+    try { f(); } catch (e) { console.error('[' + nom + ']', e); }
+  }
+
   /* ------------------------------------------------------------------ */
   /* Compas                                                              */
   /* ------------------------------------------------------------------ */
@@ -128,8 +134,14 @@
   /* Animation de l'assiette et du cap                                   */
   /* ------------------------------------------------------------------ */
 
-  const vue3d = window.Bateau.creer($('vue3d'));
-  const compas = creerCompas($('compas'));
+  /* Si une vue ne peut pas etre creee (script absent, canvas indisponible),
+   * elle est remplacee par une vue vide : le reste de l'ecran fonctionne */
+  function creerVue(nom, f) {
+    try { return f(); } catch (e) { console.error('[' + nom + ']', e); }
+    return new Proxy({}, { get: () => () => false });
+  }
+  const vue3d = creerVue('assiette', () => window.Bateau.creer($('vue3d')));
+  const compas = creerVue('compas', () => creerCompas($('compas')));
 
   const cible = { roulis: 0, tangage: 0, cap: 0 };
   const affiche = { roulis: 0, tangage: 0, cap: 0 };
@@ -147,8 +159,8 @@
     affiche.tangage += (cible.tangage - affiche.tangage) * k;
     affiche.cap = (affiche.cap + ecartCap(cible.cap, affiche.cap) * k + 360) % 360;
 
-    vue3d.dessiner(affiche.roulis, affiche.tangage);
-    compas.dessiner(affiche.cap);
+    isole('assiette', () => vue3d.dessiner(affiche.roulis, affiche.tangage));
+    isole('compas', () => compas.dessiner(affiche.cap));
 
     const reste = Math.abs(cible.roulis - affiche.roulis) + Math.abs(cible.tangage - affiche.tangage) +
       Math.abs(ecartCap(cible.cap, affiche.cap));
@@ -163,11 +175,9 @@
   }
 
   function redessiner() {
-    vue3d.redimensionner();
-    compas.redimensionner();
     instant = performance.now();
-    vue3d.dessiner(affiche.roulis, affiche.tangage);
-    compas.dessiner(affiche.cap);
+    isole('assiette', () => { vue3d.redimensionner(); vue3d.dessiner(affiche.roulis, affiche.tangage); });
+    isole('compas', () => { compas.redimensionner(); compas.dessiner(affiche.cap); });
   }
   new ResizeObserver(redessiner).observe($('p-imu'));
   new ResizeObserver(redessiner).observe($('p-cap'));
@@ -296,8 +306,8 @@
   /* Vitesse, GPS, 4G, SMS (module SIM7600)                              */
   /* ------------------------------------------------------------------ */
 
-  const carte = window.Carte.creer($('carte'));
-  new ResizeObserver(() => carte.redimensionner()).observe($('p-carte'));
+  const carte = creerVue('carte', () => window.Carte.creer($('carte')));
+  new ResizeObserver(() => isole('carte', () => carte.redimensionner())).observe($('p-carte'));
 
   const NOEUDS = 1.943844;   // m/s -> noeuds
   const SOURCES_VITESSE = { 'gps+imu': 'GPS + IMU', gps: 'GPS seul', imu: 'IMU seule : GPS perdu' };
@@ -429,6 +439,11 @@
   function surMessage(ev) {
     let m;
     try { m = JSON.parse(ev.data); } catch (e) { return; }
+    if (!m || typeof m !== 'object') return;
+    isole('message ' + m.t, () => traiter(m));
+  }
+
+  function traiter(m) {
     switch (m.t) {
       case 'imu': surImu(m); break;
       case 'bms': surBms(m); break;
@@ -463,37 +478,47 @@
   connecter();
 
   /* Verifications periodiques : donnees perimees, heure, alerte */
+  /* Verifications periodiques : chaque bloc isole, une erreur dans l'un
+   * n'empeche pas les autres de tourner */
   setInterval(() => {
     const t = performance.now();
-    classe($('p-imu'), 'perime', t - vu.imu > PERIME_MS);
-    classe($('p-cap'), 'perime', t - vu.imu > PERIME_MS);
-    classe($('p-mouv'), 'perime', t - vu.mouv > PERIME_MS);
-    classe($('p-bms1'), 'perime', t - vu.bms1 > 3000);
-    classe($('p-bms2'), 'perime', t - vu.bms2 > 3000);
-    classe($('p-power'), 'perime', t - vu.power > 3000);
-    classe($('p-temp'), 'perime', t - vu.temp > 3000);
-    classe($('p-vitesse'), 'perime', t - vu.vitesse > PERIME_MS);
-    texte($('voile-vitesse'), raisonSansGps());
-    // Carte : seulement avec une position GPS actuelle
-    const sansPosition = t - vu.gps > 3000;
-    classe($('p-carte'), 'perime', sansPosition);
-    texte($('voile-carte'), raisonSansGps().replace('vitesse inconnue', 'pas de position GPS'));
-    if (sansPosition) texte($('position'), '—');
-
-    // Barre du haut : rien de perime
-    if (t - vu.hb > 3000) { texte($('uptime'), 'ESP —'); texte($('fw'), 'fw —'); }
-    if (t - vu.sim > 3000) {
-      texte($('sim'), '4G —');
-      texte($('gps'), 'GPS —');
-      for (const id of ['sim', 'gps']) { classe($(id), 'ok', false); classe($(id), 'attention', false); }
-    }
-    if (t - vu.etat > 3000) { etatLiaison('Serveur injoignable', 'perdu'); texte($('lien'), 'UART —'); }
-    if (finAlerte && t > finAlerte) { $('alerte').hidden = true; finAlerte = 0; }
-    if (finMessage && t > finMessage) { $('message').hidden = true; finMessage = 0; }
-
-    const d = new Date();
-    texte($('heure'), [d.getHours(), d.getMinutes(), d.getSeconds()].map((x) => String(x).padStart(2, '0')).join(':'));
+    isole('voiles ESP', () => {
+      classe($('p-imu'), 'perime', t - vu.imu > PERIME_MS);
+      classe($('p-cap'), 'perime', t - vu.imu > PERIME_MS);
+      classe($('p-mouv'), 'perime', t - vu.mouv > PERIME_MS);
+      classe($('p-bms1'), 'perime', t - vu.bms1 > 3000);
+      classe($('p-bms2'), 'perime', t - vu.bms2 > 3000);
+      classe($('p-power'), 'perime', t - vu.power > 3000);
+      classe($('p-temp'), 'perime', t - vu.temp > 3000);
+    });
+    isole('voiles GPS', () => {
+      classe($('p-vitesse'), 'perime', t - vu.vitesse > PERIME_MS);
+      texte($('voile-vitesse'), raisonSansGps());
+      // Carte : seulement avec une position GPS actuelle
+      const sansPosition = t - vu.gps > 3000;
+      classe($('p-carte'), 'perime', sansPosition);
+      texte($('voile-carte'), raisonSansGps().replace('vitesse inconnue', 'pas de position GPS'));
+      if (sansPosition) texte($('position'), '—');
+    });
+    isole('barre', () => {
+      // Barre du haut : rien de perime
+      if (t - vu.hb > 3000) { texte($('uptime'), 'ESP —'); texte($('fw'), 'fw —'); }
+      if (t - vu.sim > 3000) {
+        texte($('sim'), '4G —');
+        texte($('gps'), 'GPS —');
+        for (const id of ['sim', 'gps']) { classe($(id), 'ok', false); classe($(id), 'attention', false); }
+      }
+      if (t - vu.etat > 3000) { etatLiaison('Serveur injoignable', 'perdu'); texte($('lien'), 'UART —'); }
+    });
+    isole('bandeaux', () => {
+      if (finAlerte && t > finAlerte) { $('alerte').hidden = true; finAlerte = 0; }
+      if (finMessage && t > finMessage) { $('message').hidden = true; finMessage = 0; }
+    });
+    isole('heure', () => {
+      const d = new Date();
+      texte($('heure'), [d.getHours(), d.getMinutes(), d.getSeconds()].map((x) => String(x).padStart(2, '0')).join(':'));
+    });
   }, 500);
 
-  redessiner();
+  isole('dessin initial', redessiner);
 })();

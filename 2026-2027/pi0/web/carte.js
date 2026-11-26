@@ -280,7 +280,13 @@ window.Carte = (function () {
       if (!bateau.fix) etiquette('GPS perdu', x - 40, y - s * 1.8, 'left', Math.max(12, Math.round(hauteur * 0.04)));
     }
 
+    // Appelee aussi depuis l'arrivee des tuiles : une erreur ne doit pas
+    // casser le chargement des suivantes
     function dessiner() {
+      try { dessinerTout(); } catch (e) { console.error('[carte]', e); }
+    }
+
+    function dessinerTout() {
       if (!largeur || !hauteur) return;
       ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
       ctx.fillStyle = '#0c141d';

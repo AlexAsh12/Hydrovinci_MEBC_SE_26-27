@@ -22,6 +22,9 @@ Info.md
 **/pi0/test_protocole
 **/pi0/test_pi
 **/pi0/telecharger_carte
+**/pi0/test_robustesse
+**/pi0/perf_pi
+**/pi0/stress_tableau
 **/pi0/carte/tuiles/**/*.tmp.png
 # Configuration propre a chaque bateau (modele : sondes.conf.exemple)
 **/pi0/sondes.conf

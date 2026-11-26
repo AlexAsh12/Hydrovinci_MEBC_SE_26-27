@@ -32,7 +32,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/socket.h>
+#include <stddef.h>
 #include <sys/stat.h>
+#include <sys/un.h>
 #include <time.h>
 #include <unistd.h>
 
@@ -168,6 +170,28 @@ static void journal(const char *format, ...)
     va_end(a);
     putchar('\n');
     fflush(stdout);
+}
+
+/* Chien de garde systemd (sans bibliotheque) : READY=1 une fois pret, puis
+ * WATCHDOG=1 chaque seconde depuis la boucle principale. Si la boucle se
+ * fige (WatchdogSec dans tableau-bord.service), systemd relance le service.
+ * Sans systemd (lancement a la main), ne fait rien. */
+static void notifier_systemd(const char *message)
+{
+    const char *chemin = getenv("NOTIFY_SOCKET");
+    struct sockaddr_un a;
+    if (!chemin || (chemin[0] != '/' && chemin[0] != '@')) return;
+    const size_t l = strlen(chemin);
+    if (l >= sizeof a.sun_path) return;
+    memset(&a, 0, sizeof a);
+    a.sun_family = AF_UNIX;
+    memcpy(a.sun_path, chemin, l);
+    if (a.sun_path[0] == '@') a.sun_path[0] = '\0';  /* socket abstraite */
+    const int fd = socket(AF_UNIX, SOCK_DGRAM | SOCK_CLOEXEC, 0);
+    if (fd < 0) return;
+    sendto(fd, message, strlen(message), MSG_NOSIGNAL, (struct sockaddr *)&a,
+           (socklen_t)(offsetof(struct sockaddr_un, sun_path) + l));
+    close(fd);
 }
 
 static void sur_signal(int sig)
@@ -1157,6 +1181,7 @@ int main(int argc, char **argv)
     proto_decodeur_init(&decodeur);
     ouvrir_uart();
     journal("tableau de bord sur http://%s:%d/", adresse, port_http);
+    notifier_systemd("READY=1");
 
     uint64_t dernier_etat = 0, derniere_vitesse = 0, derniere_tentative_uart = maintenant_ms();
 
@@ -1240,6 +1265,7 @@ int main(int argc, char **argv)
         if (t - dernier_etat >= PERIODE_ETAT_MS) {
             dernier_etat = t;
             diffuser_etat();  /* sert aussi de battement de coeur pour les ecrans */
+            notifier_systemd("WATCHDOG=1");
             diffuser_sim();
         }
         if (t - derniere_vitesse >= PERIODE_VITESSE_MS) {
