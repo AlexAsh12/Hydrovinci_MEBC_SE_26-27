@@ -320,12 +320,17 @@ dd { margin: 0; text-align: right; font-weight: 600; }
   display: none;
   align-items: center;
   justify-content: center;
-  background: rgba(10, 15, 21, 0.72);
+  padding: 1vmin;
+  text-align: center;
+  /* Opaque : jamais une ancienne valeur visible sous le voile */
+  background: var(--panneau);
   color: var(--attention);
   font-weight: 700;
   font-size: clamp(13px, 2.4vmin, 24px);
 }
 .panneau.perime .voile { display: flex; }
+.panneau h2 { position: relative; z-index: 1; }   /* titre visible au-dessus du voile */
+.vitesse h2 { position: absolute; }
 
 /* ---------- Petits ecrans / portrait ---------- */
 

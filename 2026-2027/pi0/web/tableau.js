@@ -177,7 +177,7 @@
   /* ------------------------------------------------------------------ */
 
   const PERIME_MS = 1500;
-  const vu = { imu: 0, mouv: 0, bms1: 0, bms2: 0, power: 0, temp: 0, etat: 0, vitesse: 0, sim: 0 };
+  const vu = { imu: 0, mouv: 0, bms1: 0, bms2: 0, power: 0, temp: 0, etat: 0, vitesse: 0, sim: 0, gps: 0, hb: 0 };
 
   function signe(v, decimales) { return (v > 0 ? '+' : '') + v.toFixed(decimales); }
 
@@ -327,7 +327,8 @@
   }
 
   function surGps(m) {
-    if (!m.fix) { carte.perdu(); return; }
+    if (!m.fix) { vu.gps = 0; carte.perdu(); return; }
+    vu.gps = performance.now();
     if (m.pt) carte.ajouterPoint(m.lat, m.lon);
     carte.position(m.lat, m.lon, capBateau(m), 1);
     texte($('position'), formatPosition(m.lat, m.lon) + (m.heure ? '   ' + m.heure + ' UTC' : ''));
@@ -366,12 +367,13 @@
   /* Pourquoi pas de vitesse / pas de carte */
   function raisonSansGps() {
     const m = etatSim;
-    if (!m || performance.now() - vu.sim > 3000) return 'Serveur injoignable';
-    if (!m.actif) return 'Module 4G désactivé';
-    if (!m.present) return 'Module 4G/GPS absent';
-    if (!m.gps) return 'GPS éteint';
-    if (!m.fix) return 'Recherche GPS…';
-    return 'Vitesse inconnue';
+    let raison = 'vitesse inconnue';
+    if (!m || performance.now() - vu.sim > 3000) raison = 'serveur injoignable';
+    else if (!m.actif) raison = 'module 4G désactivé';
+    else if (!m.present) raison = 'module 4G/GPS absent';
+    else if (!m.gps) raison = 'GPS éteint';
+    else if (!m.fix) raison = 'recherche GPS…';
+    return 'Pas de données : ' + raison;
   }
 
   function surSms(m) {
@@ -433,7 +435,7 @@
       case 'power': surPower(m); break;
       case 'temp': surTemp(m); break;
       case 'mouv': surMouvement(m); break;
-      case 'hb': texte($('uptime'), 'ESP ' + duree(m.uptime)); break;
+      case 'hb': vu.hb = performance.now(); texte($('uptime'), 'ESP ' + duree(m.uptime)); break;
       case 'hello': texte($('fw'), 'fw ' + m.fw); break;
       case 'alerte': surAlerte(m); break;
       case 'vitesse': surVitesse(m); break;
@@ -472,9 +474,20 @@
     classe($('p-temp'), 'perime', t - vu.temp > 3000);
     classe($('p-vitesse'), 'perime', t - vu.vitesse > PERIME_MS);
     texte($('voile-vitesse'), raisonSansGps());
-    classe($('p-carte'), 'perime', !carte.aDesDonnees());
-    texte($('voile-carte'), raisonSansGps() === 'Vitesse inconnue' ? 'En attente du GPS' : raisonSansGps());
-    if (t - vu.etat > 3000) etatLiaison('Serveur injoignable', 'perdu');
+    // Carte : seulement avec une position GPS actuelle
+    const sansPosition = t - vu.gps > 3000;
+    classe($('p-carte'), 'perime', sansPosition);
+    texte($('voile-carte'), raisonSansGps().replace('vitesse inconnue', 'pas de position GPS'));
+    if (sansPosition) texte($('position'), '—');
+
+    // Barre du haut : rien de perime
+    if (t - vu.hb > 3000) { texte($('uptime'), 'ESP —'); texte($('fw'), 'fw —'); }
+    if (t - vu.sim > 3000) {
+      texte($('sim'), '4G —');
+      texte($('gps'), 'GPS —');
+      for (const id of ['sim', 'gps']) { classe($(id), 'ok', false); classe($(id), 'attention', false); }
+    }
+    if (t - vu.etat > 3000) { etatLiaison('Serveur injoignable', 'perdu'); texte($('lien'), 'UART —'); }
     if (finAlerte && t > finAlerte) { $('alerte').hidden = true; finAlerte = 0; }
     if (finMessage && t > finMessage) { $('message').hidden = true; finMessage = 0; }
 

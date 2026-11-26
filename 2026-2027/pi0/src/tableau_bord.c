@@ -1231,6 +1231,10 @@ int main(int argc, char **argv)
         if (esp_present && t > derniere_trame_ms && t - derniere_trame_ms > DELAI_ESP_PERDU_MS) {
             esp_present = 0;
             journal("ESP32 perdu (plus rien depuis %u ms)", (unsigned)DELAI_ESP_PERDU_MS);
+            /* Un ecran qui se connecte ne doit pas recevoir d'anciennes mesures */
+            for (int k = D_HELLO; k <= D_PILOT; ++k) derniers[k][0] = '\0';
+            soc_dixieme[0] = soc_dixieme[1] = -1;
+            t_puissance = 0;
             diffuser_etat();
         }
         if (t - dernier_etat >= PERIODE_ETAT_MS) {
