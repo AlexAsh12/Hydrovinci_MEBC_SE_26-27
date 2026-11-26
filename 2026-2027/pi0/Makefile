@@ -39,10 +39,13 @@ test: test_protocole test_pi
 
 # Robustesse : des millions d'entrees aleatoires, avec detection des
 # debordements memoire (AddressSanitizer) et des calculs indefinis (UBSan)
-SANITIZE := -O1 -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=all
+# -static-libasan : Raspberry Pi OS precharge libarmmem (/etc/ld.so.preload),
+# ce qui empeche ASan de demarrer en bibliotheque partagee.
+# -latomic : ASan en a besoin sur la Pi 32 bits.
+SANITIZE := -O1 -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=all -static-libasan
 test_robustesse: tests/test_robustesse.c $(MODULES) $(MODULES:.c=.h) $(PROTO)/protocole.c $(PROTO)/protocole.h
 	$(CC) -std=gnu99 -Wall -Wextra $(SANITIZE) -Isrc -I$(PROTO) -o $@ tests/test_robustesse.c $(MODULES) \
-		$(PROTO)/protocole.c -lm
+		$(PROTO)/protocole.c -lm -latomic
 
 robustesse: test_robustesse
 	./test_robustesse

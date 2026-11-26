@@ -215,6 +215,7 @@ static void analyseurs(void)
 
 static long octets_ecrits, sms_recus_bruts;
 static int ecriture_hs;
+static char derniere_cmd[80];   /* derniere commande recue par le faux module */
 
 static int ecrire_rien(void *ctx, const char *d, size_t n)
 {
@@ -224,7 +225,55 @@ static int ecrire_rien(void *ctx, const char *d, size_t n)
     VERIF(d[n - 1] == '\r' || d[n - 1] == 0x1A || d[n - 1] == 0x1B);
     for (size_t i = 0; i + 1 < n; ++i) VERIF(d[i] != '\r' && d[i] != 0x1A && d[i] != 0x1B);
     octets_ecrits += (long)n;
+    if (d[n - 1] == 0x1A) {
+        strcpy(derniere_cmd, "CORPS");
+    } else if (d[n - 1] == '\r') {
+        const size_t l = n - 1 < sizeof derniere_cmd - 1 ? n - 1 : sizeof derniere_cmd - 1;
+        memcpy(derniere_cmd, d, l);
+        derniere_cmd[l] = '\0';
+    }
     return ecriture_hs && entre(4) == 0 ? -1 : 0;
+}
+
+static int commence(const char *c, const char *p)
+{
+    return strncmp(c, p, strlen(p)) == 0;
+}
+
+/* Reponse vraisemblable a la derniere commande (pour aller loin dans le
+ * dialogue : SIM prete, SMS listes, envoyes...), parfois fausse ou abimee */
+static size_t plausible(char *t, size_t taille)
+{
+    static const char *const corps[] = {"POSITION", "", "OK", "Ligne 1\nERROR", "0050004F0053", "RDY", "\xE9t\xE9"};
+    const char *c = derniere_cmd;
+    size_t n = 0;
+    t[0] = '\0';
+#define AJOUT(s) (n += (size_t)snprintf(t + n, taille - n, "%s", (s)), n = n < taille ? n : taille - 1)
+    if (!strcmp(c, "CORPS")) AJOUT(entre(5) ? "\r\n+CMGS: 7\r\n\r\nOK\r\n" : "\r\n+CMS ERROR: 500\r\n");
+    else if (commence(c, "AT+CMGS")) AJOUT("\r\n> ");
+    else if (commence(c, "AT+CPIN?")) AJOUT(entre(8) ? "\r\n+CPIN: READY\r\n\r\nOK\r\n" : "\r\n+CPIN: SIM PIN\r\n\r\nOK\r\n");
+    else if (commence(c, "AT+CGPSINFO")) {
+        AJOUT(entre(3) ? "\r\n+CGPSINFO: 4344.100000,N,00725.400000,E,261126,143205.0,5.0,4.2,87.0\r\n\r\nOK\r\n"
+                       : "\r\n+CGPSINFO: ,,,,,,,,\r\n\r\nOK\r\n");
+    } else if (commence(c, "AT+CMGL")) {
+        AJOUT("\r\n");
+        for (int i = (int)entre(4); i > 0; --i) {
+            char l[200];
+            snprintf(l, sizeof l, "+CMGL: %u,\"REC UNREAD\",\"%s\",,\"26/11/26,14:32:05+04\"\r\n%s\r\n", entre(30),
+                     entre(4) ? "+33612345678" : "Operateur", corps[entre(sizeof corps / sizeof corps[0])]);
+            AJOUT(l);
+        }
+        AJOUT("\r\nOK\r\n");
+    } else if (commence(c, "AT+CREG?")) AJOUT("\r\n+CREG: 0,1\r\n\r\nOK\r\n");
+    else if (commence(c, "AT+CEREG?")) AJOUT("\r\n+CEREG: 0,1\r\n\r\nOK\r\n");
+    else if (commence(c, "AT+CSQ")) AJOUT("\r\n+CSQ: 18,99\r\n\r\nOK\r\n");
+    else if (commence(c, "AT+COPS?")) AJOUT("\r\n+COPS: 0,0,\"Orange F\",7\r\n\r\nOK\r\n");
+    else if (c[0]) AJOUT(entre(10) ? "\r\nOK\r\n" : "\r\nERROR\r\n");
+#undef AJOUT
+    derniere_cmd[0] = '\0';
+    /* De temps en temps, des octets parasites en plus */
+    if (entre(10) == 0 && n + 1 < taille) n += brouiller(t + n, taille - n);
+    return n;
 }
 
 static void gps_recu(void *ctx, const sim_gps_t *g, int fix)
@@ -259,7 +308,7 @@ static void moteur_fou(void)
     sim_moteur_definir_pin(&moteur, "1234");
     uint64_t t = 1000;
     sim_moteur_ouvert(&moteur, t);
-    char tampon[300];
+    char tampon[1200];
     for (long k = 0; k < 200000L * facteur; ++k) {
         switch (entre(200)) {
         case 0: sim_moteur_ferme(&moteur); break;
@@ -276,7 +325,8 @@ static void moteur_fou(void)
         case 5: t += 3600000u; break;               /* une heure sans rien */
         default: break;
         }
-        const size_t n = brouiller(tampon, sizeof tampon);
+        /* Trois fois sur quatre une reponse vraisemblable, sinon n'importe quoi */
+        const size_t n = entre(4) ? plausible(tampon, sizeof tampon) : brouiller(tampon, 300);
         sim_moteur_recevoir(&moteur, tampon, n, t);
         t += entre(400);
         sim_moteur_tick(&moteur, t);
@@ -292,7 +342,9 @@ static void moteur_fou(void)
         for (int i = 0; i < moteur.nb_file; ++i) VERIF(sa_numero_valide(moteur.file[i].numero));
         if (moteur.modem == SIM_MODEM_ABSENT) VERIF(!moteur.gps_fix && moteur.cmd == 0);
     }
-    printf("  %ld octets de commandes, %ld SMS remontes\n", octets_ecrits, sms_recus_bruts);
+    printf("  %ld octets de commandes, %ld SMS remontes, %lu SMS envoyes, %lu abandonnes\n", octets_ecrits,
+           sms_recus_bruts, (unsigned long)moteur.sms_envoyes, (unsigned long)moteur.sms_echecs);
+    VERIF(sms_recus_bruts > 0 && moteur.sms_envoyes > 0);   /* le test va bien jusqu'aux SMS */
 }
 
 /* ------------------------------------------------------------------ */
