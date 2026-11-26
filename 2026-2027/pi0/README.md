@@ -184,7 +184,8 @@ Isolement des pannes :
 | Symptôme | Que faire |
 |---|---|
 | Écran noir | Attendre 10 s (nouvel essai automatique), puis `pgrep -a cage` et `sudo systemctl restart getty@tty1` |
-| Écran noir alors qu'il est branché | L'affichage ne démarre que si un écran HDMI est détecté : `cat /sys/class/drm/card*-HDMI-A-1/status` doit dire `connected`. Sinon (écran sans détection), ajouter ` video=HDMI-A-1:D` à la fin de la ligne de `/boot/firmware/cmdline.txt`, puis `sudo reboot` |
+| Écran noir alors qu'il est branché | `ls ~/sans-ecran` : si le fichier existe (mode économie), le supprimer avec `rm ~/sans-ecran`. Puis `sudo systemctl restart getty@tty1` |
+| Essais sans écran : la Pi chauffe ou rame | `touch ~/sans-ecran` puis `sudo systemctl restart getty@tty1` : sans écran détecté, l'affichage n'est plus lancé (économise un cœur et 150 Mo). **Le retirer avant de remonter l'écran** : `rm ~/sans-ecran` |
 | « Serveur injoignable » | `systemctl status tableau-bord`, puis `journalctl -u tableau-bord -b` |
 | « ESP32 perdu » | ESP non alimenté, TX/RX inversés, GND non commun. Vérifier avec `./liaison_esp32 --brut` (service arrêté) |
 | « UART indisponible » | `ls -l /dev/serial0` doit pointer vers `ttyAMA0`, sinon relancer l'installation |
