@@ -1,9 +1,9 @@
 # Tableau de câblage - saison 2026-2027
 
-Montage actuel : **ESP32-S3 DevKitC-1**. Une ligne = un fil.
+Montage actuel (ESP32-WROOM-32E provisoire). Une ligne = un fil.
 Étiqueter chaque fil **à ses deux bouts** avec son repère (colonne `Repère`).
 
-Côté ESP32 : numéros **sérigraphiés sur la DevKitC-1** (= numéros de GPIO),
+Côté ESP32 : numéros **sérigraphiés sur la DevKit** (= numéros de GPIO),
 pas les numéros de broche de la datasheet. Côté Pi : numéro de **broche
 physique** du connecteur 40 broches (1 à 40), GPIO entre parenthèses.
 
@@ -13,8 +13,8 @@ Référence dans le code : `esp32_s3_donnees/MEBC Esp32 Dev Module/include/broch
 
 | Repère | Fonction | ESP32 | Vers | Couleur | Remarque |
 |---|---|---|---|---|---|
-| U1 | UART ESP → Pi | `17` (TX) | Pi broche **10** (GPIO15, RXD) | | TX d'un côté → RX de l'autre |
-| U2 | UART Pi → ESP | `18` (RX) | Pi broche **8** (GPIO14, TXD) | | |
+| U1 | UART ESP → Pi | `17` (TX2) | Pi broche **10** (GPIO15, RXD) | | TX d'un côté → RX de l'autre |
+| U2 | UART Pi → ESP | `16` (RX2) | Pi broche **8** (GPIO14, TXD) | | |
 | U3 | Masse commune | `GND` | Pi broche **6** (GND) | | Obligatoire, sinon aucune communication |
 
 921600 bauds, niveaux 3,3 V des deux côtés (pas d'adaptateur).
@@ -25,10 +25,10 @@ Référence dans le code : `esp32_s3_donnees/MEBC Esp32 Dev Module/include/broch
 |---|---|---|---|---|---|
 | I1 | Alimentation | `3V3` | `VIN` | | Partagé avec la sonde (S1) |
 | I2 | Masse | `GND` | `GND` | | |
-| I3 | Données I²C | `8` | `SDA` | | Bus I²C (l'INA226 s'y ajoutera) |
-| I4 | Horloge I²C | `9` | `SCL` | | |
+| I3 | Données I²C | `21` | `SDA` | | Bus I²C (l'INA226 s'y ajoutera) |
+| I4 | Horloge I²C | `22` | `SCL` | | |
 | I5 | Mesure prête | `4` | `INT` | | |
-| I6 | Remise à zéro | `5` | `RST` | | |
+| I6 | Remise à zéro | `23` | `RST` | | |
 
 À laisser **débranchés** sur le BNO085 : `DI`, `CS`, `P0`, `P1`, `3Vo`.
 - `P0` / `P1` choisissent le mode : branchés, le capteur quitte l'I²C.
@@ -40,11 +40,11 @@ Référence dans le code : `esp32_s3_donnees/MEBC Esp32 Dev Module/include/broch
 |---|---|---|---|---|---|
 | S1 | Alimentation | `3V3` | fil **rouge** | rouge | |
 | S2 | Masse | `GND` | fil **noir** | noir | |
-| S3 | Données | `7` | fil **jaune** | jaune | |
-| R1 | Rappel du bus | `7` | `3V3` | - | **Résistance 4,7 kΩ** entre le jaune et le 3V3 |
+| S3 | Données | `27` | fil **jaune** | jaune | |
+| R1 | Rappel du bus | `27` | `3V3` | - | **Résistance 4,7 kΩ** entre le jaune et le 3V3 |
 
 Plusieurs sondes : tous les rouges ensemble, tous les noirs ensemble, tous
-les jaunes ensemble sur `7`, **une seule** résistance R1 pour tout le bus.
+les jaunes ensemble sur `27`, **une seule** résistance R1 pour tout le bus.
 
 Sondes branchées :
 
@@ -54,11 +54,22 @@ Sondes branchées :
 
 ## 4. Module 4G / GPS - Waveshare SIM7600G-H 4G HAT (B) (USB)
 
-Aucun fil : le HAT se visse **sous** la Pi Zero 2W avec les entretoises, et
-ses 4 pogo pins (pointes à ressort) appuient sur les pastilles de test du
-port USB, au dos de la Pi. La Pi parle au module **en USB uniquement** : sur
-cette carte (B), les broches série TXD/RXD du module ne sont reliées à rien
-(schéma Waveshare V2).
+La Pi parle au module **en USB uniquement** : sur cette carte (B), les
+broches série TXD/RXD du module ne sont reliées à rien (schéma Waveshare V2).
+Aucune soudure, deux façons au choix (**jamais les deux à la fois**) :
+
+- **A. Pogo pins (montage final)** : le HAT se visse **sous** la Pi Zero 2W
+  avec les entretoises ; ses 4 pogo pins (pointes à ressort) appuient sur les
+  pastilles de test du port USB, au dos de la Pi. Aucun câble.
+- **B. Câble (essais, HAT à côté de la Pi)** : prise micro-USB **« USB »**
+  de la Pi (celle du milieu, **pas** « PWR IN ») → adaptateur **OTG**
+  micro-USB mâle / USB-A femelle → câble USB-A / micro-USB → prise
+  micro-USB du HAT. Ou un seul câble OTG micro-USB / micro-USB. Le HAT est
+  alors alimenté par ce câble.
+
+Les 2 prises USB-A du HAT sont des **sorties** (hub) : jamais pour relier la Pi.
+
+Pogo pins (façon A) :
 
 | Repère | Fonction | Pogo pin HAT | Vers (Pi Zero 2W) | Remarque |
 |---|---|---|---|---|
@@ -76,9 +87,10 @@ cette carte (B), les broches série TXD/RXD du module ne sont reliées à rien
 
 - Le module démarre seul à la mise sous tension (`POWERKEY` relié à la
   masse sur le HAT) : aucune GPIO utilisée.
-- Le port micro-USB du HAT et ses 2 prises USB-A partagent ce même USB :
-  ne jamais brancher en plus le micro-USB du HAT à un autre ordinateur ou
-  à un chargeur (deux 5 V reliés sans protection).
+- Pogo pins et micro-USB du HAT partagent le même USB : en façon A, rien
+  sur le micro-USB du HAT ; en façon B, HAT pas vissé sur les pastilles.
+  Jamais de chargeur ni d'autre ordinateur sur le micro-USB du HAT relié à
+  la Pi (deux 5 V reliés sans protection).
 - Pointes de courant du module en émission : alimenter la Pi avec un
   bloc **5 V 3 A** (A1).
 - Voyants : `PWR` (vert) allumé = alimenté ; `NET` (rouge) qui clignote
@@ -91,29 +103,30 @@ cette carte (B), les broches série TXD/RXD du module ne sont reliées à rien
 | A1 | Alimentation Pi | Alimentation 5 V 3 A | Pi, micro-USB **PWR IN** | Alimente aussi le HAT 4G (G1) |
 | A2 | Alimentation ESP32 | | ESP32, USB | À compléter pour le bateau (aujourd'hui : USB du PC) |
 | E1 | Écran | Pi, **mini-HDMI** | Écran HDMI | Adaptateur mini-HDMI → HDMI |
-| P1 | Programmation | ESP32-S3, prise USB **« UART »** (ou « COM ») | PC | Flash et journaux. Pas la prise « USB » : les journaux n'y sortent pas |
+| P1 | Programmation | ESP32, USB | PC | Flash et journaux (pilote CP210x, COM3) |
 
-## 6. Broches ESP32-S3 occupées et à éviter
+## 6. Broches ESP32 occupées et à éviter
 
 | GPIO | Utilisation |
 |---|---|
 | 4 | BNO085 INT |
-| 5 | BNO085 RST |
-| 7 | Bus 1-Wire |
-| 8, 9 | Bus I²C (SDA, SCL) |
-| 17, 18 | UART vers la Pi (TX, RX) |
-| 43, 44 | Réservées : journaux USB (prise « UART ») |
-| 19, 20 | Réservées : USB natif (prise « USB ») |
-| 26 à 32 | Interdites : mémoire flash |
-| 33 à 37 | Interdites sur les modules avec PSRAM (référence en « R8 ») |
-| 0, 3, 45, 46 | À éviter : rôle au démarrage |
+| 16, 17 | UART vers la Pi |
+| 21, 22 | Bus I²C |
+| 23 | BNO085 RST |
+| 27 | Bus 1-Wire |
+| 1, 3 | Réservées : USB (flash et journaux) |
+| 6 à 11 | Interdites : mémoire flash |
+| 0, 2, 12, 15 | À éviter : rôle au démarrage |
+| 34 à 39 | Entrée seulement |
 
 ## 7. Prévu, pas encore câblé
 
 - BMS 1 et 2 (RS485)
-- INA226 (énergie), sur le bus I²C (SDA `8` / SCL `9`), adresse 0x40
+- INA226 (énergie), sur le bus I²C (SDA `21` / SCL `22`), adresse 0x40
 - Bus CAN
 - ESP32-C3 du boîtier pilote
+- Passage à l'ESP32-S3 : broches déjà prêtes dans `include/broches.h`
+  (environnement `s3`) : UART Pi 17/18, I²C 8/9, IMU INT 4 / RST 5, 1-Wire 7
 
 ## 8. Contrôle avant mise sous tension
 
