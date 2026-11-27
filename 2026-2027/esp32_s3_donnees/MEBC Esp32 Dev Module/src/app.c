@@ -143,7 +143,7 @@ static void log_temp(void)
 {
     const int n = ds18b20_nb();
     if (n == 0) {
-        plateforme_log("[TEMP] aucune sonde (verifier le fil jaune sur GPIO27 et la 4,7 kOhm)\n");
+        plateforme_log("[TEMP] aucune sonde (verifier le fil jaune sur la broche 1-Wire de broches.h et la 4,7 kOhm)\n");
         return;
     }
     for (int i = 0; i < n; ++i) {
